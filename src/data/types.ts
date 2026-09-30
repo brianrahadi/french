@@ -29,6 +29,8 @@ export interface Word {
   custom?: boolean
   /** Where a learner-added word came from, e.g. 'text:<id>', 'talk:<id>', 'writing'. */
   from?: string
+  /** When a learner-added word was added (ISO), for syncing deletions correctly. */
+  added?: string
 }
 
 export interface Deck {

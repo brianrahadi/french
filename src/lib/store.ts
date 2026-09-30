@@ -6,6 +6,7 @@ import type { WritingFeedback } from './ai/writing'
 import type { Conversation } from '../features/talk/types'
 import type { ReaderText } from '../features/reading/types'
 import { addDays, dayKey } from './date'
+import { DEVICE_ID } from './device'
 import { cardId, newCard, Rating, review, type CardDir, type Grade, type StoredCard } from './srs'
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -81,7 +82,28 @@ export interface State {
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
   read: Record<string, string>
+  /** Bookkeeping that lets progress from several devices be merged. */
+  sync: SyncMeta
 }
+
+export interface SyncMeta {
+  /** Changes when progress is reset or replaced from a backup; the newer epoch replaces older data everywhere. */
+  epoch: string
+  epochAt: string
+  /**
+   * When each shared setting ('settings.dailyGoal'), the deck list, level, drill
+   * setup and each skill's recent results ('skill:<id>') last changed. The newest
+   * change wins when merging, key by key.
+   */
+  changed: Record<string, string>
+  /** Deleted items ('word:<id>', 'card:<id>', 'writing:<id>', 'talk:<id>', 'text:<id>') → when. */
+  deleted: Record<string, string>
+  /** Daily activity per device, so counts from several devices add up. */
+  devices: Record<string, Record<string, DayActivity>>
+}
+
+/** Settings that belong to one device (voice, speed, theme) and are never synced. */
+export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme'] as const
 
 export interface SentenceStat {
   n: number
@@ -198,6 +220,60 @@ export const initialState: State = {
   conversations: [],
   texts: [],
   read: {},
+  sync: { epoch: '', epochAt: '', changed: {}, deleted: {}, devices: {} },
+}
+
+const now = () => new Date().toISOString()
+const isDeviceSetting = (k: string) => (DEVICE_SETTINGS as readonly string[]).includes(k)
+/** Records when shared values changed, for merging with other devices. */
+const stamp = (s: State, keys: string[], at = now()): Pick<State, 'sync'> => ({
+  sync: { ...s.sync, changed: { ...s.sync.changed, ...Object.fromEntries(keys.map((k) => [k, at])) } },
+})
+
+/** Stamps every "last change wins" value, e.g. for a save from before sync existed or a restored backup. */
+export function stampAll(s: Pick<State, 'settings' | 'skills'>, at = now()): Record<string, string> {
+  const keys = [
+    ...Object.keys(s.settings)
+      .filter((k) => !isDeviceSetting(k))
+      .map((k) => `settings.${k}`),
+    'activeDecks',
+    'conjConfig',
+    'startLevel',
+    ...Object.keys(s.skills ?? {}).map((k) => `skill:${k}`),
+  ]
+  return Object.fromEntries(keys.map((k) => [k, at]))
+}
+const tombstone = (s: State, keys: string[]): Pick<State, 'sync'> => {
+  const at = now()
+  return { sync: { ...s.sync, deleted: { ...s.sync.deleted, ...Object.fromEntries(keys.map((k) => [k, at])) } } }
+}
+
+/** Adds to today's activity, both in total and for this device. */
+function addActivity(s: State, items: number, correct: number, newWords: number): Partial<State> {
+  const k = dayKey()
+  const bump = (d?: DayActivity): DayActivity => ({
+    items: (d?.items ?? 0) + items,
+    correct: (d?.correct ?? 0) + correct,
+    newWords: (d?.newWords ?? 0) + newWords,
+  })
+  const mine = s.sync.devices[DEVICE_ID] ?? {}
+  return {
+    activity: { ...s.activity, [k]: bump(s.activity[k]) },
+    sync: { ...s.sync, devices: { ...s.sync.devices, [DEVICE_ID]: { ...mine, [k]: bump(mine[k]) } } },
+  }
+}
+
+/**
+ * Fills in sync bookkeeping. Saves from before sync existed (`legacy`) get their
+ * settings stamped as changed now, so they win over a new device's defaults, and
+ * their activity is attributed to this device.
+ */
+export function withSyncMeta(state: State, legacy = false): State {
+  const sync = { ...initialState.sync, ...(state.sync ?? {}) }
+  if (legacy) sync.changed = { ...stampAll(state), ...sync.changed }
+  if (!Object.keys(sync.devices).length && Object.keys(state.activity ?? {}).length)
+    sync.devices = { [DEVICE_ID]: { ...state.activity } }
+  return { ...state, sync }
 }
 
 export const MAX_MISTAKES = 500
@@ -209,9 +285,13 @@ export const useStore = create<State & Actions>()(
     (set, get) => ({
       ...initialState,
 
-      updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
+      updateSettings: (patch) =>
+        set((s) => {
+          const shared = Object.keys(patch).filter((k) => !isDeviceSetting(k))
+          return { settings: { ...s.settings, ...patch }, ...(shared.length ? stamp(s, shared.map((k) => `settings.${k}`)) : {}) }
+        }),
 
-      setStartLevel: (level, decks) => set({ startLevel: level, activeDecks: decks }),
+      setStartLevel: (level, decks) => set((s) => ({ startLevel: level, activeDecks: decks, ...stamp(s, ['startLevel', 'activeDecks']) })),
 
       logMistakes: (ms) =>
         set((s) => {
@@ -225,7 +305,10 @@ export const useStore = create<State & Actions>()(
         set((s) => ({ mistakes: s.mistakes.map((m) => (m.id === id ? { ...m, resolved } : m)) })),
 
       recordSkill: (skill, ok) =>
-        set((s) => ({ skills: { ...s.skills, [skill]: [...(s.skills[skill] ?? []), ok ? 1 : 0].slice(-10) } })),
+        set((s) => ({
+          skills: { ...s.skills, [skill]: [...(s.skills[skill] ?? []), ok ? 1 : 0].slice(-10) },
+          ...stamp(s, [`skill:${skill}`]),
+        })),
 
       recordSentence: (kind, id, score) =>
         set((s) => {
@@ -242,26 +325,22 @@ export const useStore = create<State & Actions>()(
       saveConversation: (c) =>
         set((s) => ({ conversations: [c, ...s.conversations.filter((x) => x.id !== c.id)].slice(0, 60) })),
 
-      deleteConversation: (id) => set((s) => ({ conversations: s.conversations.filter((c) => c.id !== id) })),
+      deleteConversation: (id) =>
+        set((s) => ({ conversations: s.conversations.filter((c) => c.id !== id), ...tombstone(s, [`talk:${id}`]) })),
 
       saveText: (t) => set((s) => ({ texts: [t, ...s.texts.filter((x) => x.id !== t.id)].slice(0, 150) })),
 
       updateText: (id, patch) => set((s) => ({ texts: s.texts.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
 
-      deleteText: (id) => set((s) => ({ texts: s.texts.filter((t) => t.id !== id) })),
+      deleteText: (id) => set((s) => ({ texts: s.texts.filter((t) => t.id !== id), ...tombstone(s, [`text:${id}`]) })),
 
       markRead: (id) => set((s) => ({ read: { ...s.read, [id]: dayKey() } })),
 
       addWriting: (e) => set((s) => ({ writings: [e, ...s.writings.filter((w) => w.id !== e.id)].slice(0, 200) })),
 
-      deleteWriting: (id) => set((s) => ({ writings: s.writings.filter((w) => w.id !== id) })),
+      deleteWriting: (id) => set((s) => ({ writings: s.writings.filter((w) => w.id !== id), ...tombstone(s, [`writing:${id}`]) })),
 
-      logActivityBulk: (items, correct) =>
-        set((s) => {
-          const k = dayKey()
-          const d = s.activity[k] ?? { items: 0, correct: 0, newWords: 0 }
-          return { activity: { ...s.activity, [k]: { ...d, items: d.items + items, correct: d.correct + correct } } }
-        }),
+      logActivityBulk: (items, correct) => set((s) => addActivity(s, items, correct, 0)),
 
       introduceWord: (wordId, dirs, alreadyKnown = false) =>
         set((s) => {
@@ -297,15 +376,22 @@ export const useStore = create<State & Actions>()(
           activeDecks: s.activeDecks.includes(deckId)
             ? s.activeDecks.filter((d) => d !== deckId)
             : [...s.activeDecks, deckId],
+          ...stamp(s, ['activeDecks']),
         })),
 
       addCustomWords: (words) =>
         set((s) => {
           const existing = new Set(s.customWords.map((w) => w.id))
-          const fresh = words.filter((w) => !existing.has(w.id))
+          const at = now()
+          const fresh = words.filter((w) => !existing.has(w.id)).map((w) => ({ ...w, added: w.added ?? at }))
+          // Re-adding a word that was deleted earlier undoes the deletion.
+          const deleted = { ...s.sync.deleted }
+          for (const w of fresh) delete deleted[`word:${w.id}`]
+          const hasDeck = s.activeDecks.includes('custom')
           return {
             customWords: [...s.customWords, ...fresh],
-            activeDecks: s.activeDecks.includes('custom') ? s.activeDecks : [...s.activeDecks, 'custom'],
+            activeDecks: hasDeck ? s.activeDecks : [...s.activeDecks, 'custom'],
+            sync: { ...(hasDeck ? s.sync : stamp(s, ['activeDecks'], at).sync), deleted },
           }
         }),
 
@@ -316,7 +402,12 @@ export const useStore = create<State & Actions>()(
           delete cards[cardId(id, 'p')]
           const introduced = { ...s.introduced }
           delete introduced[id]
-          return { customWords: s.customWords.filter((w) => w.id !== id), cards, introduced }
+          return {
+            customWords: s.customWords.filter((w) => w.id !== id),
+            cards,
+            introduced,
+            ...tombstone(s, [`word:${id}`, `card:${cardId(id, 'r')}`, `card:${cardId(id, 'p')}`]),
+          }
         }),
 
       resetWord: (wordId) =>
@@ -326,7 +417,7 @@ export const useStore = create<State & Actions>()(
           delete cards[cardId(wordId, 'p')]
           const introduced = { ...s.introduced }
           delete introduced[wordId]
-          return { cards, introduced }
+          return { cards, introduced, ...tombstone(s, [`card:${cardId(wordId, 'r')}`, `card:${cardId(wordId, 'p')}`]) }
         }),
 
       recordLesson: (lessonId, score) =>
@@ -370,23 +461,9 @@ export const useStore = create<State & Actions>()(
           }
         }),
 
-      setConjConfig: (c) => set((s) => ({ conjConfig: { ...s.conjConfig, ...c } })),
+      setConjConfig: (c) => set((s) => ({ conjConfig: { ...s.conjConfig, ...c }, ...stamp(s, ['conjConfig']) })),
 
-      logActivity: (correct, opts) =>
-        set((s) => {
-          const k = dayKey()
-          const d = s.activity[k] ?? { items: 0, correct: 0, newWords: 0 }
-          return {
-            activity: {
-              ...s.activity,
-              [k]: {
-                items: d.items + 1,
-                correct: d.correct + (correct ? 1 : 0),
-                newWords: d.newWords + (opts?.newWord ? 1 : 0),
-              },
-            },
-          }
-        }),
+      logActivity: (correct, opts) => set((s) => addActivity(s, 1, correct ? 1 : 0, opts?.newWord ? 1 : 0)),
 
       importData: (data) => {
         const d = data as { state?: Partial<State> } & Partial<State>
@@ -394,14 +471,27 @@ export const useStore = create<State & Actions>()(
         if (!incoming || typeof incoming !== 'object' || !('cards' in incoming || 'lessons' in incoming)) {
           throw new Error('This file does not look like a Petit à petit backup.')
         }
-        set({
+        // A restored backup replaces progress on every synced device.
+        const restored = withSyncMeta({
           ...initialState,
           ...incoming,
           settings: { ...DEFAULT_SETTINGS, ...(incoming.settings ?? {}) },
-        })
+          sync: { ...initialState.sync, devices: {} },
+        } as State)
+        const at = now()
+        set({ ...restored, sync: { ...restored.sync, epoch: newId('e'), epochAt: at, changed: stampAll(restored, at) } })
       },
 
-      resetAll: () => set({ ...initialState, settings: get().settings }),
+      // Resetting also resets every synced device.
+      resetAll: () => {
+        const at = now()
+        const settings = get().settings
+        set({
+          ...initialState,
+          settings,
+          sync: { ...initialState.sync, epoch: newId('e'), epochAt: at, changed: stampAll({ settings, skills: {} }, at) },
+        })
+      },
     }),
     {
       name: 'petit-a-petit',
@@ -414,7 +504,8 @@ export const useStore = create<State & Actions>()(
       },
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<State>
-        return { ...current, ...p, settings: { ...DEFAULT_SETTINGS, ...(p.settings ?? {}) } }
+        const legacy = !p.sync && ('cards' in p || 'lessons' in p)
+        return withSyncMeta({ ...current, ...p, settings: { ...DEFAULT_SETTINGS, ...(p.settings ?? {}) } } as State & Actions, legacy) as State & Actions
       },
     },
   ),
@@ -441,6 +532,7 @@ export function exportData(): string {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
+    sync: s.sync,
   }
   return JSON.stringify({ app: 'petit-a-petit', version: 1, exportedAt: new Date().toISOString(), state: data }, null, 2)
 }
