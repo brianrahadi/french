@@ -80,7 +80,7 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - On-screen accent keys (é è ê à ç ô û ù œ …), accent-tolerant marking (configurable), French typography (narrow spaces before `? ! : ;`).
 - Text-to-speech in French via the Web Speech API — pick the best voice in Settings (on macOS, download an *Enhanced* or *Premium* French voice).
 - Light and dark themes, responsive down to phone size, installable as a PWA and works offline.
-- All progress lives in your browser (localStorage). Export/import a JSON backup in Settings to move between devices.
+- Progress lives in your browser (localStorage) and works offline. **Sign in with Google** to sync it across your phone and computer (optional — see below), or export/import a JSON backup in Settings.
 
 ## AI features — bring your own key
 
@@ -117,6 +117,28 @@ npm run dev        # http://localhost:5173
 | `npm test` | Run the unit tests (conjugation engine, answer checking, SRS, AI client, dictation grading, weak spots, content integrity) |
 | `npm run lint` | Lint with oxlint |
 
+## Sign-in and sync (optional)
+
+With a free [Supabase](https://supabase.com) project, people can **sign in with Google** and their progress syncs between their devices. Without it, the app works exactly the same, with progress kept in the browser.
+
+**How it works**
+- Each learner has one row in a `progress` table, protected by row-level security — nobody can read anyone else’s.
+- The app pulls when it opens, when you come back to the tab, every 30 seconds while it’s open and instantly when another device saves (realtime). It saves when you pause for a few seconds (at least every two minutes while you study non-stop) and right away when you leave the tab or switch apps. Progress is stored gzip-compressed to keep syncs light on mobile data.
+- Progress from two devices is **merged item by item**, never overwritten: each flashcard keeps its latest review, activity from each device adds up, mistakes, writings, texts and conversations from both are kept, deletions are respected, and each study setting follows whichever device changed it last. Voice, speed, theme and AI keys stay on each device (AI keys are never uploaded).
+- Saves carry a version number, so if two devices save at the same moment the second one merges and tries again instead of overwriting.
+- Signing in on a new device adds what you studied there to your account. After that, resetting progress or restoring a backup applies to all signed-in devices. Signing out keeps your progress on that device.
+
+**Set it up (about 15 minutes, once)**
+1. **Create a project** at [supabase.com](https://supabase.com/dashboard) (the free plan is plenty; it pauses after a week with no use and can be restored from the dashboard).
+2. **Create the table:** Dashboard → *SQL Editor* → paste [`supabase/schema.sql`](supabase/schema.sql) → *Run*.
+3. **Create a Google sign-in client** in the [Google Auth Platform console](https://console.cloud.google.com/auth/clients):
+   - *Branding*: app name and support email. *Audience*: publish the app (while it’s in “Testing”, only the test users you list can sign in).
+   - *Clients → Create client → Web application*. **Authorized JavaScript origins:** `http://localhost:5173` and `https://<you>.github.io`. **Authorized redirect URI:** the callback URL shown in Supabase under *Authentication → Sign In / Providers → Google* (`https://<project-ref>.supabase.co/auth/v1/callback`).
+4. **Turn on Google in Supabase:** *Authentication → Sign In / Providers → Google* → enable, paste the client ID and secret.
+5. **Allow the app’s addresses:** *Authentication → URL Configuration* → Site URL `https://<you>.github.io/french/`; Redirect URLs `http://localhost:5173/**` and `https://<you>.github.io/french/**`.
+6. **Connect the app:** copy `.env.example` to `.env.local` and fill in the Project URL and publishable key from *Project Settings → API Keys*. Restart `npm run dev` — *Settings → Account & sync* now shows **Continue with Google**.
+7. **For GitHub Pages:** add the same two values as repository variables (*Settings → Secrets and variables → Actions → Variables*): `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. The publishable key is meant to be public; row-level security protects the data.
+
 ## Deploying
 
 It’s a static site — any static host works.
@@ -150,6 +172,7 @@ src/
     french.ts     tokenising, word alignment, dictation grading, speech matching
     srs.ts        FSRS wrapper (ts-fsrs)
     store.ts      persisted app state (zustand) incl. the mistake log
+    sync/         Supabase sign-in and sync (engine) and item-by-item merging (merge)
     mistakes.ts   records mistakes from every kind of practice
     speech.ts     French text-to-speech
     recognition.ts microphone: speech recognition, recording, level meter
