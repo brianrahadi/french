@@ -112,6 +112,12 @@ export default function SettingsPage() {
           <Row title="Strict accents" desc="When off, a missing or wrong accent counts as correct (but is still shown).">
             <Switch checked={settings.strictAccents} onChange={(v) => update({ strictAccents: v })} label="Strict accents" />
           </Row>
+          <Row title="Dictation in today’s session" desc="Add two short dictation sentences to the daily session (needs text-to-speech).">
+            <Switch checked={settings.sessionListening} onChange={(v) => update({ sessionListening: v })} label="Dictation in today’s session" />
+          </Row>
+          <Row title="Speaking in today’s session" desc="Add two read-aloud sentences to the daily session (needs a microphone).">
+            <Switch checked={settings.sessionSpeaking} onChange={(v) => update({ sessionSpeaking: v })} label="Speaking in today’s session" />
+          </Row>
           <Row
             title="Target retention"
             desc={

@@ -1,23 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { buildMixedPlan, interleave, MIX } from './plan'
-import { DEFAULT_SETTINGS, type State } from '../../lib/store'
+import { initialState, type State } from '../../lib/store'
 import { newCard } from '../../lib/srs'
 import { addDays, dayKey } from '../../lib/date'
 import { BUILTIN_WORDS } from '../../data/vocab'
 
 function baseState(): State {
   return {
-    settings: DEFAULT_SETTINGS,
-    cards: {},
-    introduced: {},
+    ...initialState,
+    // Keep the original mix for these tests; listening items are tested separately.
+    settings: { ...initialState.settings, sessionListening: false },
     activeDecks: ['a1-essentials'],
-    customWords: [],
-    lessons: {},
-    conj: {},
-    conjConfig: { tenses: ['present'], set: 'essential', custom: [], length: 20 },
-    activity: {},
     startLevel: 'A1',
-    writings: [],
   }
 }
 

@@ -27,6 +27,8 @@ export interface Word {
   level: Level
   deck: string
   custom?: boolean
+  /** Where a learner-added word came from, e.g. 'text:<id>', 'talk:<id>', 'writing'. */
+  from?: string
 }
 
 export interface Deck {

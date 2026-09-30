@@ -2,7 +2,9 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import type { Level, Word } from '../data/types'
 import type { Tense } from './conjugate'
-import type { WritingFeedback } from './ai'
+import type { WritingFeedback } from './ai/writing'
+import type { Conversation } from '../features/talk/types'
+import type { ReaderText } from '../features/reading/types'
 import { addDays, dayKey } from './date'
 import { cardId, newCard, Rating, review, type CardDir, type Grade, type StoredCard } from './srs'
 
@@ -19,6 +21,10 @@ export interface Settings {
   strictAccents: boolean
   theme: Theme
   retention: number
+  /** Include a couple of dictation sentences in Today's session. */
+  sessionListening: boolean
+  /** Include a couple of read-aloud sentences in Today's session (needs a microphone). */
+  sessionSpeaking: boolean
 }
 
 export interface LessonProgress {
@@ -63,7 +69,51 @@ export interface State {
   activity: Record<string, DayActivity>
   startLevel: Level | null
   writings: WritingEntry[]
+  /** Mistakes from every kind of practice, newest first — feeds Weak spots. */
+  mistakes: Mistake[]
+  /** Recent results (1 = right) per skill, e.g. 'lesson:articles', newest last. */
+  skills: Record<string, number[]>
+  /** Dictation results per sentence id. */
+  listening: Record<string, SentenceStat>
+  /** Read-aloud results per sentence id. */
+  speaking: Record<string, SentenceStat>
+  conversations: Conversation[]
+  texts: ReaderText[]
+  /** Built-in or saved texts the learner finished: id → dayKey. */
+  read: Record<string, string>
 }
+
+export interface SentenceStat {
+  n: number
+  best: number // 0..100
+  last: number
+  at: string
+}
+
+export type MistakeSource = 'grammar' | 'verbs' | 'words' | 'writing' | 'talk' | 'listening' | 'speaking'
+
+export interface Mistake {
+  id: string
+  at: string
+  source: MistakeSource
+  /**
+   * What the mistake says about the learner: 'lesson:<id>', 'verb:<inf>|<tense>',
+   * 'word:<wordId>', 'listen:<category>', 'say:<word>' or 'write:<category>'.
+   */
+  skill: string
+  prompt?: string
+  given: string
+  expected: string
+  note?: string
+  /** A correction from writing or conversation that can be practised as "fix the sentence". */
+  fixable?: boolean
+  /** Fixed later in practice, or dismissed by the learner. */
+  resolved?: boolean
+  /** Related item, e.g. a dictation sentence id or a conversation id. */
+  ref?: string
+}
+
+export type NewMistake = Omit<Mistake, 'id' | 'at'>
 
 export interface WritingEntry {
   id: string
@@ -82,6 +132,16 @@ export interface WritingEntry {
 }
 
 interface Actions {
+  logMistakes: (ms: NewMistake[]) => void
+  resolveMistake: (id: string, resolved?: boolean) => void
+  recordSkill: (skill: string, ok: boolean) => void
+  recordSentence: (kind: 'listening' | 'speaking', id: string, score: number) => void
+  saveConversation: (c: Conversation) => void
+  deleteConversation: (id: string) => void
+  saveText: (t: ReaderText) => void
+  updateText: (id: string, patch: Partial<ReaderText>) => void
+  deleteText: (id: string) => void
+  markRead: (id: string) => void
   addWriting: (e: WritingEntry) => void
   deleteWriting: (id: string) => void
   logActivityBulk: (items: number, correct: number) => void
@@ -115,9 +175,11 @@ export const DEFAULT_SETTINGS: Settings = {
   strictAccents: false,
   theme: 'system',
   retention: 0.9,
+  sessionListening: true,
+  sessionSpeaking: false,
 }
 
-const initialState: State = {
+export const initialState: State = {
   settings: DEFAULT_SETTINGS,
   cards: {},
   introduced: {},
@@ -129,7 +191,18 @@ const initialState: State = {
   activity: {},
   startLevel: null,
   writings: [],
+  mistakes: [],
+  skills: {},
+  listening: {},
+  speaking: {},
+  conversations: [],
+  texts: [],
+  read: {},
 }
+
+export const MAX_MISTAKES = 500
+let seq = 0
+export const newId = (prefix = '') => `${prefix}${Date.now().toString(36)}${(seq++ % 1296).toString(36).padStart(2, '0')}${Math.random().toString(36).slice(2, 5)}`
 
 export const useStore = create<State & Actions>()(
   persist(
@@ -139,6 +212,45 @@ export const useStore = create<State & Actions>()(
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
 
       setStartLevel: (level, decks) => set({ startLevel: level, activeDecks: decks }),
+
+      logMistakes: (ms) =>
+        set((s) => {
+          if (!ms.length) return {}
+          const at = new Date().toISOString()
+          const fresh = ms.map((m) => ({ ...m, id: newId('m'), at }))
+          return { mistakes: [...fresh, ...s.mistakes].slice(0, MAX_MISTAKES) }
+        }),
+
+      resolveMistake: (id, resolved = true) =>
+        set((s) => ({ mistakes: s.mistakes.map((m) => (m.id === id ? { ...m, resolved } : m)) })),
+
+      recordSkill: (skill, ok) =>
+        set((s) => ({ skills: { ...s.skills, [skill]: [...(s.skills[skill] ?? []), ok ? 1 : 0].slice(-10) } })),
+
+      recordSentence: (kind, id, score) =>
+        set((s) => {
+          const prev = s[kind][id]
+          const stat: SentenceStat = {
+            n: (prev?.n ?? 0) + 1,
+            best: Math.max(prev?.best ?? 0, score),
+            last: score,
+            at: new Date().toISOString(),
+          }
+          return { [kind]: { ...s[kind], [id]: stat } } as Partial<State>
+        }),
+
+      saveConversation: (c) =>
+        set((s) => ({ conversations: [c, ...s.conversations.filter((x) => x.id !== c.id)].slice(0, 60) })),
+
+      deleteConversation: (id) => set((s) => ({ conversations: s.conversations.filter((c) => c.id !== id) })),
+
+      saveText: (t) => set((s) => ({ texts: [t, ...s.texts.filter((x) => x.id !== t.id)].slice(0, 150) })),
+
+      updateText: (id, patch) => set((s) => ({ texts: s.texts.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
+
+      deleteText: (id) => set((s) => ({ texts: s.texts.filter((t) => t.id !== id) })),
+
+      markRead: (id) => set((s) => ({ read: { ...s.read, [id]: dayKey() } })),
 
       addWriting: (e) => set((s) => ({ writings: [e, ...s.writings.filter((w) => w.id !== e.id)].slice(0, 200) })),
 
@@ -322,6 +434,13 @@ export function exportData(): string {
     activity: s.activity,
     startLevel: s.startLevel,
     writings: s.writings,
+    mistakes: s.mistakes,
+    skills: s.skills,
+    listening: s.listening,
+    speaking: s.speaking,
+    conversations: s.conversations,
+    texts: s.texts,
+    read: s.read,
   }
   return JSON.stringify({ app: 'petit-a-petit', version: 1, exportedAt: new Date().toISOString(), state: data }, null, 2)
 }

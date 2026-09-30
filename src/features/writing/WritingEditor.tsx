@@ -11,6 +11,7 @@ import { AiError, countWords, describeConfig, getWritingFeedback, useAiConfig } 
 import { useDocumentTitle } from '../../lib/hooks'
 import { frTypo } from '../../lib/words'
 import { ConnectAiCard } from '../../components/AiSetup'
+import { noteCorrections } from '../../lib/mistakes'
 
 const DRAFT_KEY = 'petit-a-petit-draft:'
 
@@ -112,6 +113,7 @@ export default function WritingEditor() {
         feedback,
         revisionOf: original?.id,
       })
+      noteCorrections('writing', feedback.errors, text.trim(), id)
       // Count writing toward the daily goal: roughly one "answer" per ten words.
       const items = Math.max(1, Math.round(words / 10))
       logActivityBulk(items, Math.round((items * feedback.score) / 100))
