@@ -2,6 +2,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { contentPlugin } from './src/content/plugin.ts'
 
 // BASE_PATH lets you deploy under a sub-path, e.g. GitHub Pages: BASE_PATH=/french/
 const base = process.env.BASE_PATH ?? '/'
@@ -9,6 +10,8 @@ const base = process.env.BASE_PATH ?? '/'
 export default defineConfig({
   base,
   plugins: [
+    // Lessons, vocabulary, texts, role-plays, writing prompts and pronunciation sets live in content/*.md.
+    contentPlugin(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',

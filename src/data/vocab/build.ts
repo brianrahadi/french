@@ -1,4 +1,4 @@
-import type { Deck, Level, Pos, Word } from '../types'
+import type { Deck, Level, Pos, Word } from '../types.ts'
 
 /**
  * Compact authoring format for vocabulary:

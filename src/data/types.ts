@@ -110,3 +110,73 @@ export interface Lesson {
   sections: LessonSection[]
   exercises: Exercise[]
 }
+
+// ───────────── Reading ─────────────
+
+export interface ReaderTextDef {
+  id: string // kebab-case, prefixed with the level, e.g. 'a1-ma-famille'
+  level: Level
+  title: string // French title
+  titleEn: string // English title
+  topic: string // short English topic label, e.g. 'Family', 'Travel', 'Work'
+  paragraphs: { fr: string; en: string }[] // French paragraph + natural English translation
+}
+
+// ───────────── Conversation ─────────────
+
+export const SCENARIO_ICONS = [
+  'coffee', 'croissant', 'map', 'hotel', 'stethoscope', 'shopping', 'phone', 'briefcase', 'home',
+  'train', 'party', 'package', 'utensils', 'handshake', 'newspaper', 'plane', 'user', 'ticket',
+] as const
+export type ScenarioIcon = (typeof SCENARIO_ICONS)[number]
+
+export interface Scenario {
+  id: string // short kebab-case, unique, e.g. 'cafe'
+  level: Level
+  title: string // English title, e.g. 'Ordering at a café'
+  titleFr: string // e.g. 'Au café'
+  icon: ScenarioIcon
+  /** Shown to the learner: where they are, who they talk to, what's going on. */
+  setting: string
+  /** Instructions for the AI: who it plays, personality, facts it knows, a small complication. */
+  aiRole: string
+  aiName: string // first name of the character the AI plays
+  /** The AI's first line, in French, ending with a question or prompt. */
+  opening: string
+  openingEn: string
+  /** Concrete things the learner should achieve; ids are stable (progress is saved under them). */
+  goals: { id: string; text: string }[]
+  /** Useful phrases for the learner (French + English). */
+  phrases: { fr: string; en: string }[]
+  /** Ids of grammar lessons the scenario practises. */
+  lessons: string[]
+}
+
+// ───────────── Writing ─────────────
+
+export interface WritingPrompt {
+  id: string
+  level: Level
+  titleFr: string
+  title: string
+  /** What to write, in English. */
+  task: string
+  /** The grammar this prompt practises. */
+  focus: string
+  lessons: string[]
+  words: [number, number]
+  /** Useful expressions to get started. */
+  phrases: string[]
+}
+
+// ───────────── Pronunciation ─────────────
+
+export interface SoundSet {
+  id: string // kebab-case, e.g. 'u-ou'
+  title: string // English, e.g. 'u vs ou'
+  sound: string // the sounds in French notation, e.g. 'u · ou'
+  /** How to make the sound(s): lips/tongue position, English comparison. */
+  tip: string
+  /** Short sentences dense in the sound, with English translations. */
+  sentences: { fr: string; en: string }[]
+}
