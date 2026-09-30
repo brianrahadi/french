@@ -1,10 +1,10 @@
 import type { Lesson, Level } from '../types'
-import { A1_LESSONS } from './a1'
-import { A2_LESSONS } from './a2'
-import { B1_LESSONS } from './b1'
-import { B2_LESSONS } from './b2'
+import { inOrder } from '../../content/load'
 
-export const LESSONS: Lesson[] = [...A1_LESSONS, ...A2_LESSONS, ...B1_LESSONS, ...B2_LESSONS]
+/** Grammar lessons from content/grammar/<level>/*.md (files starting with _ are drafts). */
+export const LESSONS: Lesson[] = inOrder(
+  import.meta.glob<Lesson>(['/content/grammar/**/*.md', '!**/_*.md'], { eager: true, import: 'default' }),
+)
 export const LESSON_BY_ID: Record<string, Lesson> = Object.fromEntries(LESSONS.map((l) => [l.id, l]))
 
 export function lessonsByLevel(level: Level): Lesson[] {
