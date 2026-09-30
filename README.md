@@ -1,6 +1,6 @@
 # Petit à petit — French study
 
-A focused, keyboard-friendly web app for learning French **grammar**, **vocabulary**, **verb conjugation** and **writing** — built to sit alongside input-heavy tools like LingQ, Alexa and Anki, and cover what they don’t: structured grammar, active recall of word forms, and conjugation until it’s automatic.
+A focused, keyboard-friendly web app for learning French: **grammar**, **vocabulary** and **verb conjugation** to learn, then **listening**, **speaking**, **reading**, **writing** and **conversation** to practise — plus **weak spots**, which gathers every mistake you make and drills the rules behind them. It’s built to sit alongside input-heavy tools like LingQ, Alexa and Anki and cover what they don’t.
 
 > *Petit à petit, l’oiseau fait son nid* — little by little, the bird builds its nest.
 
@@ -8,20 +8,51 @@ A focused, keyboard-friendly web app for learning French **grammar**, **vocabula
 | --- | --- | --- | --- |
 | ![Today](docs/screenshots/today.png) | ![Lesson](docs/screenshots/lesson.png) | ![Vocabulary](docs/screenshots/vocab.png) | ![Drill](docs/screenshots/drill.png) |
 
+| Conversation | Reading | Dictation | Weak spots |
+| --- | --- | --- | --- |
+| ![Conversation](docs/screenshots/talk.png) | ![Reading](docs/screenshots/reading.png) | ![Dictation](docs/screenshots/dictation.png) | ![Weak spots](docs/screenshots/weak.png) |
+
 ## What’s inside
 
 **Today’s session — one mixed daily session**
-- Press **Start** (or `Enter`) on Today to get everything that’s due in one queue: vocabulary reviews, a few new words, spaced reviews of grammar lessons, practice from lessons you’ve studied, and a short adaptive conjugation drill.
-- The kinds of practice are interleaved rather than done in blocks, which tends to improve retention. Missed grammar and verb items come back a few questions later.
+- Press **Start** (or `Enter`) on Today to get everything that’s due in one queue: vocabulary reviews, a few new words, spaced reviews of grammar lessons, practice from lessons you’ve studied, a short adaptive conjugation drill, two dictation sentences and a couple of your own past mistakes to fix.
+- The kinds of practice are interleaved rather than done in blocks, which tends to improve retention. Missed grammar, verb and fix-it items come back a few questions later.
+- Grammar points you keep getting wrong (in drills, writing or conversation) get extra questions.
 - Grammar lessons that are due for review are scored inside the session, and their review schedule moves on (or resets) accordingly.
-- Capped at about 25 reviews + 5 new words + 5 grammar + 5 verbs (≈10–15 min); any extra reviews stay available under Vocabulary.
+- Capped at about 25 reviews + 5 new words + 5 grammar + 5 verbs + 2 dictation + 2 fixes (≈15 min). Dictation and read-aloud items can be switched on or off in Settings.
 
-**Writing — corrections from Claude**
+**Weak spots — every mistake in one place**
+- Mistakes from grammar drills, conjugation, flashcards (cards you forget), writing corrections, conversation corrections, dictation and speaking are logged together.
+- They’re grouped by the rule behind them: grammar points you keep missing, verb/tense pairs with low recent accuracy, words that keep slipping, and the kinds of sounds you mishear. Recent mistakes weigh more; three right answers in a row make a spot fade.
+- **Practise** builds a targeted session: exercises from your weakest lessons, the verb forms you miss, your slippery words, “fix your own sentence” items made from your writing and conversation corrections, and sentences you misheard.
+
+**Listening — dictation**
+- Hear a sentence (normal or slow, as often as you like), type it, and see each word marked: right, accent slip, wrong, missed or extra.
+- Mistakes are classified — silent endings (*parle / parlent*, *aimé / aimer*), sound-alikes (*a / à*, *et / est*, *ces / ses*), accents, missed little words, spelling — with a short tip for each.
+- Sentences come from the words you’re learning or from any level (≈700 sentences from the decks and lessons). Sentences that went badly come back.
+
+**Speaking — read aloud, listen & repeat**
+- Say a sentence; speech recognition shows which words came across clearly, and you can play your recording next to the native model. Missed words get a pronunciation tip (u vs ou, nasal vowels, the French r…).
+- Eight “tricky sounds” sets: u/ou, nasals, r, é/è, eu, liaison and silent letters, oi/ille/gn, tongue twisters.
+- Uses the browser’s speech recognition (Chrome, Edge, Safari). In browsers without it (Firefox, Brave) recordings can be transcribed by OpenAI or Gemini if you’ve connected them — otherwise you record and compare by ear.
+
+**Reading — graded texts and your own**
+- 10 original graded texts (A1 → B2) with translations, anything you paste in, or a new story written for you at your level on any topic, using the words you’re currently learning.
+- Tap any word: the dictionary entry, which verb and tense a form comes from (*allée* → past participle of *aller*), and — with an AI connected — what it means in *this* sentence. Extend the selection with ‹ › to look up whole expressions.
+- Add words to your flashcards with the sentence as the example. Words you’re learning are underlined as you read.
+- Listen to the text with sentence-by-sentence highlighting; show the translation paragraph by paragraph.
+
+**Conversation — role-play with an AI partner**
+- 16 real situations from A1 to B2 (café, bakery, directions, hotel, doctor, job interview, flat visit, returning a product, negotiating, a debate on remote work…), each with goals to reach and useful phrases, plus free conversation on any topic.
+- Replies stream in and stay in character; each of your messages is quietly checked, with corrections, the rule and the lesson that covers it.
+- Stuck? Tap the lightbulb for ideas of what to say (or write in English), show translations, hear every reply aloud, tap words to look them up, dictate your answer with the microphone.
+- **Finish** for feedback on the whole conversation: a score, strengths, what to work on with better phrasings, words to keep and a tip for next time.
+
+**Writing — corrections with explanations**
 - 20 writing prompts from A1 to B2, each aimed at specific grammar (e.g. *Mon week-end dernier* → passé composé), plus free writing and your own topic.
 - Editor with accent keys, a word-count target, clickable “useful phrases”, and drafts saved automatically.
-- Claude marks every mistake inline, explains the rule in English, and links it to the lesson that teaches it. You also get a minimally corrected version, a more natural version, what you did well, and words worth keeping — added to your flashcards in one click.
+- Every mistake is marked inline, explained in English and linked to the lesson that teaches it. You also get a minimally corrected version, a more natural version, what you did well, and words worth keeping — added to your flashcards in one click.
 - “Rewrite it yourself” lets you fix the text using the feedback and compares the two scores.
-- Uses **your own Anthropic API key** (Settings → Writing feedback). The key is stored only in your browser — never in progress backups — and requests go directly from the browser to Anthropic. The default model is Claude Sonnet 5.5; a correction costs roughly a cent.
 
 **Grammar — 30 lessons, A1 → B2, 320 exercises**
 - Short explanations with tables, audio examples, “watch out” boxes for classic mistakes.
@@ -45,11 +76,29 @@ A focused, keyboard-friendly web app for learning French **grammar**, **vocabula
 
 **Everything else**
 - Daily goal, streak and an activity heatmap.
-- Keyboard-first: `Enter` check/continue (and starts today’s session) · `Space` flip · `1–4` rate / choose · `K` known · `Esc` leave · `S` study · `P` practise · `⌘↵` send writing.
+- Keyboard-first: `Enter` check/continue (and starts today’s session) · `Space` flip / start and stop the microphone · `1–4` rate / choose · `K` known · `Esc` leave · `S` study · `P` practise · `⇧↵` replay in dictation · `⌘↵` send writing · `Enter` send in conversation (`⇧↵` new line).
 - On-screen accent keys (é è ê à ç ô û ù œ …), accent-tolerant marking (configurable), French typography (narrow spaces before `? ! : ;`).
 - Text-to-speech in French via the Web Speech API — pick the best voice in Settings (on macOS, download an *Enhanced* or *Premium* French voice).
 - Light and dark themes, responsive down to phone size, installable as a PWA and works offline.
 - All progress lives in your browser (localStorage). Export/import a JSON backup in Settings to move between devices.
+
+## AI features — bring your own key
+
+Writing corrections, conversation practice, meanings in context, translations and generated texts use an AI model you choose in **Settings → AI**:
+
+| Provider | Key | Notes |
+| --- | --- | --- |
+| **Claude** (Anthropic) | [console.anthropic.com](https://console.anthropic.com/settings/keys) | Default: Claude Sonnet 5.5 |
+| **OpenAI** | [platform.openai.com](https://platform.openai.com/api-keys) | Default: GPT-6.1 Sol. Can also transcribe speech |
+| **Google Gemini** | [aistudio.google.com](https://aistudio.google.com/apikey) | Default: Gemini 3.8 Flash. Free tier; can transcribe speech |
+| **OpenRouter** | [openrouter.ai](https://openrouter.ai/keys) | One key for hundreds of models (Claude, GPT, Gemini, Mistral, DeepSeek, Llama…) |
+| **Other** (OpenAI-compatible) | — | Ollama, LM Studio, Mistral, Groq, DeepSeek, xAI or any `/v1/chat/completions` server |
+
+- Pick a provider, paste its key, press **Save & test**. **Load models** lists the models your key can use; any model id can be typed in.
+- Keys are stored only in this browser (localStorage, separate from progress and never in backups) and sent only to that provider. Requests go straight from the browser — there’s no server in between. A correction or a conversation typically costs about a cent.
+- Responses are requested as structured JSON (schema-constrained where the provider supports it) and streamed in conversation. If a provider rejects an optional feature (JSON schema, streaming, reasoning settings), the app retries without it automatically.
+- **Local models:** start Ollama with `OLLAMA_ORIGINS="*" ollama serve` (or your site’s origin), choose *Other → Ollama*, then **Load models**. In LM Studio, enable CORS in the server settings. Smaller local models work for conversation but give less reliable corrections.
+- Some hosted providers don’t accept requests straight from a browser (CORS); if the test fails with a network error, use OpenRouter for that model instead.
 
 ## Getting started
 
@@ -65,7 +114,7 @@ npm run dev        # http://localhost:5173
 | `npm run dev` | Start the dev server |
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
-| `npm test` | Run the unit tests (conjugation engine, answer checking, SRS, content integrity) |
+| `npm test` | Run the unit tests (conjugation engine, answer checking, SRS, AI client, dictation grading, weak spots, content integrity) |
 | `npm run lint` | Lint with oxlint |
 
 ## Deploying
@@ -78,7 +127,8 @@ It’s a static site — any static host works.
 ## How it fits with LingQ, Anki and Alexa
 
 - **LingQ / Alexa** give you input (reading and listening). Keep doing that — it’s where most acquisition happens.
-- **This app** gives the structure input alone doesn’t: one grammar point at a time with feedback, active production of words (typing them, with gender), and conjugation drills.
+- **This app** gives the structure input alone doesn’t: one grammar point at a time with feedback, active production of words (typing them, with gender), conjugation drills — and output practice (speaking, writing, conversation) with corrections, plus dictation to connect what you hear with how it’s written.
+- **LingQ texts** can be pasted into *Reading* to look words up in context and send them to your flashcards with their sentence.
 - **Anki:** if you already have a French deck, either keep it for vocabulary and use this app for grammar + conjugation, or import your cards (*File → Export → Notes in Plain Text*) under *Vocabulary → Add & import*.
 
 ## Project structure
@@ -90,18 +140,26 @@ src/
     vocab/        25 decks (a1.ts … b2.ts) in a compact row format
     verbs.ts      103 verbs (irregular stems, auxiliaries, participles)
     writing.ts    20 writing prompts linked to lessons
+    scenarios.ts  16 conversation role-plays (goals, phrases, character brief)
+    texts.ts      10 graded reading texts with translations
+    sounds.ts     8 pronunciation sets; soundTips.ts: tips for missed words
     types.ts      content types
   lib/
     conjugate.ts  conjugation engine
     answer.ts     normalisation, accent-tolerant checking, diffs
+    french.ts     tokenising, word alignment, dictation grading, speech matching
     srs.ts        FSRS wrapper (ts-fsrs)
-    store.ts      persisted app state (zustand)
+    store.ts      persisted app state (zustand) incl. the mistake log
+    mistakes.ts   records mistakes from every kind of practice
     speech.ts     French text-to-speech
-    ai.ts         Claude writing feedback (browser → Anthropic API, structured JSON)
-  features/       today, session (mixed daily session), vocab, grammar,
-                  conjugation, verbs, writing, settings
-  components/     shared UI (feedback sheet, accent bar, dialogs…)
-  styles/         design tokens, base, components, sessions, features
+    recognition.ts microphone: speech recognition, recording, level meter
+    ai/           providers (Claude, OpenAI, Gemini, OpenRouter, OpenAI-compatible),
+                  client (streaming, JSON, fallbacks), writing feedback
+  features/       today, session (daily + weak-spot sessions), vocab, grammar,
+                  conjugation, verbs, listening, speaking, reading, talk,
+                  writing, weak, practice, settings
+  components/     shared UI (feedback sheet, accent bar, dialogs, AI setup…)
+  styles/         design tokens, base, components, sessions, features, practice
 ```
 
 ### Adding content
@@ -112,7 +170,10 @@ src/
 - **A lesson:** add an object to `src/data/grammar/*.ts`. Blocks support `**bold**`, `*French in italics*` and `~~wrong form~~`.
 - **A verb:** add it to `src/data/verbs.ts`. Regular verbs need only the infinitive; irregular ones need the present, past participle and any irregular future/subjunctive stems.
 
-`npm test` checks the content for you (unique ids, well-formed exercises, balanced markup, every verb conjugating in every tense).
+- **A conversation scenario:** add an entry to `src/data/scenarios.ts` (the `aiRole` brief tells the AI who to play and what it knows).
+- **A reading text:** add an entry to `src/data/texts.ts` (French paragraphs with English translations).
+
+`npm test` checks the content for you (unique ids, well-formed exercises, balanced markup, every verb conjugating in every tense, scenarios pointing at real lessons).
 
 ## Tech
 
