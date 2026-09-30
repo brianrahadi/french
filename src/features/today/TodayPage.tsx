@@ -1,6 +1,22 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowRight, BookOpen, Flame, Layers, NotebookPen, PenLine, Play, Settings, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  BookOpenText,
+  Flame,
+  Headphones,
+  Layers,
+  MessagesSquare,
+  Mic,
+  NotebookPen,
+  PenLine,
+  Play,
+  Settings,
+  Sparkles,
+  Target,
+  Wrench,
+} from 'lucide-react'
 import { DECKS } from '../../data/vocab'
 import { LESSONS, lessonsByLevel } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS, type Level } from '../../data/types'
@@ -13,6 +29,9 @@ import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { buildMixedPlan } from '../session/plan'
 import { dueCardIds, newAvailableToday, vocabCounts } from '../vocab/selectors'
 import { dueLessons, lessonStatus, nextUp } from '../grammar/status'
+import { computeWeakSpots } from '../weak/weak'
+import { speechSupported } from '../../lib/speech'
+import { recognitionSupported } from '../../lib/recognition'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -32,9 +51,10 @@ export default function TodayPage() {
   const greeting = hour >= 18 || hour < 4 ? 'Bonsoir' : 'Bonjour'
   const firstRun = !state.startLevel && totalItems === 0
   const tenses = state.conjConfig.tenses.map((t) => TENSE_BY_ID[t]?.label).filter(Boolean)
-  const plan = useMemo(() => buildMixedPlan(state), [state])
+  const plan = useMemo(() => buildMixedPlan(state, Math.random, { tts: speechSupported, asr: recognitionSupported }), [state])
   const hasSession = plan.items.length > 0
-  const writings = state.writings.length
+  const weak = useMemo(() => computeWeakSpots(state), [state])
+  const weakCount = weak.total + weak.fixables.length
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
 
   return (
@@ -104,6 +124,21 @@ export default function TodayPage() {
                     <PenLine size={14} aria-hidden /> {plan.counts.conj} verbs
                   </span>
                 )}
+                {plan.counts.listen > 0 && (
+                  <span className="pill">
+                    <Headphones size={14} aria-hidden /> {plan.counts.listen} dictation
+                  </span>
+                )}
+                {plan.counts.say > 0 && (
+                  <span className="pill pill--green">
+                    <Mic size={14} aria-hidden /> {plan.counts.say} to say
+                  </span>
+                )}
+                {plan.counts.fix > 0 && (
+                  <span className="pill pill--pink">
+                    <Wrench size={14} aria-hidden /> {plan.counts.fix} to fix
+                  </span>
+                )}
               </div>
             </>
           ) : (
@@ -155,14 +190,46 @@ export default function TodayPage() {
             meta={`Quick drill · ${tenses.slice(0, 3).join(', ') || 'Présent'}${tenses.length > 3 ? '…' : ''}`}
             cta="Drill"
           />
-          <ActionCard
+          {weakCount > 0 ? (
+            <ActionCard
+              to="/weak"
+              icon={<Target size={22} aria-hidden />}
+              tone="pink"
+              title="Weak spots"
+              meta={`${weak.total ? `${weak.total} weak spot${weak.total > 1 ? 's' : ''}` : ''}${weak.total && weak.fixables.length ? ' · ' : ''}${weak.fixables.length ? `${weak.fixables.length} correction${weak.fixables.length > 1 ? 's' : ''} to fix` : ''}`}
+              cta="Fix"
+            />
+          ) : (
+            <ActionCard
+              to="/talk"
+              icon={<MessagesSquare size={22} aria-hidden />}
+              tone="amber"
+              title="Conversation"
+              meta={state.conversations.length ? 'Pick up a situation or chat freely' : 'Role-play a real situation in French'}
+              cta="Talk"
+            />
+          )}
+        </div>
+      </section>
+
+      <section className="section" aria-labelledby="skills-title">
+        <div className="section-title">
+          <span id="skills-title">Practise a skill</span>
+          <Link to="/practice" className="small">
+            All practice <ArrowRight size={14} aria-hidden style={{ verticalAlign: '-2px' }} />
+          </Link>
+        </div>
+        <div className="skill-strip">
+          <SkillTile to="/listening" icon={<Headphones size={20} aria-hidden />} label="Listen" meta="Dictation" />
+          <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
+          <SkillTile to="/reading" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
+          <SkillTile
             to="/writing"
-            icon={<NotebookPen size={22} aria-hidden />}
-            tone="amber"
-            title="Writing"
-            meta={writings ? `${writings} text${writings > 1 ? 's' : ''} corrected · write another` : 'Write a few sentences, get corrections'}
-            cta="Write"
+            icon={<NotebookPen size={20} aria-hidden />}
+            label="Write"
+            meta={state.writings.length ? `${state.writings.length} corrected` : 'With corrections'}
           />
+          <SkillTile to="/talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
         </div>
       </section>
 
@@ -211,6 +278,16 @@ function ActionCard({
       <span className={`btn ${primary ? 'btn--primary' : 'btn--secondary'} btn--sm`} aria-hidden>
         {cta} <ArrowRight size={15} />
       </span>
+    </Link>
+  )
+}
+
+function SkillTile({ to, icon, label, meta }: { to: string; icon: React.ReactNode; label: string; meta: string }) {
+  return (
+    <Link to={to} className="skill-tile">
+      <span className="skill-tile__icon">{icon}</span>
+      <span className="skill-tile__label">{label}</span>
+      <span className="skill-tile__meta">{meta}</span>
     </Link>
   )
 }

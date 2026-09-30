@@ -8,6 +8,7 @@ import './styles/base.css'
 import './styles/components.css'
 import './styles/session.css'
 import './styles/features.css'
+import './styles/practice.css'
 import { router } from './router'
 import { ThemeSync } from './components/ThemeSync'
 
