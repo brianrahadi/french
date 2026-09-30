@@ -109,19 +109,23 @@ export default function VocabPage() {
         ))}
       </div>
 
-      {tab === 'decks' && <DecksTab />}
+      {tab === 'decks' && <DecksTab onView={(deckId) => setParams({ tab: 'browse', deck: deckId })} />}
       {tab === 'browse' && <BrowseTab />}
-      {tab === 'add' && <AddTab onDone={() => setTab('browse')} />}
+      {tab === 'add' && <AddTab onDone={() => setParams({ tab: 'browse' })} />}
     </div>
   )
 }
 
-function DecksTab() {
+function DecksTab({ onView }: { onView: (id: string) => void }) {
   const activeDecks = useStore((s) => s.activeDecks)
   const introduced = useStore((s) => s.introduced)
   const cards = useStore((s) => s.cards)
   const customWords = useStore((s) => s.customWords)
   const toggleDeck = useStore((s) => s.toggleDeck)
+  const setDecksActive = useStore((s) => s.setDecksActive)
+
+  const allDecksIds = useMemo(() => [...DECKS.map((d) => d.id), CUSTOM_DECK_ID], [])
+  const allActive = allDecksIds.every((id) => activeDecks.includes(id))
 
   const deckRow = (id: string, title: string, titleFr: string, words: Word[]) => {
     const started = words.filter((w) => introduced[w.id]).length
@@ -129,7 +133,7 @@ function DecksTab() {
     const active = activeDecks.includes(id)
     return (
       <div key={id} className={`deck${active ? ' deck--active' : ''}`}>
-        <div className="deck__text">
+        <div className="deck__text" onClick={() => onView(id)} style={{ cursor: 'pointer' }} title="View words">
           <div className="deck__title">{title}</div>
           <div className="deck__fr fr" lang="fr">
             {titleFr}
@@ -149,22 +153,31 @@ function DecksTab() {
 
   return (
     <div className="stack-lg">
-      <p className="muted small">
-        Switch on the decks you want new words from. Words are introduced in order, a few each day (change the number in
-        Settings).
-      </p>
-      {LEVELS.map((level) => (
-        <section key={level}>
-          <div className="level-head" style={{ marginBottom: 10 }}>
-            <LevelBadge level={level} />
-          </div>
-          <div className="deck-grid">
-            {DECKS.filter((d) => d.level === level).map((d) => deckRow(d.id, d.title, d.titleFr, d.words))}
-          </div>
-        </section>
-      ))}
+      <div className="row-wrap" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <p className="muted small" style={{ margin: 0, maxWidth: 600 }}>
+          Switch on the decks you want new words from. Words are introduced in order, a few each day (change the number in
+          Settings).
+        </p>
+        <button className="btn btn--secondary btn--sm" onClick={() => setDecksActive(allDecksIds, !allActive)}>
+          {allActive ? 'Turn all off' : 'Turn all on'}
+        </button>
+      </div>
+      {LEVELS.map((level) => {
+        const levelDecks = DECKS.filter((d) => d.level === level)
+
+        return (
+          <section key={level}>
+            <div className="level-head row" style={{ marginBottom: 10, justifyContent: 'space-between' }}>
+              <LevelBadge level={level} />
+            </div>
+            <div className="deck-grid">
+              {levelDecks.map((d) => deckRow(d.id, d.title, d.titleFr, d.words))}
+            </div>
+          </section>
+        )
+      })}
       <section>
-        <div className="level-head" style={{ marginBottom: 10 }}>
+        <div className="level-head row" style={{ marginBottom: 10, justifyContent: 'space-between' }}>
           <span className="badge">Yours</span>
         </div>
         <div className="deck-grid">
@@ -192,6 +205,7 @@ const STATUS_BADGE = {
 }
 
 function BrowseTab() {
+  const [params, setParams] = useSearchParams()
   const cards = useStore((s) => s.cards)
   const customWords = useStore((s) => s.customWords)
   const resetWord = useStore((s) => s.resetWord)
@@ -200,14 +214,17 @@ function BrowseTab() {
   const [filter, setFilter] = useState<'all' | 'new' | 'learning' | 'young' | 'mature' | 'custom'>('all')
   const [limit, setLimit] = useState(60)
 
+  const deckFilter = params.get('deck') || 'all'
+
   const words = useMemo(() => {
     const list = allWords(customWords).filter((w) => matchesSearch(w, q))
     return list.filter((w) => {
+      if (deckFilter !== 'all' && w.deck !== deckFilter) return false
       if (filter === 'all') return true
       if (filter === 'custom') return w.custom
       return wordStatus(w.id, cards) === filter
     })
-  }, [customWords, q, filter, cards])
+  }, [customWords, q, filter, cards, deckFilter])
 
   return (
     <div className="stack">
@@ -226,8 +243,28 @@ function BrowseTab() {
             aria-label="Search words"
           />
         </div>
+        <select
+          className="select"
+          style={{ width: 'auto' }}
+          value={deckFilter}
+          onChange={(e) => {
+            const next = new URLSearchParams(params)
+            if (e.target.value === 'all') next.delete('deck')
+            else next.set('deck', e.target.value)
+            setParams(next)
+          }}
+          aria-label="Filter by deck"
+        >
+          <option value="all">All decks</option>
+          {DECKS.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.title}
+            </option>
+          ))}
+          <option value={CUSTOM_DECK_ID}>My words</option>
+        </select>
         <select className="select" style={{ width: 'auto' }} value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} aria-label="Filter by status">
-          <option value="all">All words</option>
+          <option value="all">All status</option>
           <option value="new">New</option>
           <option value="learning">Learning</option>
           <option value="young">Reviewing</option>

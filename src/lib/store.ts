@@ -173,6 +173,7 @@ interface Actions {
   addCard: (wordId: string, dir: CardDir) => void
   rateCard: (id: string, grade: Grade) => StoredCard
   toggleDeck: (deckId: string) => void
+  setDecksActive: (deckIds: string[], active: boolean) => void
   addCustomWords: (words: Word[]) => void
   removeCustomWord: (id: string) => void
   resetWord: (wordId: string) => void
@@ -378,6 +379,17 @@ export const useStore = create<State & Actions>()(
             : [...s.activeDecks, deckId],
           ...stamp(s, ['activeDecks']),
         })),
+
+      setDecksActive: (deckIds, active) =>
+        set((s) => {
+          const newSet = new Set(s.activeDecks)
+          if (active) {
+            for (const id of deckIds) newSet.add(id)
+          } else {
+            for (const id of deckIds) newSet.delete(id)
+          }
+          return { activeDecks: Array.from(newSet), ...stamp(s, ['activeDecks']) }
+        }),
 
       addCustomWords: (words) =>
         set((s) => {
