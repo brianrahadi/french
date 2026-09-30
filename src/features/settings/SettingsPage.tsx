@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { Download, Upload, Volume2 } from 'lucide-react'
 import { Dialog } from '../../components/Dialog'
 import { Kbd, Switch } from '../../components/ui'
@@ -305,7 +305,7 @@ export default function SettingsPage() {
       </section>
 
       <p className="subtle small" style={{ marginTop: 32 }}>
-        Petit à petit, l’oiseau fait son nid. — Little by little, the bird builds its nest.
+        Petit à petit, l’oiseau fait son nid. — Little by little, the bird builds its nest. · <Link to="/privacy">Privacy</Link>
       </p>
 
       <Dialog

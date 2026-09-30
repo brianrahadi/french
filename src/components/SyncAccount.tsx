@@ -97,6 +97,9 @@ export function SyncAccount() {
           ) : (
             <GoogleButton />
           )}
+          <Link to="/privacy" className="small subtle">
+            What’s stored and where
+          </Link>
         </div>
       </div>
     )

@@ -44,6 +44,7 @@ export const router = createBrowserRouter(
         { path: 'reading/:id', lazy: page(() => import('./features/reading/ReaderPage')) },
         { path: 'talk', lazy: page(() => import('./features/talk/TalkHome')) },
         { path: 'settings', lazy: page(() => import('./features/settings/SettingsPage')) },
+        { path: 'privacy', lazy: page(() => import('./features/privacy/PrivacyPage')) },
         { path: '*', Component: NotFound },
       ],
     },
