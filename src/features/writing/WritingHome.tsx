@@ -4,9 +4,9 @@ import { WRITING_PROMPTS, type WritingPrompt } from '../../data/writing'
 import { LEVELS, LEVEL_INFO } from '../../data/types'
 import { LevelBadge } from '../../components/ui'
 import { useStore, type LessonProgress, type WritingEntry } from '../../lib/store'
-import { useAi } from '../../lib/ai'
+import { useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
-import { ApiKeySetup } from './ApiKeySetup'
+import { ConnectAiCard } from '../../components/AiSetup'
 
 /** Suggest a prompt that practises grammar the learner has recently mastered. */
 function suggest(lessons: Record<string, LessonProgress>, written: Set<string>, startLevel: string | null): WritingPrompt | undefined {
@@ -30,7 +30,7 @@ export default function WritingHome() {
   const writings = useStore((s) => s.writings)
   const lessons = useStore((s) => s.lessons)
   const startLevel = useStore((s) => s.startLevel)
-  const apiKey = useAi((s) => s.apiKey)
+  const ai = useAiConfig()
   const written = new Set(writings.map((w) => w.promptId))
   const pick = suggest(lessons, written, startLevel)
 
@@ -41,22 +41,18 @@ export default function WritingHome() {
           <div className="page-eyebrow">Expression écrite</div>
           <h1 className="page-title">Writing</h1>
           <p className="page-subtitle">
-            Write a short text and Claude corrects it like a teacher would: every mistake explained, linked to the lesson that
+            Write a short text and get it corrected like a teacher would: every mistake explained, linked to the lesson that
             covers it, plus a more natural version to learn from.
           </p>
         </div>
       </header>
 
-      {!apiKey && (
-        <section className="card stack" style={{ marginBottom: 24 }} aria-labelledby="key-title">
-          <h2 id="key-title" className="card__title">
-            Connect Claude to get corrections
-          </h2>
-          <p className="muted small">
-            Paste your Anthropic API key once. You can still write without it — you just won’t get feedback until it’s added.
-          </p>
-          <ApiKeySetup compact />
-        </section>
+      {!ai && (
+        <div style={{ marginBottom: 24 }}>
+          <ConnectAiCard title="Connect an AI to get corrections">
+            Corrections come from the AI model of your choice, with your own key. You can still write without it — you just won’t get feedback until one is connected.
+          </ConnectAiCard>
+        </div>
       )}
 
       <div className="grid-2">

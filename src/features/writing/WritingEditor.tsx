@@ -7,10 +7,10 @@ import { LEVELS, type Level } from '../../data/types'
 import { AccentBar } from '../../components/AccentBar'
 import { Callout, Kbd, LevelBadge } from '../../components/ui'
 import { useStore } from '../../lib/store'
-import { countWords, getWritingFeedback, useAi, AiError } from '../../lib/ai'
+import { AiError, countWords, describeConfig, getWritingFeedback, useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { frTypo } from '../../lib/words'
-import { ApiKeySetup } from './ApiKeySetup'
+import { ConnectAiCard } from '../../components/AiSetup'
 
 const DRAFT_KEY = 'petit-a-petit-draft:'
 
@@ -42,8 +42,7 @@ export default function WritingEditor() {
   const startLevel = useStore((s) => s.startLevel)
   const addWriting = useStore((s) => s.addWriting)
   const logActivityBulk = useStore((s) => s.logActivityBulk)
-  const apiKey = useAi((s) => s.apiKey)
-  const model = useAi((s) => s.model)
+  const ai = useAiConfig()
 
   const original = rewriteId ? writings.find((w) => w.id === rewriteId) : undefined
   const prompt = PROMPT_BY_ID[original?.promptId ?? promptId]
@@ -79,7 +78,7 @@ export default function WritingEditor() {
         ? customTask.trim() || 'Write about a topic of your choice.'
         : 'Free writing — any topic the learner chooses.'
   const title = kind === 'prompt' ? `${prompt!.titleFr}` : kind === 'custom' ? customTask.trim().slice(0, 60) || 'Your own topic' : 'Free writing'
-  const canSubmit = words >= 5 && !loading && !!apiKey && (kind !== 'custom' || customTask.trim().length > 0)
+  const canSubmit = words >= 5 && !loading && !!ai && (kind !== 'custom' || customTask.trim().length > 0)
 
   const lessonList = useMemo(() => LESSONS.map((l) => ({ id: l.id, title: `${l.title} (${l.level})` })), [])
 
@@ -91,8 +90,7 @@ export default function WritingEditor() {
     abort.current = ctrl
     try {
       const feedback = await getWritingFeedback({
-        apiKey,
-        model,
+        config: ai,
         text,
         task,
         focus: prompt?.focus,
@@ -110,7 +108,7 @@ export default function WritingEditor() {
         text: text.trim(),
         words,
         createdAt: new Date().toISOString(),
-        model,
+        model: ai ? describeConfig(ai) : '',
         feedback,
         revisionOf: original?.id,
       })
@@ -260,11 +258,10 @@ export default function WritingEditor() {
         </div>
       )}
 
-      {!apiKey && (
-        <section className="card stack" style={{ marginTop: 16 }}>
-          <div className="card__title">Add your Claude API key to get feedback</div>
-          <ApiKeySetup compact />
-        </section>
+      {!ai && (
+        <div style={{ marginTop: 16 }}>
+          <ConnectAiCard title="Connect an AI to get feedback" />
+        </div>
       )}
 
       <div className="writing-submit">
@@ -272,7 +269,7 @@ export default function WritingEditor() {
           <>
             <div className="writing-loading" role="status">
               <LoaderCircle size={18} className="spin" aria-hidden />
-              Claude is reading your text…
+              {ai?.name ?? 'The AI'} is reading your text…
             </div>
             <button type="button" className="btn btn--ghost" onClick={() => abort.current?.abort()}>
               Cancel

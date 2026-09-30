@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router'
 import { Download, Upload, Volume2 } from 'lucide-react'
 import { Dialog } from '../../components/Dialog'
 import { Kbd, Switch } from '../../components/ui'
@@ -7,7 +8,7 @@ import { exportData, useStore, type Directions, type Theme } from '../../lib/sto
 import { useDocumentTitle } from '../../lib/hooks'
 import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
-import { ApiKeySetup } from '../writing/ApiKeySetup'
+import { AiSetup } from '../../components/AiSetup'
 
 function Row({ title, desc, children, stack }: { title: string; desc?: React.ReactNode; children: React.ReactNode; stack?: boolean }) {
   return (
@@ -39,6 +40,12 @@ function Stepper({ value, onChange, min, max, step = 1, label }: { value: number
 
 export default function SettingsPage() {
   useDocumentTitle('Settings')
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (!hash) return
+    const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' }), 60)
+    return () => clearTimeout(t)
+  }, [hash])
   const settings = useStore((s) => s.settings)
   const update = useStore((s) => s.updateSettings)
   const importData = useStore((s) => s.importData)
@@ -188,16 +195,16 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="set-ai">
+      <section className="section" aria-labelledby="set-ai" id="ai">
         <h2 id="set-ai" className="section-title">
-          Writing feedback (Claude)
+          AI (writing, conversation, reading)
         </h2>
         <div className="card">
           <p className="muted small" style={{ marginBottom: 14 }}>
-            Writing practice sends your text to Claude for corrections. Requests go straight from this browser to Anthropic
-            using your own API key.
+            Writing corrections, conversation practice and reading help use an AI model of your choice. Requests go straight
+            from this browser to the provider with your own key — nothing passes through a server of ours.
           </p>
-          <ApiKeySetup />
+          <AiSetup />
         </div>
       </section>
 
@@ -251,7 +258,7 @@ export default function SettingsPage() {
           Your data
         </h2>
         <div className="card card--flush">
-          <Row title="Back up progress" desc="Everything is stored in this browser only. Download a backup to move to another device (your API key isn’t included).">
+          <Row title="Back up progress" desc="Everything is stored in this browser only. Download a backup to move to another device (your AI keys aren’t included).">
             <button type="button" className="btn btn--secondary" onClick={download}>
               <Download size={16} aria-hidden /> Export
             </button>
