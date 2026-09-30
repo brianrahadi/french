@@ -8,6 +8,7 @@ import { useDocumentTitle } from '../../lib/hooks'
 import { fullForm, makeDrill, poolFor, type DrillItem } from './drill'
 import { frTypo } from '../../lib/words'
 import { DrillQuestion, type DrillAnswer } from './DrillQuestion'
+import { noteConj } from '../../lib/mistakes'
 
 type Answered = DrillAnswer
 
@@ -70,6 +71,7 @@ function DrillSession() {
     if (firstTime) {
       setLog((l) => [...l, a])
       recordConj(a.item.inf, a.item.tense, a.pass)
+      noteConj(a.item.inf, a.item.tense, { pass: a.pass, given: a.given, expected: fullForm(a.item) })
     }
     logActivity(a.pass)
     if (!a.pass && !requeued.has(pos) && firstTime) {

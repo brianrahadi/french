@@ -9,6 +9,7 @@ import { useDocumentTitle } from '../../lib/hooks'
 import type { Graded } from './grade'
 import { frTypo } from '../../lib/words'
 import { GrammarQuestion, promptText } from './GrammarQuestion'
+import { noteGrammar } from '../../lib/mistakes'
 
 interface Mistake {
   ex: Exercise
@@ -66,6 +67,7 @@ export default function PracticeSession() {
     setAnswered(true)
     logActivity(g.pass)
     if (!(exIndex in firstTry)) {
+      noteGrammar(lesson.id, promptText(ex), g, 'explain' in ex ? ex.explain : undefined)
       setFirstTry((f) => ({ ...f, [exIndex]: g.pass }))
       if (!g.pass) setMistakes((m) => [...m, { ex, given: g.given, expected: g.expected }])
     }

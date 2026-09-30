@@ -9,6 +9,8 @@ import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
 import { dirsFor, dueCardIds, newAvailableToday, newWordQueue } from './selectors'
 import { IntroCard, ProductionCard, RecognitionCard } from './cards'
+import { noteLapse } from '../../lib/mistakes'
+import { displayFr } from '../../lib/words'
 
 type Item = { kind: 'intro'; wordId: string } | { kind: 'card'; id: string }
 
@@ -103,6 +105,11 @@ function StudySession({ extra }: { extra: number }) {
   const onRated = (id: string, grade: Grade) => {
     const next = rateCard(id, grade)
     logActivity(grade !== Rating.Again)
+    if (grade === Rating.Again) {
+      const { wordId, dir } = parseCardId(id)
+      const w = findWord(wordId, useStore.getState().customWords)
+      if (w) noteLapse(wordId, dir === 'r' ? w.fr : w.en, dir === 'r' ? w.en : displayFr(w))
+    }
     setSession((s) => {
       const dueMs = new Date(next.due).getTime()
       const inSession = (next.state === State.Learning || next.state === State.Relearning) && dueMs - Date.now() < 60 * 60_000

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { ArrowRight, BookOpen, CheckCircle2, Layers, NotebookPen, PenLine } from 'lucide-react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
+import { ArrowRight, BookOpen, CheckCircle2, Headphones, Layers, Mic, NotebookPen, PenLine, Target, Wrench } from 'lucide-react'
 import { findWord } from '../../data/vocab'
 import { LESSON_BY_ID } from '../../data/grammar'
 import { FocusShell } from '../../components/FocusShell'
@@ -8,7 +8,14 @@ import { Kbd } from '../../components/ui'
 import { PASS_MARK, useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
-import { frTypo } from '../../lib/words'
+import { displayFr, frTypo } from '../../lib/words'
+import { speechSupported } from '../../lib/speech'
+import { recognitionSupported } from '../../lib/recognition'
+import { noteConj, noteDictation, noteGrammar, noteLapse, noteSpeaking } from '../../lib/mistakes'
+import { DictationQuestion, type DictationAnswer } from '../listening/DictationQuestion'
+import { sentenceById } from '../listening/sentences'
+import { SpeakQuestion, type SpeakAnswer } from '../speaking/SpeakQuestion'
+import { FixQuestion, type FixAnswer } from '../weak/FixQuestion'
 import { IntroCard, ProductionCard, RecognitionCard } from '../vocab/cards'
 import { dirsFor } from '../vocab/selectors'
 import { GrammarQuestion, promptText } from '../grammar/GrammarQuestion'
@@ -17,7 +24,7 @@ import { nextUp } from '../grammar/status'
 import { DrillQuestion, type DrillAnswer } from '../conjugation/DrillQuestion'
 import { fullForm } from '../conjugation/drill'
 import { TENSE_BY_ID } from '../../lib/conjugate'
-import { buildMixedPlan, lessonTitle, type MixedItem, type MixedPlan } from './plan'
+import { buildMixedPlan, buildWeakPlan, lessonTitle, type MixedItem, type MixedPlan } from './plan'
 
 interface Tally {
   n: number
@@ -33,6 +40,9 @@ interface Run {
   newWords: number
   grammar: Tally
   conj: Tally
+  listen: Tally
+  say: Tally
+  fix: Tally
   /** First-try results for lessons being reviewed. */
   lessons: Record<string, Tally>
   mistakes: { what: string; given: string; expected: string }[]
@@ -76,6 +86,9 @@ function start(plan: MixedPlan): Run {
     newWords: 0,
     grammar: { n: 0, ok: 0 },
     conj: { n: 0, ok: 0 },
+    listen: { n: 0, ok: 0 },
+    say: { n: 0, ok: 0 },
+    fix: { n: 0, ok: 0 },
     lessons: {},
     mistakes: [],
   })
@@ -90,9 +103,19 @@ function Kind({ icon, label }: { icon: React.ReactNode; label: string }) {
   )
 }
 
-export default function MixedSession() {
-  useDocumentTitle('Today’s session')
-  const [plan] = useState(() => buildMixedPlan(useStore.getState()))
+export default function MixedSessionRoute() {
+  const [params] = useSearchParams()
+  const mode = params.get('mode') === 'weak' ? 'weak' : 'daily'
+  return <MixedSession key={mode} mode={mode} />
+}
+
+function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
+  useDocumentTitle(mode === 'weak' ? 'Weak spots' : 'Today’s session')
+  const exitTo = mode === 'weak' ? '/weak' : '/'
+  const [plan] = useState(() => {
+    const opts = { tts: speechSupported, asr: recognitionSupported }
+    return mode === 'weak' ? buildWeakPlan(useStore.getState(), Math.random, opts) : buildMixedPlan(useStore.getState(), Math.random, opts)
+  })
   const [run, setRun] = useState<Run>(() => start(plan))
   const [startedAt] = useState(() => Date.now())
 
@@ -103,6 +126,8 @@ export default function MixedSession() {
   const recordConj = useStore((s) => s.recordConj)
   const recordLesson = useStore((s) => s.recordLesson)
   const logActivity = useStore((s) => s.logActivity)
+  const recordSentence = useStore((s) => s.recordSentence)
+  const resolveMistake = useStore((s) => s.resolveMistake)
 
   const remaining = run.items.length + run.learning.length + (run.current ? 1 : 0)
   const progress = run.done / Math.max(1, run.done + remaining)
@@ -140,6 +165,11 @@ export default function MixedSession() {
     const next = rateCard(id, grade)
     const ok = grade !== Rating.Again
     logActivity(ok)
+    if (!ok) {
+      const { wordId, dir } = parseCardId(id)
+      const w = findWord(wordId, customWords)
+      if (w) noteLapse(wordId, dir === 'r' ? w.fr : w.en, dir === 'r' ? w.en : displayFr(w))
+    }
     setRun((r) => {
       const dueMs = new Date(next.due).getTime()
       const again = (next.state === State.Learning || next.state === State.Relearning) && dueMs - Date.now() < 60 * 60_000
@@ -156,6 +186,7 @@ export default function MixedSession() {
     logActivity(g.pass)
     if (item.retry) return
     const ex = LESSON_BY_ID[item.lessonId].exercises[item.index]
+    noteGrammar(item.lessonId, promptText(ex), g, 'explain' in ex ? ex.explain : undefined)
     setRun((r) => ({
       ...r,
       grammar: bump(r.grammar, g.pass),
@@ -185,6 +216,7 @@ export default function MixedSession() {
     logActivity(a.pass)
     if (item.retry) return
     recordConj(a.item.inf, a.item.tense, a.pass)
+    noteConj(a.item.inf, a.item.tense, { pass: a.pass, given: a.given, expected: fullForm(a.item) })
     setRun((r) => ({
       ...r,
       conj: bump(r.conj, a.pass),
@@ -195,11 +227,38 @@ export default function MixedSession() {
     }))
   }
 
-  if (!plan.items.length) return <NothingToDo />
+  const onFix = (item: Extract<MixedItem, { kind: 'fix' }>, a: FixAnswer) => {
+    logActivity(a.pass)
+    if (a.pass) resolveMistake(a.mistake.id)
+    if (item.retry) return
+    setRun((r) => ({
+      ...r,
+      fix: bump(r.fix, a.pass),
+      mistakes: a.pass ? r.mistakes : [...r.mistakes, { what: a.mistake.prompt ?? '', given: a.given, expected: a.mistake.expected }],
+      items: a.pass ? r.items : insertAt(r.items, 4, { ...item, retry: true }),
+    }))
+  }
+
+  const onListen = (a: DictationAnswer) => {
+    recordSentence('listening', a.sentence.id, a.result.score)
+    noteDictation(a.sentence, a.result)
+    logActivity(a.result.score >= 70)
+    setRun((r) => ({ ...r, listen: bump(r.listen, a.result.score >= 70) }))
+  }
+
+  const onSay = (a: SpeakAnswer) => {
+    if (!a.attempts) return
+    recordSentence('speaking', a.sentence.id, a.score)
+    if (a.match) noteSpeaking(a.sentence, a.match)
+    logActivity(a.score >= 60)
+    setRun((r) => ({ ...r, say: bump(r.say, a.score >= 60) }))
+  }
+
+  if (!plan.items.length) return <NothingToDo mode={mode} />
 
   if (!cur) {
     return (
-      <FocusShell progress={1} exitTo="/" label="Session" count={count}>
+      <FocusShell progress={1} exitTo={exitTo} label="Session" count={count}>
         <Summary run={run} plan={plan} startedAt={startedAt} />
       </FocusShell>
     )
@@ -217,7 +276,7 @@ export default function MixedSession() {
     }
     body = (
       <>
-        <Kind icon={<Layers size={15} aria-hidden />} label="Vocabulary" />
+        <Kind icon={<Layers size={15} aria-hidden />} label={plan.mode === 'weak' ? 'Vocabulary · weak spot' : 'Vocabulary'} />
         {cur.kind === 'intro' ? (
           <IntroCard key={key} word={w} onDone={(known) => onIntroduced(w.id, known)} />
         ) : parseCardId(cur.id).dir === 'r' ? (
@@ -236,7 +295,7 @@ export default function MixedSession() {
         context={
           <Kind
             icon={<BookOpen size={15} aria-hidden />}
-            label={`Grammar · ${lesson.title}${cur.retry ? ' · retry' : cur.review ? ' · review' : ''}`}
+            label={`Grammar · ${lesson.title}${cur.retry ? ' · retry' : cur.review ? ' · review' : cur.weak ? ' · weak spot' : ''}`}
           />
         }
         onAnswered={(g) => onGrammar(cur, g)}
@@ -244,24 +303,78 @@ export default function MixedSession() {
         onOverride={cur.retry ? undefined : () => onGrammarOverride(cur)}
       />
     )
-  } else {
+  } else if (cur.kind === 'conj') {
     body = (
       <>
         <Kind icon={<PenLine size={15} aria-hidden />} label={`Conjugation${cur.retry ? ' · retry' : ''}`} />
         <DrillQuestion key={key} item={cur.item} onAnswered={(a) => onConj(cur, a)} onContinue={advance} />
       </>
     )
+  } else if (cur.kind === 'fix') {
+    const m = useStore.getState().mistakes.find((x) => x.id === cur.mistakeId)
+    if (!m) {
+      setTimeout(advance)
+      return null
+    }
+    body = (
+      <FixQuestion
+        key={key}
+        mistake={m}
+        context={<Kind icon={<Wrench size={15} aria-hidden />} label={`Fix it${cur.retry ? ' · retry' : ''}`} />}
+        onAnswered={(a) => onFix(cur, a)}
+        onContinue={advance}
+      />
+    )
+  } else {
+    const sentence = sentenceById(cur.sentenceId)
+    if (!sentence) {
+      setTimeout(advance)
+      return null
+    }
+    body =
+      cur.kind === 'listen' ? (
+        <DictationQuestion
+          key={key}
+          sentence={sentence}
+          context={<Kind icon={<Headphones size={15} aria-hidden />} label="Listening" />}
+          onAnswered={onListen}
+          onContinue={advance}
+        />
+      ) : (
+        <SpeakQuestion
+          key={key}
+          sentence={sentence}
+          context={<Kind icon={<Mic size={15} aria-hidden />} label="Speaking" />}
+          onAnswered={onSay}
+          onContinue={advance}
+        />
+      )
   }
 
   return (
-    <FocusShell progress={progress} exitTo="/" label="Today’s session" count={count}>
+    <FocusShell progress={progress} exitTo={exitTo} label={mode === 'weak' ? 'Weak spots' : 'Today’s session'} count={count}>
       {body}
     </FocusShell>
   )
 }
 
-function NothingToDo() {
+function NothingToDo({ mode }: { mode: 'daily' | 'weak' }) {
   const up = nextUp(useStore.getState().lessons)
+  if (mode === 'weak')
+    return (
+      <FocusShell progress={1} exitTo="/weak" label="Session">
+        <div className="results">
+          <Target size={44} color="var(--success)" aria-hidden />
+          <h1 className="results__title">No weak spots right now</h1>
+          <p className="muted" style={{ maxWidth: 440 }}>
+            Mistakes from drills, writing, conversations and dictation show up here. Keep practising and come back later.
+          </p>
+          <Link to="/" className="btn btn--primary btn--lg" style={{ marginTop: 18 }}>
+            Back to Today
+          </Link>
+        </div>
+      </FocusShell>
+    )
   return (
     <FocusShell progress={1} exitTo="/" label="Session">
       <div className="results">
@@ -290,21 +403,22 @@ function Summary({ run, plan, startedAt }: { run: Run; plan: MixedPlan; startedA
   const lessons = useStore((s) => s.lessons)
   const up = nextUp(lessons)
   const minutes = Math.max(1, Math.round((Date.now() - startedAt) / 60_000))
-  const total = run.vocab.n + run.grammar.n + run.conj.n
-  const ok = run.vocab.ok + run.grammar.ok + run.conj.ok
-  useHotkeys({ Enter: () => navigate('/') })
+  const total = run.vocab.n + run.grammar.n + run.conj.n + run.fix.n + run.listen.n + run.say.n
+  const ok = run.vocab.ok + run.grammar.ok + run.conj.ok + run.fix.ok + run.listen.ok + run.say.ok
+  const home = plan.mode === 'weak' ? '/weak' : '/'
+  useHotkeys({ Enter: () => navigate(home) })
 
   const pct = (t: Tally) => (t.n ? `${Math.round((t.ok / t.n) * 100)}%` : '—')
 
   return (
     <div className="results">
       <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-      <h1 className="results__title">Séance terminée&nbsp;!</h1>
+      <h1 className="results__title">{plan.mode === 'weak' ? 'Points faibles travaillés\u00a0!' : 'Séance terminée\u00a0!'}</h1>
       <p className="muted">
         {total ? `${ok} of ${total} right on the first try` : 'Nice work'} · {minutes} min
       </p>
 
-      <div className="stats" style={{ width: '100%', marginTop: 18 }}>
+      <div className={`stats${[run.fix.n, run.listen.n, run.say.n].filter(Boolean).length ? ' stats--3' : ''}`} style={{ width: '100%', marginTop: 18 }}>
         <div className="stat">
           <div className="stat__label">Words reviewed</div>
           <div className="stat__value">
@@ -330,6 +444,33 @@ function Summary({ run, plan, startedAt }: { run: Run; plan: MixedPlan; startedA
             <small>/ {run.conj.n}</small>
           </div>
         </div>
+        {run.fix.n > 0 && (
+          <div className="stat">
+            <div className="stat__label">Fixed</div>
+            <div className="stat__value">
+              {run.fix.ok}
+              <small>/ {run.fix.n}</small>
+            </div>
+          </div>
+        )}
+        {run.listen.n > 0 && (
+          <div className="stat">
+            <div className="stat__label">Listening</div>
+            <div className="stat__value">
+              {run.listen.ok}
+              <small>/ {run.listen.n}</small>
+            </div>
+          </div>
+        )}
+        {run.say.n > 0 && (
+          <div className="stat">
+            <div className="stat__label">Speaking</div>
+            <div className="stat__value">
+              {run.say.ok}
+              <small>/ {run.say.n}</small>
+            </div>
+          </div>
+        )}
       </div>
 
       {plan.reviewLessons.length > 0 && (
@@ -370,7 +511,7 @@ function Summary({ run, plan, startedAt }: { run: Run; plan: MixedPlan; startedA
         <Link to="/writing" className="btn btn--secondary btn--lg">
           <NotebookPen size={17} aria-hidden /> Write
         </Link>
-        <Link to="/" className="btn btn--primary btn--lg">
+        <Link to={home} className="btn btn--primary btn--lg">
           Done <Kbd>↵</Kbd>
         </Link>
       </div>
