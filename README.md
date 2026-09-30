@@ -156,16 +156,16 @@ It’s a static site — any static host works.
 ## Project structure
 
 ```
+content/          everything learners study, as Markdown — see content/README.md
+  grammar/        30 lessons: explanations + exercises (a1/ … b2/)
+  vocab/          25 word decks, one table each (a1/ … b2/)
+  reading/        10 graded texts with translations
+  conversations/  16 AI role-plays (goals, phrases, character brief)
+  writing/        20 writing prompts linked to lessons
+  pronunciation/  8 sound practice sets
 src/
-  data/
-    grammar/      30 lessons (a1.ts … b2.ts) — explanations + exercises
-    vocab/        25 decks (a1.ts … b2.ts) in a compact row format
-    verbs.ts      103 verbs (irregular stems, auxiliaries, participles)
-    writing.ts    20 writing prompts linked to lessons
-    scenarios.ts  16 conversation role-plays (goals, phrases, character brief)
-    texts.ts      10 graded reading texts with translations
-    sounds.ts     8 pronunciation sets; soundTips.ts: tips for missed words
-    types.ts      content types
+  content/        reads content/*.md at build time (parser + Vite plugin)
+  data/           loads the content; verbs.ts (103 verbs) and soundTips.ts stay in code
   lib/
     conjugate.ts  conjugation engine
     answer.ts     normalisation, accent-tolerant checking, diffs
@@ -180,23 +180,18 @@ src/
                   client (streaming, JSON, fallbacks), writing feedback
   features/       today, session (daily + weak-spot sessions), vocab, grammar,
                   conjugation, verbs, listening, speaking, reading, talk,
-                  writing, weak, practice, settings
+                  writing, weak, practice, privacy, settings
   components/     shared UI (feedback sheet, accent bar, dialogs, AI setup…)
   styles/         design tokens, base, components, sessions, features, practice
 ```
 
 ### Adding content
 
-- **A word:** add a row to a deck in `src/data/vocab/*.ts`:
-  `['bibliothèque', 'library', 'f', 'Je travaille à la bibliothèque.', 'I work at the library.']`
-  The third column is `m` / `f` / `mf` / `mpl` / `fpl` for nouns, `adj:feminine-form` for adjectives, or a part of speech (`v`, `adv`, `expr`…).
-- **A lesson:** add an object to `src/data/grammar/*.ts`. Blocks support `**bold**`, `*French in italics*` and `~~wrong form~~`.
+Lessons, words, texts, role-plays, writing prompts and pronunciation sets are Markdown files in [`content/`](content/README.md). Copy a neighbouring file, change the `id` and the text, and save; `npm run dev` picks it up immediately. [`content/README.md`](content/README.md) has a template for each kind.
+
 - **A verb:** add it to `src/data/verbs.ts`. Regular verbs need only the infinitive; irregular ones need the present, past participle and any irregular future/subjunctive stems.
 
-- **A conversation scenario:** add an entry to `src/data/scenarios.ts` (the `aiRole` brief tells the AI who to play and what it knows).
-- **A reading text:** add an entry to `src/data/texts.ts` (French paragraphs with English translations).
-
-`npm test` checks the content for you (unique ids, well-formed exercises, balanced markup, every verb conjugating in every tense, scenarios pointing at real lessons).
+`npm test` checks the content for you (every file parses, unique ids, well-formed exercises, balanced markup, every verb conjugating in every tense, role-plays and prompts pointing at real lessons). A mistake in a content file names the file and line.
 
 ## Tech
 
