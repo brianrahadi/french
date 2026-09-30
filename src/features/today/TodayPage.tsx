@@ -32,6 +32,8 @@ import { dueLessons, lessonStatus, nextUp } from '../grammar/status'
 import { computeWeakSpots } from '../weak/weak'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
+import { SyncGlyph, SyncPrompt } from '../../components/SyncAccount'
+import { syncConfigured, useSync } from '../../lib/sync/engine'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -55,6 +57,9 @@ export default function TodayPage() {
   const hasSession = plan.items.length > 0
   const weak = useMemo(() => computeWeakSpots(state), [state])
   const weakCount = weak.total + weak.fixables.length
+  const syncState = useSync((s) => s.state)
+  const signedIn = !!useSync((s) => s.user)
+  const syncLabel = signedIn ? (syncState === 'synced' ? 'Synced' : syncState) : 'Not signed in'
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
 
   return (
@@ -70,11 +75,18 @@ export default function TodayPage() {
               <Flame size={18} aria-hidden /> <span className="tnum">{streak}</span> day{streak > 1 ? 's' : ''}
             </div>
           )}
+          {syncConfigured && (
+            <Link to="/settings#account" className="icon-btn icon-btn--outline mobile-only" aria-label={`Sync: ${syncLabel}`} title={syncLabel}>
+              <SyncGlyph state={syncState} size={18} />
+            </Link>
+          )}
           <Link to="/settings" className="icon-btn icon-btn--outline mobile-only" aria-label="Settings">
             <Settings size={19} aria-hidden />
           </Link>
         </div>
       </header>
+
+      <SyncPrompt />
 
       {firstRun && <Welcome onPick={(lvl) => {
         const decks = DECKS.filter((d) => d.level === lvl).map((d) => d.id)

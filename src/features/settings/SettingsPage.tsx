@@ -9,6 +9,8 @@ import { useDocumentTitle } from '../../lib/hooks'
 import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
 import { AiSetup } from '../../components/AiSetup'
+import { SyncAccount } from '../../components/SyncAccount'
+import { useSync } from '../../lib/sync/engine'
 
 function Row({ title, desc, children, stack }: { title: string; desc?: React.ReactNode; children: React.ReactNode; stack?: boolean }) {
   return (
@@ -50,6 +52,7 @@ export default function SettingsPage() {
   const update = useStore((s) => s.updateSettings)
   const importData = useStore((s) => s.importData)
   const resetAll = useStore((s) => s.resetAll)
+  const signedIn = !!useSync((s) => s.user)
   const voices = useFrenchVoices()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmReset, setConfirmReset] = useState(false)
@@ -82,6 +85,13 @@ export default function SettingsPage() {
           <h1 className="page-title">Settings</h1>
         </div>
       </header>
+
+      <section className="section" aria-labelledby="set-account" id="account">
+        <h2 id="set-account" className="section-title">
+          Account &amp; sync
+        </h2>
+        <SyncAccount />
+      </section>
 
       <section className="section" aria-labelledby="set-study">
         <h2 id="set-study" className="section-title">
@@ -264,12 +274,12 @@ export default function SettingsPage() {
           Your data
         </h2>
         <div className="card card--flush">
-          <Row title="Back up progress" desc="Everything is stored in this browser only. Download a backup to move to another device (your AI keys aren’t included).">
+          <Row title="Back up progress" desc={signedIn ? 'Your progress is stored in this browser and synced to your account. A backup file is a snapshot you can keep (AI keys aren’t included).' : 'Everything is stored in this browser only. Download a backup to move to another device (your AI keys aren’t included).'}>
             <button type="button" className="btn btn--secondary" onClick={download}>
               <Download size={16} aria-hidden /> Export
             </button>
           </Row>
-          <Row title="Restore from backup" desc="Replaces your current progress with the file’s contents.">
+          <Row title="Restore from backup" desc={signedIn ? 'Replaces your progress with the file’s contents — on all your signed-in devices.' : 'Replaces your current progress with the file’s contents.'}>
             <button type="button" className="btn btn--secondary" onClick={() => fileRef.current?.click()}>
               <Upload size={16} aria-hidden /> Import
             </button>
@@ -286,7 +296,7 @@ export default function SettingsPage() {
               }}
             />
           </Row>
-          <Row title="Reset all progress" desc="Clears reviews, lessons and stats. Your settings are kept.">
+          <Row title="Reset all progress" desc={signedIn ? 'Clears reviews, lessons and stats on all your signed-in devices. Your settings are kept.' : 'Clears reviews, lessons and stats. Your settings are kept.'}>
             <button type="button" className="btn btn--ghost" style={{ color: 'var(--danger)' }} onClick={() => setConfirmReset(true)}>
               Reset…
             </button>

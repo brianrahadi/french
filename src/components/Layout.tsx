@@ -19,6 +19,7 @@ import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
 import { Toaster } from './Toast'
+import { SyncBadge } from './SyncAccount'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -108,6 +109,7 @@ export function Layout() {
           </div>
         </nav>
         <div className="sidebar__footer">
+          <SyncBadge />
           <NavLink to="/settings" className="nav-link">
             <Settings size={19} aria-hidden />
             Settings

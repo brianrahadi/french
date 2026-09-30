@@ -1386,3 +1386,100 @@
   max-width: calc(100vw - 32px);
   text-align: center;
 }
+
+/* ───────────── Account & sync ───────────── */
+.sync-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sync-card__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sync-card__head .card__title {
+  margin: 0;
+}
+.sync-card__email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sync-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sync-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+.sync-avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.sync-avatar--initial {
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 700;
+  font-size: 18px;
+}
+.sync-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 14px;
+  font-weight: 560;
+}
+.sync-line--synced {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.sync-line--error,
+.sync-line--offline {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.sync-badge {
+  font-size: 14px;
+}
+.sync-badge--synced svg {
+  color: var(--success);
+}
+.sync-badge--error,
+.sync-badge--offline {
+  color: var(--warning);
+}
+.sync-prompt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+}
+.sync-prompt .card__title {
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .sync-prompt {
+    flex-wrap: wrap;
+  }
+  .sync-prompt .sync-icon {
+    display: none;
+  }
+}
