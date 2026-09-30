@@ -333,7 +333,7 @@ function WordCard({
               <span className="fr" lang="fr">
                 {frTypo(displayFr(builtin))}
               </span>{' '}
-              <span className="subtle small">{posLabel(builtin)}</span>
+              <span className="subtle small">{posLabel(builtin)}</span>{' '}
               {builtin.g && !builtin.both && <GenderTag g={builtin.g} />} <span className="muted">— {builtin.en}</span>
             </div>
           )}
