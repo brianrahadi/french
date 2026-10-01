@@ -1,12 +1,14 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { BookOpenText, Check, ClipboardPaste, LoaderCircle, Trash2, WandSparkles } from 'lucide-react'
-import { BUILTIN_TEXTS } from '../../data/texts'
+import { BUILTIN_TEXTS, type ReaderTextDef } from '../../data/texts'
 import { LEVELS, type Level } from '../../data/types'
 import { findWord } from '../../data/vocab'
 import { ConnectAiCard } from '../../components/AiSetup'
 import { Dialog } from '../../components/Dialog'
 import { Callout, LevelBadge, Switch } from '../../components/ui'
+import { Shelf } from '../../components/Shelf'
+import type { ReaderText } from './types'
 import { newId, useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { countWords } from '../../lib/ai/writing'
@@ -31,107 +33,85 @@ export default function ReadingHome() {
   const startLevel = useStore((s) => s.startLevel)
   const [confirm, setConfirm] = useState<string | null>(null)
   const [paste, setPaste] = useState(false)
-  const [levelFilter, setLevelFilter] = useState<Level | 'all'>('all')
-  const builtin = BUILTIN_TEXTS.filter((t) => levelFilter === 'all' || t.level === levelFilter)
+  const [generate, setGenerate] = useState<Level | null>(null)
+
+  // Unfinished things first, shelf by shelf; everything finished goes to the last shelf.
+  const opened = texts.filter((t) => !read[t.id] && t.openedAt).sort((a, b) => (b.openedAt ?? '').localeCompare(a.openedAt ?? ''))
+  const fresh = texts.filter((t) => !read[t.id] && !t.openedAt)
+  const levels = startLevel ? [startLevel, ...LEVELS.filter((l) => l !== startLevel)] : LEVELS
+  const done = [
+    ...texts.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: t, builtin: undefined })),
+    ...BUILTIN_TEXTS.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: undefined, builtin: t })),
+  ].sort((a, b) => b.at.localeCompare(a.at))
 
   return (
     <div className="page">
-      <header className="page-header">
+      <header className="page-header page-header--compact">
         <div>
           <div className="page-eyebrow">Compréhension écrite</div>
           <h1 className="page-title">Reading</h1>
-          <p className="page-subtitle">
-            Read graded texts or anything you paste in. Tap a word to see what it means in that sentence and add it to your
-            flashcards with the sentence as its example — or have a text read aloud.
-          </p>
+          <p className="page-subtitle">Tap any word to see what it means in its sentence and add it to your flashcards.</p>
+        </div>
+        <div className="page-header__actions">
+          <button type="button" className="btn btn--secondary" onClick={() => setPaste(true)}>
+            <ClipboardPaste size={16} aria-hidden /> Paste a text
+          </button>
+          <button type="button" className="btn btn--primary" onClick={() => setGenerate(startLevel ?? 'A2')}>
+            <WandSparkles size={16} aria-hidden /> Write me a story
+          </button>
         </div>
       </header>
 
-      <div className="grid-2">
-        <button type="button" className="card card--interactive hero-card" onClick={() => setPaste(true)}>
-          <div className="hero-card__icon">
-            <ClipboardPaste size={22} aria-hidden />
-          </div>
-          <div style={{ minWidth: 0, textAlign: 'left' }}>
-            <div className="card__title">Paste a text</div>
-            <div className="card__meta">An article, a LingQ lesson, song notes, an email…</div>
-          </div>
-        </button>
-        <GenerateCard defaultLevel={startLevel ?? 'A2'} />
-      </div>
-
-      {texts.length > 0 && (
-        <section className="section" aria-labelledby="my-texts">
-          <h2 id="my-texts" className="section-title">
-            <span>Your texts</span>
-            <span className="tnum">{texts.length}</span>
-          </h2>
-          <div className="card card--flush">
-            {texts.map((t) => (
-              <div key={t.id} className="list-row text-row">
-                <Link to={`/reading/${t.id}`} className="text-row__main">
-                  <span className="text-row__title fr" lang="fr">
-                    {frTypo(t.title)}
-                  </span>
-                  <span className="small subtle">
-                    {t.source === 'ai' ? 'Generated' : 'Pasted'} · {countWords(t.content)} words · {ago(t.openedAt ?? t.createdAt)}
-                  </span>
-                </Link>
-                {t.level && <LevelBadge level={t.level} />}
-                {read[t.id] && (
-                  <span className="badge badge--success" title="Finished">
-                    <Check size={12} aria-hidden /> read
-                  </span>
-                )}
-                <button type="button" className="icon-btn icon-btn--sm" onClick={() => setConfirm(t.id)} aria-label={`Delete ${t.title}`}>
-                  <Trash2 size={15} aria-hidden />
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
+      {opened.length > 0 && (
+        <Shelf title="Continue reading" count={opened.length}>
+          {opened.map((t) => (
+            <UserTextTile key={t.id} t={t} onDelete={() => setConfirm(t.id)} />
+          ))}
+        </Shelf>
       )}
 
-      <section className="section" aria-labelledby="library">
-        <h2 id="library" className="section-title">
-          <span>Graded texts</span>
-          <div className="segmented" role="group" aria-label="Level">
-            {(['all', ...LEVELS] as const).map((l) => (
-              <button key={l} type="button" aria-pressed={levelFilter === l} onClick={() => setLevelFilter(l)}>
-                {l === 'all' ? 'All' : l}
-              </button>
+      {fresh.length > 0 && (
+        <Shelf title="Your texts" count={fresh.length}>
+          {fresh.map((t) => (
+            <UserTextTile key={t.id} t={t} onDelete={() => setConfirm(t.id)} />
+          ))}
+        </Shelf>
+      )}
+
+      {levels.map((level) => {
+        const list = BUILTIN_TEXTS.filter((t) => t.level === level && !read[t.id])
+        return (
+          <Shelf key={level} title={<>Graded texts · {level}</>} count={list.length}>
+            {list.map((t) => (
+              <GradedTile key={t.id} t={t} />
             ))}
-          </div>
-        </h2>
-        <div className="text-grid">
-          {builtin.map((t) => {
-            const words = countWords(t.paragraphs.map((p) => p.fr).join(' '))
-            return (
-              <Link key={t.id} to={`/reading/${t.id}`} className="card card--interactive text-card">
-                <div className="row" style={{ gap: 8 }}>
-                  <LevelBadge level={t.level} />
-                  <span className="small subtle">{t.topic}</span>
-                  <div className="spacer" />
-                  {read[t.id] && (
-                    <span className="badge badge--success">
-                      <Check size={12} aria-hidden /> read
-                    </span>
-                  )}
-                </div>
-                <div className="text-card__title fr" lang="fr">
-                  {frTypo(t.title)}
-                </div>
-                <div className="small muted">{t.titleEn}</div>
-                <div className="small subtle" style={{ marginTop: 'auto' }}>
-                  <BookOpenText size={13} aria-hidden style={{ verticalAlign: '-2px' }} /> {words} words · {Math.max(1, Math.round(words / 120))} min
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      </section>
+            <button type="button" className="stile stile--action" onClick={() => setGenerate(level)}>
+              <span className="stile__icon">
+                <WandSparkles size={18} aria-hidden />
+              </span>
+              <span className="stile__title" style={{ fontSize: 15 }}>
+                {list.length ? 'Want more?' : 'All read!'} Write a new {level} story
+              </span>
+              <span className="stile__sub">On any topic, with your words</span>
+            </button>
+          </Shelf>
+        )
+      })}
+
+      {done.length > 0 && (
+        <Shelf title="Completed" count={done.length} hint="Read them again any time — you’ll be surprised how much easier they get.">
+          {done.map((d) =>
+            d.user ? (
+              <UserTextTile key={d.user.id} t={d.user} done onDelete={() => setConfirm(d.user!.id)} />
+            ) : (
+              <GradedTile key={d.builtin!.id} t={d.builtin!} done />
+            ),
+          )}
+        </Shelf>
+      )}
 
       <PasteDialog open={paste} onClose={() => setPaste(false)} />
+      <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? startLevel ?? 'A2'} />
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
@@ -155,6 +135,51 @@ export default function ReadingHome() {
       >
         <p className="muted">Words you added from it stay in your flashcards.</p>
       </Dialog>
+    </div>
+  )
+}
+
+function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
+  const words = countWords(t.paragraphs.map((p) => p.fr).join(' '))
+  return (
+    <div className={`stile${done ? ' stile--done' : ''}`}>
+      <div className="stile__top">
+        <LevelBadge level={t.level} />
+        <span className="small subtle">{t.topic}</span>
+        {done && (
+          <span className="badge badge--success stile__corner">
+            <Check size={12} aria-hidden /> read
+          </span>
+        )}
+      </div>
+      <Link to={`/reading/${t.id}`} className="stile__title stile__stretch fr" lang="fr">
+        {frTypo(t.title)}
+      </Link>
+      <div className="stile__sub">{t.titleEn}</div>
+      <div className="stile__foot">
+        <BookOpenText size={13} aria-hidden /> {words} words · {Math.max(1, Math.round(words / 120))} min
+      </div>
+    </div>
+  )
+}
+
+function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; onDelete: () => void }) {
+  return (
+    <div className={`stile${done ? ' stile--done' : ''}`}>
+      <div className="stile__top">
+        {t.level && <LevelBadge level={t.level} />}
+        <span className="small subtle">{t.source === 'ai' ? 'Generated' : 'Pasted'}</span>
+        <button type="button" className="icon-btn icon-btn--sm stile__corner" onClick={onDelete} aria-label={`Delete ${t.title}`}>
+          <Trash2 size={14} aria-hidden />
+        </button>
+      </div>
+      <Link to={`/reading/${t.id}`} className="stile__title stile__stretch fr" lang="fr">
+        {frTypo(t.title)}
+      </Link>
+      <div className="stile__sub">{t.topic ?? `${countWords(t.content)} words`}</div>
+      <div className="stile__foot">
+        {done ? <Check size={13} aria-hidden /> : <BookOpenText size={13} aria-hidden />} {countWords(t.content)} words · {ago(t.openedAt ?? t.createdAt)}
+      </div>
     </div>
   )
 }
@@ -232,24 +257,6 @@ function PasteDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
         </div>
       </div>
     </Dialog>
-  )
-}
-
-function GenerateCard({ defaultLevel }: { defaultLevel: Level }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button type="button" className="card card--interactive hero-card" onClick={() => setOpen(true)}>
-        <div className="hero-card__icon hero-card__icon--amber">
-          <WandSparkles size={22} aria-hidden />
-        </div>
-        <div style={{ minWidth: 0, textAlign: 'left' }}>
-          <div className="card__title">Write me a story</div>
-          <div className="card__meta">A new text at your level, on any topic — with the words you’re learning</div>
-        </div>
-      </button>
-      <GenerateDialog open={open} onClose={() => setOpen(false)} defaultLevel={defaultLevel} />
-    </>
   )
 }
 

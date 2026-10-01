@@ -291,39 +291,38 @@ function Story({ story }: { story: StoryDef }) {
               <RotateCcw size={16} aria-hidden /> Try again
             </button>
           </div>
-          {story.questions.map((q, qi) => {
-            const ok = answers[qi] === q.answer
-            return (
-              <div key={qi} className="card story-q">
-                <div className="story-q__prompt">
-                  <span className={`badge ${ok ? 'badge--success' : 'badge--danger'}`}>
-                    {ok ? <Check size={12} aria-hidden /> : <X size={12} aria-hidden />} {ok ? 'Right' : 'Not quite'}
+          <div className="card card--flush">
+            {story.questions.map((q, qi) => {
+              const ok = answers[qi] === q.answer
+              return (
+                <div key={qi} className="list-row story-result">
+                  <span className={`story-result__mark ${ok ? 'is-ok' : 'is-wrong'}`} aria-label={ok ? 'Right' : 'Wrong'}>
+                    {ok ? <Check size={14} aria-hidden /> : <X size={14} aria-hidden />}
                   </span>
-                  <div>
-                    <Rich text={q.prompt} />
+                  <div className="story-result__body">
+                    <div className="story-result__q">
+                      <Rich text={q.prompt} />
+                    </div>
+                    <div className="small">
+                      {!ok && (
+                        <span className="story-result__wrong fr" lang="fr">
+                          {frTypo(q.options[answers[qi]])}
+                        </span>
+                      )}
+                      <span className="story-result__right fr" lang="fr">
+                        {frTypo(q.options[q.answer])}
+                      </span>
+                    </div>
+                    {q.explain && (
+                      <div className="small subtle">
+                        <Rich text={q.explain} />
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="options">
-                  {q.options.map((o, oi) => (
-                    <div
-                      key={oi}
-                      className={`option ${oi === q.answer ? 'option--correct' : oi === answers[qi] ? 'option--wrong' : 'option--dim'}`}
-                    >
-                      <span className="option__key" aria-hidden>
-                        {String.fromCharCode(65 + oi)}
-                      </span>
-                      <span>{frTypo(o)}</span>
-                    </div>
-                  ))}
-                </div>
-                {q.explain && (
-                  <p className="small muted" style={{ margin: '12px 0 0' }}>
-                    <Rich text={q.explain} />
-                  </p>
-                )}
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </section>
       )}
 

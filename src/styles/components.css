@@ -1085,3 +1085,202 @@ button.list-row {
   width: 11px;
   height: 11px;
 }
+
+/* ───────────── Shelves: rows of cards that scroll sideways ───────────── */
+.shelf {
+  margin-top: 26px;
+}
+.shelf__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.shelf__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+.shelf__count {
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 550;
+}
+.shelf__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shelf__arrows {
+  display: inline-flex;
+  gap: 2px;
+}
+.shelf__hint {
+  margin: -4px 0 10px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.shelf__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 232px;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding: 2px 2px 6px;
+  margin: 0 -2px;
+}
+.shelf__track::-webkit-scrollbar {
+  display: none;
+}
+.shelf__track > * {
+  scroll-snap-align: start;
+}
+@media (max-width: 640px) {
+  .shelf__arrows {
+    display: none;
+  }
+  .shelf__track {
+    grid-auto-columns: 72%;
+  }
+}
+
+/* A card on a shelf */
+.stile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 148px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 14px);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-ui);
+  text-align: left;
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.stile:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.stile:hover .stile__title {
+  color: var(--primary-text);
+}
+.stile__title.fr {
+  font-family: var(--font-fr);
+}
+.stile:active {
+  transform: translateY(1px);
+}
+.stile__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+}
+.stile__title {
+  display: -webkit-box;
+  color: var(--text);
+  text-decoration: none;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.stile__sub {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stile__foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+.stile__stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.stile__corner {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+}
+.stile--done {
+  background: var(--surface-2);
+}
+.stile--action {
+  justify-content: center;
+  align-items: flex-start;
+  border-style: dashed;
+  cursor: pointer;
+  font: inherit;
+}
+.stile__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+.stile__progress {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--surface-3, var(--border));
+  overflow: hidden;
+}
+.stile__progress > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+.page-header--compact {
+  margin-bottom: 4px;
+}
+.page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inline-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.inline-stats strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+button.stile {
+  font: inherit;
+  cursor: pointer;
+}
+button.stile:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
