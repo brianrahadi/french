@@ -64,6 +64,7 @@ export function toDoc(s: State): SyncDoc {
     skills: s.skills,
     listening: s.listening,
     stories: s.stories ?? {},
+    audio: s.audio ?? {},
     speaking: s.speaking,
     conversations: s.conversations,
     texts: s.texts,
@@ -203,6 +204,11 @@ export function mergeDocs(local: SyncDoc, remote: SyncDoc, now = new Date()): Sy
     skills,
     listening: byKey(local.listening, remote.listening, (x, y) => newest(x, y, x.at, y.at)),
     stories: byKey(local.stories ?? {}, remote.stories ?? {}, (x, y) => newest(x, y, x.at, y.at)),
+    audio: byKey(local.audio ?? {}, remote.audio ?? {}, (x, y) => {
+      const n = newest(x, y, x.at, y.at)
+      const done = [x.done, y.done].filter(Boolean).sort()[0]
+      return done ? { ...n, done } : n
+    }),
     speaking: byKey(local.speaking, remote.speaking, (x, y) => newest(x, y, x.at, y.at)),
     conversations: byId(local.conversations, remote.conversations, (x, y) => newest(x, y, x.updatedAt, y.updatedAt))
       .filter((c) => !gone(`talk:${c.id}`))

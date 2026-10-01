@@ -9,6 +9,7 @@ content/
                   top5000/          the 5000 most frequent words, 100 per deck
   reading/        a1/ a2/ b1/ b2/   graded texts with translations
   stories/        a1/ a2/ b1/ b2/   listening stories (1–2 min) + questions
+  audio/          a1/ a2/ b1/ b2/   Pimsleur-style audio lessons (one course, in file order)
   conversations/  a1/ a2/ b1/ b2/   AI role-plays
   writing/        a1/ a2/ b1/ b2/   writing prompts
   pronunciation/                    sound practice sets
@@ -213,6 +214,44 @@ Madame Martin habite au troisième étage. Elle a un chat.
 Write the questions in French at every level — simple wording at A1–A2 (Où… ? Qui… ? Pourquoi… ?). Ask about the main events and a few details, in story order.
 
 ---
+
+## Audio lessons — `audio/<level>/NN-name.md`
+
+Hands-free lessons in the style of Pimsleur. You write the conversation and the phrases it uses; the app turns them into a ~12-minute spoken script: the dialogue first, then each phrase modelled, repeated, built up from the end, and asked for again at growing intervals ("How do you say…?" → pause to answer out loud → answer). Then the Practice prompts, a role play where the learner takes `role`'s lines, and the dialogue once more. The first lessons of the course are reviewed at the start of the next one.
+
+Lessons form one course: number files across levels (a1/01… a1/06, a2/07…) so each builds on the earlier ones.
+
+```markdown
+---
+id: audio-02-au-cafe
+title: Un café, s’il vous plaît
+titleEn: Ordering in a café
+role: Alex
+---
+
+## Scene
+
+You walk into a small café in Lyon. The waiter, Marc, comes over.
+
+## Dialogue
+
+- Marc: Bonjour ! Qu’est-ce que vous voulez ? | Hello! What would you like?
+- Alex: Je voudrais un café, s’il vous plaît. | I’d like a coffee, please.
+
+## Phrases
+
+- Je voudrais · un café | I’d like a coffee | Optional note, read by the narrator.
+- C’est combien ? | How much is it?
+
+## Practice
+
+- Je voudrais un croissant, s’il vous plaît. | Order a croissant, politely.
+```
+
+- **Scene**, the **notes** and the **Practice cues** are read by an English voice: keep French words out of them (it would mispronounce them).
+- **Dialogue**: exactly two speakers; `role` is the one the learner plays. At least 4 lines.
+- **Phrases**: at least 4, in the order they're taught. Split long phrases into chunks with ` · ` between words; the learner repeats them from the end (*s’il vous plaît* → *un café s’il vous plaît* → the whole phrase). Cover everything the learner says in the dialogue.
+- **Practice**: French answer | English cue. Recombine the phrases into new sentences — that's where the learning happens.
 
 ## Conversation role-plays — `conversations/<level>/NN-name.md`
 

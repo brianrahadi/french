@@ -128,6 +128,27 @@ export interface StoryDef {
   questions: Extract<Exercise, { type: 'mcq' }>[]
 }
 
+/**
+ * A Pimsleur-style audio lesson: hands-free, built from a short dialogue and
+ * the phrases in it. The spoken script (prompts, pauses, spaced recall) is
+ * generated from this (see features/audio/script.ts).
+ */
+export interface AudioLessonDef {
+  id: string
+  level: Level
+  title: string // French title
+  titleEn: string
+  /** English set-up read by the narrator before the dialogue. */
+  scene: string
+  /** The speaker whose lines the learner takes in the role play. */
+  role: string
+  dialogue: { who: string; fr: string; en: string }[]
+  /** Taught one by one; `chunks` (split on " · ") are built up from the end. */
+  phrases: { fr: string; en: string; chunks: string[]; note?: string }[]
+  /** Extra recall prompts that recombine the phrases: an English cue and the French answer. */
+  practice: { fr: string; en: string }[]
+}
+
 export interface ReaderTextDef {
   id: string // kebab-case, prefixed with the level, e.g. 'a1-ma-famille'
   level: Level

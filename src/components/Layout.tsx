@@ -1,5 +1,6 @@
 import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import {
+  AudioLines,
   BookOpen,
   BookOpenText,
   Dumbbell,
@@ -50,6 +51,7 @@ const LEARN: NavItem[] = [
   { to: '/verbs', label: 'Verb tables', short: 'Tables', icon: Table2 },
 ]
 const PRACTISE: NavItem[] = [
+  { to: '/audio', label: 'Audio lessons', short: 'Audio', icon: AudioLines },
   { to: '/listening', label: 'Listening', short: 'Listen', icon: Headphones },
   { to: '/speaking', label: 'Speaking', short: 'Speak', icon: Mic },
   { to: '/reading', label: 'Reading', short: 'Read', icon: BookOpenText },

@@ -88,6 +88,8 @@ export interface State {
   speaking: Record<string, SentenceStat>
   /** Listening-story results (comprehension score, %) per story id. */
   stories: Record<string, SentenceStat>
+  /** Audio lessons: where you stopped, and when you finished, per lesson id. */
+  audio: Record<string, AudioProgress>
   conversations: Conversation[]
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
@@ -114,6 +116,15 @@ export interface SyncMeta {
 
 /** Settings that belong to one device (voice, speed, theme) and are never synced. */
 export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme'] as const
+
+export interface AudioProgress {
+  /** Step to resume from. */
+  pos: number
+  total: number
+  /** ISO time the lesson was first finished. */
+  done?: string
+  at: string
+}
 
 export interface SentenceStat {
   n: number
@@ -168,6 +179,7 @@ interface Actions {
   resolveMistake: (id: string, resolved?: boolean) => void
   recordSkill: (skill: string, ok: boolean) => void
   recordSentence: (kind: 'listening' | 'speaking' | 'stories', id: string, score: number) => void
+  saveAudio: (id: string, pos: number, total: number, finished?: boolean) => void
   saveConversation: (c: Conversation) => void
   deleteConversation: (id: string) => void
   saveText: (t: ReaderText) => void
@@ -237,6 +249,7 @@ export const initialState: State = {
   skills: {},
   listening: {},
   stories: {},
+  audio: {},
   speaking: {},
   conversations: [],
   texts: [],
@@ -341,6 +354,13 @@ export const useStore = create<State & Actions>()(
             at: new Date().toISOString(),
           }
           return { [kind]: { ...(s[kind] ?? {}), [id]: stat } } as Partial<State>
+        }),
+
+      saveAudio: (id, pos, total, finished) =>
+        set((s) => {
+          const prev = s.audio?.[id]
+          const done = prev?.done ?? (finished ? new Date().toISOString() : undefined)
+          return { audio: { ...(s.audio ?? {}), [id]: { pos: finished ? 0 : pos, total, at: new Date().toISOString(), ...(done ? { done } : {}) } } }
         }),
 
       saveConversation: (c) =>
@@ -607,6 +627,7 @@ export function exportData(): string {
     skills: s.skills,
     listening: s.listening,
     stories: s.stories,
+    audio: s.audio,
     speaking: s.speaking,
     conversations: s.conversations,
     texts: s.texts,

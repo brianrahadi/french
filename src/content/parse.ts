@@ -8,6 +8,7 @@
  */
 import {
   SCENARIO_ICONS,
+  type AudioLessonDef,
   type Block,
   type Deck,
   type Exercise,
@@ -26,9 +27,9 @@ import { ContentError, parseMarkdown, type Field, type ListItem, type MdBlock, t
 
 export { ContentError }
 
-export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'pronunciation'] as const
+export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'pronunciation', 'audio'] as const
 export type ContentKind = (typeof CONTENT_KINDS)[number]
-const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing']
+const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'audio']
 const LEVEL_DIRS: Record<string, Level> = { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' }
 /** Vocabulary decks that aren't sorted by level or theme (the level comes from their front matter). */
 export const FREQUENCY_DIR = 'top5000'
@@ -66,7 +67,7 @@ export function describePath(path: string): ContentPath | null {
 }
 
 /** Parses one content file (by its path) into app data. */
-export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | StoryDef | Scenario | WritingPrompt | SoundSet {
+export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | StoryDef | Scenario | WritingPrompt | SoundSet | AudioLessonDef {
   const where = describePath(path)
   if (!where) throw new ContentError('This file is not in a content folder the app knows about.', 1)
   const doc = parseMarkdown(source)
@@ -86,6 +87,8 @@ export function parseContent(source: string, path: string): Lesson | Deck | Read
       return parseWriting(doc, level)
     case 'pronunciation':
       return parseSoundSet(doc)
+    case 'audio':
+      return parseAudioLesson(doc, level)
   }
 }
 
@@ -444,6 +447,60 @@ export function parseStory(doc: MdDocument, level: Level): StoryDef {
   if (!paragraphs[paragraphs.length - 1].en) fail('The last paragraph needs its English translation ("> …").', 1)
   if (questions.length < 3) fail('Add at least 3 questions under "## Questions".', 1)
   return { id: readId(m.id), level, title: m.title.value, titleEn: m.titleEn.value, topic: m.topic.value, paragraphs, questions }
+}
+
+// ───────────── Audio lessons ─────────────
+
+/**
+ * Front matter: id, title, titleEn, role (the speaker the learner plays).
+ * "## Scene": English paragraph. "## Dialogue": "- Name: French | English".
+ * "## Phrases": "- French, chunks split by ' · ' | English | optional note".
+ * "## Practice": "- French answer | English cue".
+ */
+export function parseAudioLesson(doc: MdDocument, level: Level): AudioLessonDef {
+  const m = readMeta(doc, ['id', 'title', 'titleEn', 'role'])
+  const parts = sections(doc)
+  if (parts[0].blocks.length) fail('Put everything under a ## heading (Scene, Dialogue, Phrases, Practice).', parts[0].blocks[0].line)
+  const by: Record<string, (typeof parts)[number]> = {}
+  for (const s of parts.slice(1)) {
+    const k = key(s.heading)
+    if (!['scene', 'dialogue', 'phrases', 'practice'].includes(k)) fail(`Unknown section "${s.heading}". Use Scene, Dialogue, Phrases and Practice.`, s.line)
+    if (by[k]) fail(`"## ${s.heading}" appears twice.`, s.line)
+    by[k] = s
+  }
+  for (const k of ['scene', 'dialogue', 'phrases']) if (!by[k]) fail(`Add a "## ${k[0].toUpperCase() + k.slice(1)}" section.`, 1)
+  const items = (k: string): ListItem[] => {
+    const s = by[k]
+    if (!s) return []
+    const out: ListItem[] = []
+    for (const b of s.blocks) {
+      if (b.kind !== 'list') fail(`Only a list is expected under "## ${s.heading}".`, b.line)
+      else out.push(...b.items)
+    }
+    return out
+  }
+  const scene = paragraphs(by.scene.blocks, 'scene', by.scene.line)
+  const role = m.role.value
+  const dialogue = items('dialogue').map((it) => {
+    const who = /^([^:|]{1,24}): /.exec(it.text)
+    if (!who) fail('Start each dialogue line with the speaker: "- Léa: Bonjour ! | Hello!"', it.line)
+    const p = pair({ ...it, text: it.text.slice(who![0].length) })
+    return { who: who![1].trim(), ...p }
+  })
+  if (dialogue.length < 4) fail('The dialogue needs at least 4 lines.', by.dialogue.line)
+  const speakers = [...new Set(dialogue.map((d) => d.who))]
+  if (speakers.length !== 2) fail(`The dialogue should have exactly two speakers (found: ${speakers.join(', ')}).`, by.dialogue.line)
+  if (!speakers.includes(role)) fail(`"role" must be one of the speakers: ${speakers.join(', ')}.`, m.role.line)
+  const phrases = items('phrases').map((it) => {
+    const cols = it.text.split(' | ').map((c) => c.trim())
+    if (cols.length < 2 || cols.length > 3 || !cols[0] || !cols[1]) fail('Write each phrase as "French | English" or "French | English | note".', it.line)
+    if (/[^ ]·|·[^ ]/.test(cols[0])) fail('Split chunks with " · " (a space on each side), between words.', it.line)
+    const chunks = cols[0].split(' · ').map((c) => c.trim())
+    return { fr: chunks.join(' '), en: cols[1], chunks, ...(cols[2] ? { note: cols[2] } : {}) }
+  })
+  if (phrases.length < 4) fail('Teach at least 4 phrases.', by.phrases.line)
+  const practice = items('practice').map(pair)
+  return { id: readId(m.id), level, title: m.title.value, titleEn: m.titleEn.value, scene, role, dialogue, phrases, practice }
 }
 
 // ───────────── Conversation scenarios ─────────────

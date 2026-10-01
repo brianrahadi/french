@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
-import { ArrowRight, BookOpenText, Headphones, MessagesSquare, Mic, NotebookPen, Sparkles, Target } from 'lucide-react'
+import { ArrowRight, AudioLines, BookOpenText, Headphones, MessagesSquare, Mic, NotebookPen, Sparkles, Target } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
@@ -25,6 +25,7 @@ export default function PracticeHub() {
   const listened = Object.keys(s.listening).length
   const spoken = Object.keys(s.speaking).length
   const read = Object.keys(s.read).length
+  const audioDone = Object.values(s.audio ?? {}).filter((a) => a.done).length
 
   const skills: Skill[] = [
     {
@@ -35,6 +36,14 @@ export default function PracticeHub() {
       tone: 'pink',
       text: 'Everything you got wrong, grouped by the rule behind it — with a session that targets it.',
       meta: weak.total ? `${weak.total} weak spot${weak.total > 1 ? 's' : ''} to work on` : 'Nothing stands out right now',
+    },
+    {
+      to: '/audio',
+      title: 'Audio lessons',
+      fr: 'Cours audio',
+      icon: <AudioLines size={22} aria-hidden />,
+      text: 'Hands-free lessons like Pimsleur: answer out loud in the pauses; phrases come back until they stick.',
+      meta: audioDone ? `${audioDone} lesson${audioDone > 1 ? 's' : ''} done` : 'Start with lesson 1 — about 15 minutes',
     },
     {
       to: '/listening',

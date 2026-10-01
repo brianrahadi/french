@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { LESSONS, LESSON_BY_ID } from '../data/grammar'
 import { DECKS, THEMED_DECKS } from '../data/vocab'
 import { BUILTIN_TEXTS } from '../data/texts'
+import { AUDIO_LESSONS } from '../data/audio'
 import { STORIES } from '../data/stories'
 import { SCENARIOS } from '../data/scenarios'
 import { WRITING_PROMPTS } from '../data/writing'
@@ -28,11 +29,14 @@ describe('content folder', () => {
     expect(SCENARIOS.length).toBe(count('conversations'))
     expect(WRITING_PROMPTS.length).toBe(count('writing'))
     expect(SOUND_SETS.length).toBe(count('pronunciation'))
-    expect(md.length).toBe(LESSONS.length + DECKS.length + BUILTIN_TEXTS.length + STORIES.length + SCENARIOS.length + WRITING_PROMPTS.length + SOUND_SETS.length)
+    expect(AUDIO_LESSONS.length).toBe(count('audio'))
+    expect(md.length).toBe(
+      LESSONS.length + DECKS.length + BUILTIN_TEXTS.length + STORIES.length + SCENARIOS.length + WRITING_PROMPTS.length + SOUND_SETS.length + AUDIO_LESSONS.length,
+    )
   })
 
   it('uses each id once per kind', () => {
-    for (const list of [LESSONS, DECKS, BUILTIN_TEXTS, STORIES, SCENARIOS, WRITING_PROMPTS, SOUND_SETS]) {
+    for (const list of [LESSONS, DECKS, BUILTIN_TEXTS, STORIES, SCENARIOS, WRITING_PROMPTS, SOUND_SETS, AUDIO_LESSONS]) {
       const ids = list.map((x) => x.id)
       expect(ids.filter((id, i) => ids.indexOf(id) !== i), 'duplicate ids').toEqual([])
     }

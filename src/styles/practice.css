@@ -1694,3 +1694,155 @@
   color: var(--success);
   font-weight: 600;
 }
+
+/* ───────────── Audio lessons ───────────── */
+.audio-now {
+  margin-top: 16px;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+}
+.audio-now__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.audio-now__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  flex: none;
+}
+.audio-now__icon--turn {
+  background: var(--success-soft);
+  color: var(--success-strong);
+  animation: audio-pulse 1.4s ease-in-out infinite;
+}
+.audio-now__icon--done {
+  background: var(--success-soft);
+  color: var(--success-strong);
+}
+@keyframes audio-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+.audio-now__label {
+  font-weight: 650;
+  font-size: 16px;
+}
+.audio-now__cue {
+  margin: 14px 0 0;
+  font-size: 19px;
+  line-height: 1.45;
+}
+.audio-now__fr {
+  margin: 10px 0 0;
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--text);
+}
+.audio-now__done {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.audio-countdown {
+  height: 4px;
+  margin-top: 16px;
+  border-radius: 2px;
+  background: var(--success-strong);
+  transform-origin: left;
+  animation-name: audio-countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes audio-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+.audio-now > .story-player__controls {
+  margin-top: auto !important;
+  padding-top: 18px;
+}
+.audio-settings {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.audio-parts {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.audio-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.audio-part:hover {
+  border-color: var(--border-strong);
+}
+.audio-part__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: 11px;
+  font-weight: 650;
+}
+.audio-part--now {
+  border-color: var(--primary);
+  color: var(--text);
+}
+.audio-part--now .audio-part__mark {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.audio-part--done .audio-part__mark {
+  background: var(--success-soft);
+  color: var(--success-strong);
+}
+.stile--next {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.audio-how {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 4px 0 18px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+.audio-how > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.audio-how svg {
+  color: var(--primary-text);
+}
