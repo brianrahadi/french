@@ -68,3 +68,23 @@ describe('frequency words', () => {
     expect(queue.slice(0, 3).map((w) => w.fr)).toEqual(['le', 'de', 'être'])
   })
 })
+
+describe('duplicates', () => {
+  it('has no two deck words that are the same word with or without an article', async () => {
+    const { baseForm } = await import('../../lib/words')
+    const seen = new Map<string, string>()
+    for (const w of BUILTIN_WORDS) {
+      const k = `${baseForm(w.fr)}|${w.pos}|${w.g ?? ''}`
+      expect(seen.get(k), `${w.id} duplicates ${seen.get(k)}`).toBeUndefined()
+      seen.set(k, w.id)
+    }
+  })
+  it('tells apart words that only look alike', async () => {
+    const { customWord, findSameWord } = await import('../../lib/words')
+    expect(findSameWord(customWord('la gare', 'station'), BUILTIN_WORDS)?.id).toBe('gare-n')
+    expect(findSameWord(customWord("l'hôtel (m)", 'hotel'), BUILTIN_WORDS)?.id).toBe('hotel-n')
+    expect(findSameWord(customWord('le pas', 'step'), BUILTIN_WORDS)?.id).toBe('pas-n')
+    expect(findSameWord(customWord('pas', 'not'), BUILTIN_WORDS)?.id).toBe('pas-adv')
+    expect(findSameWord(customWord('la poste', 'post office'), BUILTIN_WORDS)).toBeUndefined()
+  })
+})

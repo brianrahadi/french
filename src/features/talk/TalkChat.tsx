@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { SCENARIO_BY_ID, type Scenario } from '../../data/scenarios'
 import { LESSON_BY_ID } from '../../data/grammar'
-import { findWord } from '../../data/vocab'
+import { alreadyHave, findWord } from '../../data/vocab'
 import { AccentBar } from '../../components/AccentBar'
 import { ConnectAiCard } from '../../components/AiSetup'
 import { Empty, Ring } from '../../components/ui'
@@ -618,6 +618,7 @@ function FeedbackPanel({
 }) {
   const customWords = useStore((s) => s.customWords)
   const addCustomWords = useStore((s) => s.addCustomWords)
+  const introduced = useStore((s) => s.introduced)
   const fb = c.feedback
   if (loading)
     return (
@@ -636,7 +637,7 @@ function FeedbackPanel({
     )
   const vocab = fb.vocabulary.map((v) => {
     const w = customWord(v.fr, v.en)
-    return { ...v, word: w, added: !!findWord(w.id, customWords) }
+    return { ...v, word: w, added: !!findWord(w.id, customWords) || alreadyHave(w, customWords, introduced) }
   })
   return (
     <section className="card talk-feedback" aria-labelledby="talk-fb">

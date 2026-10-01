@@ -29,4 +29,4 @@ titleFr: Les sentiments
 | s'ennuyer       | to be bored               | v              | Je m’ennuie à cette fête.        | I'm bored at this party.         |                 |
 | pleurer         | to cry                    | v              | Le bébé pleure.                  | The baby is crying.              |                 |
 | rire            | to laugh                  | v              | Il me fait toujours rire.        | He always makes me laugh.        |                 |
-| sourire         | to smile; a smile         | v              | Souris pour la photo !           | Smile for the photo!             |                 |
+| sourire         | to smile                  | v              | Souris pour la photo !           | Smile for the photo!             |                 |

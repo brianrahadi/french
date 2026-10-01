@@ -8,6 +8,7 @@
 import { FREQUENCY_WORDS } from '../../data/vocab'
 import type { Word } from '../../data/types'
 import { readTokens, splitSentences } from '../../lib/french'
+import { baseForm } from '../../lib/words'
 import { dictionaryLookup, verbFormLookup } from './lookup'
 
 export interface TextWord {
@@ -75,10 +76,16 @@ export function textVocab(paragraphs: string[], customWords: Word[]): TextWord[]
         if (!atStart && /^\p{Lu}/u.test(t.text)) continue
         const w = bankWordFor(t.text, customWords)
         if (!w) continue
-        const seen = found.get(w.id)
+        // One entry per word even if it's both in the decks and in my words ("gare" / "la gare").
+        const k = `${baseForm(w.fr)}|${w.pos === 'n' ? `n${w.g ?? ''}` : w.pos === 'expr' ? 'x' : w.pos}`
+        const seen = found.get(w.id) ?? found.get(k)
         if (seen) seen.count++
-        else found.set(w.id, { word: w, form: t.text, sentence, count: 1, rank: rank(w) })
+        else {
+          const entry = { word: w, form: t.text, sentence, count: 1, rank: rank(w) }
+          found.set(w.id, entry)
+          found.set(k, entry)
+        }
       }
     }
-  return [...found.values()]
+  return [...new Set(found.values())]
 }

@@ -173,3 +173,32 @@ export function customWord(fr: string, en: string, ex?: string, g?: 'm' | 'f'): 
     custom: true,
   }
 }
+
+/**
+ * A word without its article or gender marker, lower-case, for telling whether
+ * two entries are the same word: "la gare", "une gare", "gare (f)" → "gare";
+ * "l'hôtel" → "hôtel". "se lever" keeps its "se" (it isn't the same as "lever").
+ */
+export function baseForm(fr: string): string {
+  return fr
+    .trim()
+    .replace(/[’‘`´ʼ]/g, "'")
+    .replace(/\s*\((m|f)\.?\)$/i, '')
+    .replace(/^(?:(?:le|la|les|un|une|des|du|de la)\s+|l'\s*)/i, '')
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+}
+
+/**
+ * The entry in `pool` that is the same word as `w`, if any: same base form, and
+ * — when both are nouns with a gender — the same gender (le poste ≠ la poste).
+ * A word typed without an article matches a non-noun first ("pas" → not), then a noun.
+ */
+export function findSameWord(w: Pick<Word, 'fr' | 'pos' | 'g' | 'both'>, pool: Word[]): Word | undefined {
+  const base = baseForm(w.fr)
+  const same = pool.filter((x) => baseForm(x.fr) === base)
+  if (!same.length) return undefined
+  const isNoun = w.pos === 'n' && !!w.g
+  if (isNoun) return same.find((x) => x.pos === 'n' && (!x.g || !w.g || x.g === w.g || x.both || w.both))
+  return same.find((x) => x.pos !== 'n') ?? same[0]
+}

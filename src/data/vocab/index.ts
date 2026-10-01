@@ -1,5 +1,6 @@
 import type { Deck, Word } from '../types'
 import { inOrder } from '../../content/load'
+import { findSameWord } from '../../lib/words'
 
 /**
  * Vocabulary decks from content/vocab/ (files starting with _ are drafts):
@@ -52,4 +53,14 @@ export function deckWords(deckId: string, custom: Word[]): Word[] {
   if (deckId === CUSTOM_DECK_ID) return custom
   if (deckId === FREQUENCY_ID) return FREQUENCY_WORDS
   return (DECK_BY_ID[deckId]?.words ?? []).map((w) => builtinById.get(w.id) ?? w)
+}
+
+/**
+ * Whether the learner already has this word, under any spelling of its entry
+ * ("la gare" = "gare"): one of their own words, or a deck word they've started.
+ */
+export function alreadyHave(w: Pick<Word, 'fr' | 'pos' | 'g' | 'both'>, custom: Word[], introduced: Record<string, string>): boolean {
+  if (findSameWord(w, custom)) return true
+  const b = findSameWord(w, BUILTIN_WORDS)
+  return !!b && !!introduced[b.id]
 }

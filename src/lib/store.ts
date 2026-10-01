@@ -8,6 +8,8 @@ import type { ReaderText } from '../features/reading/types'
 import { addDays, dayKey } from './date'
 import { DEVICE_ID } from './device'
 import { cardId, newCard, Rating, review, type CardDir, type Grade, type StoredCard } from './srs'
+import { BUILTIN_WORDS } from '../data/vocab'
+import { findSameWord } from './words'
 
 export type Theme = 'system' | 'light' | 'dark'
 export type Directions = 'both' | 'recognition' | 'production'
@@ -426,14 +428,36 @@ export const useStore = create<State & Actions>()(
 
       addCustomWords: (words) =>
         set((s) => {
-          const existing = new Set(s.customWords.map((w) => w.id))
           const at = now()
-          const fresh = words.filter((w) => !existing.has(w.id)).map((w) => ({ ...w, added: w.added ?? at }))
+          // No duplicates: a word already in the decks ("la gare" when "gare" is built in)
+          // is started from the deck instead; one already in my words is skipped.
+          const fresh: Word[] = []
+          const builtinIds: string[] = []
+          for (const w of words) {
+            const builtin = findSameWord(w, BUILTIN_WORDS)
+            if (builtin) {
+              if (!builtinIds.includes(builtin.id)) builtinIds.push(builtin.id)
+              continue
+            }
+            if (s.customWords.some((x) => x.id === w.id) || findSameWord(w, [...s.customWords, ...fresh])) continue
+            fresh.push({ ...w, added: w.added ?? at })
+          }
+          const cards = { ...s.cards }
+          const introduced = { ...s.introduced }
+          const dirs: CardDir[] = s.settings.directions === 'both' ? ['r', 'p'] : s.settings.directions === 'recognition' ? ['r'] : ['p']
+          for (const id of builtinIds) {
+            if (introduced[id]) continue
+            for (const d of dirs) cards[cardId(id, d)] ??= newCard()
+            introduced[id] = dayKey()
+          }
+          if (!fresh.length) return builtinIds.length ? { cards, introduced } : {}
           // Re-adding a word that was deleted earlier undoes the deletion.
           const deleted = { ...s.sync.deleted }
           for (const w of fresh) delete deleted[`word:${w.id}`]
           const hasDeck = s.activeDecks.includes('custom')
           return {
+            cards,
+            introduced,
             customWords: [...s.customWords, ...fresh],
             activeDecks: hasDeck ? s.activeDecks : [...s.activeDecks, 'custom'],
             sync: { ...(hasDeck ? s.sync : stamp(s, ['activeDecks'], at).sync), deleted },

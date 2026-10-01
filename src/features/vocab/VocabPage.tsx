@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Layers, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
-import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, allWords, deckWords } from '../../data/vocab'
+import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, BUILTIN_WORDS, allWords, alreadyHave, deckWords } from '../../data/vocab'
 import { LEVELS, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
-import { customWord, definite, frTypo, matchesSearch, parseImport, speakText } from '../../lib/words'
+import { customWord, definite, findSameWord, frTypo, matchesSearch, parseImport, speakText } from '../../lib/words'
 import { relativeDay } from '../../lib/date'
 import { useNavigate } from 'react-router'
 import { dueCounts, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus, wordStats } from './selectors'
@@ -411,6 +411,8 @@ function BrowseTab() {
 
 function AddTab({ onDone }: { onDone: () => void }) {
   const addCustomWords = useStore((s) => s.addCustomWords)
+  const customWords = useStore((s) => s.customWords)
+  const introduced = useStore((s) => s.introduced)
   const [fr, setFr] = useState('')
   const [en, setEn] = useState('')
   const [ex, setEx] = useState('')
@@ -421,8 +423,12 @@ function AddTab({ onDone }: { onDone: () => void }) {
     e.preventDefault()
     if (!fr.trim() || !en.trim()) return
     const g = /^(le|un) /i.test(fr) ? 'm' : /^(la|une) /i.test(fr) ? 'f' : undefined
-    addCustomWords([customWord(fr, en, ex, g)])
-    toast(`Added “${fr.trim()}”`)
+    const w = customWord(fr, en, ex, g)
+    if (alreadyHave(w, customWords, introduced)) toast(`“${fr.trim()}” is already in your words`)
+    else {
+      addCustomWords([w])
+      toast(findSameWord(w, BUILTIN_WORDS) ? `“${fr.trim()}” is in the decks — added it from there` : `Added “${fr.trim()}”`)
+    }
     setFr('')
     setEn('')
     setEx('')
@@ -430,8 +436,10 @@ function AddTab({ onDone }: { onDone: () => void }) {
 
   const importAll = () => {
     if (!parsed.length) return
-    addCustomWords(parsed.map((p) => customWord(p.fr, p.en, p.ex, p.g)))
-    toast(`Imported ${parsed.length} words into “My words”`)
+    const words = parsed.map((p) => customWord(p.fr, p.en, p.ex, p.g))
+    const have = words.filter((w) => alreadyHave(w, customWords, introduced)).length
+    addCustomWords(words)
+    toast(have ? `Imported ${words.length - have} words · ${have} you already had were skipped` : `Imported ${words.length} words`)
     setBulk('')
     onDone()
   }

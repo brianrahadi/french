@@ -70,3 +70,20 @@ describe('checking words after reading', () => {
     expect(useStore.getState().cards['maison-n|r'].lapses + useStore.getState().cards['maison-n|r'].reps).toBeGreaterThan(0)
   })
 })
+
+describe('no duplicate words', () => {
+  it('starts a deck word instead of adding "la gare" when "gare" is built in', async () => {
+    const { customWord } = await import('./words')
+    useStore.getState().addCustomWords([customWord('la gare', 'station')])
+    const s = useStore.getState()
+    expect(s.customWords).toEqual([])
+    expect(s.introduced['gare-n']).toBeDefined()
+    expect(s.cards['gare-n|r']).toBeDefined()
+  })
+  it('skips the same word added again with another article or meaning', async () => {
+    const { customWord } = await import('./words')
+    useStore.getState().addCustomWords([customWord('la trottinette', 'scooter')])
+    useStore.getState().addCustomWords([customWord('une trottinette', 'kick scooter'), customWord('trottinette (f)', 'scooter')])
+    expect(useStore.getState().customWords.map((w) => w.fr)).toEqual(['la trottinette'])
+  })
+})
