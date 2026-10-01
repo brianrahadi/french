@@ -25,4 +25,5 @@ export interface Gloss {
   meaning: string
   note: string
   sentenceTranslation: string
+  isBasic?: boolean
 }

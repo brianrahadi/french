@@ -12,7 +12,7 @@ import { lookupForms, readTokens, splitSentences } from '../../lib/french'
 import { useStore } from '../../lib/store'
 import { customWord, displayFr, frTypo, posLabel } from '../../lib/words'
 import { dirsFor } from '../vocab/selectors'
-import { cachedGloss, dictionaryLookup, glossInContext, key, verbFormLookup } from './lookup'
+import { cachedGloss, dictionaryLookup, glossInContext, key, verbFormLookup, fallbackGloss } from './lookup'
 import type { Gloss } from './types'
 
 interface Open {
@@ -237,11 +237,16 @@ function WordCard({
   const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
-    if (!ai || gloss) return
+    if (gloss) return
     const ctrl = new AbortController()
     setLoading(true)
     setError('')
-    glossInContext(phrase, sentence, ai, ctrl.signal)
+    
+    const fetcher = ai 
+      ? glossInContext(phrase, sentence, ai, ctrl.signal)
+      : fallbackGloss(phrase, sentence, ctrl.signal)
+      
+    fetcher
       .then(setGloss)
       .catch((e) => {
         if ((e as Error).name !== 'AbortError') setError(e instanceof Error ? e.message : 'Lookup failed.')
@@ -306,14 +311,20 @@ function WordCard({
                 <span className="fr" lang="fr">
                   {frTypo(gloss.lemma)}
                 </span>
-                <span className="subtle">· {gloss.pos}</span>
+                {!gloss.isBasic && <span className="subtle">· {gloss.pos}</span>}
                 {gloss.gender && <GenderTag g={gloss.gender} />}
               </div>
               {gloss.note && <p className="lk-card__note">{gloss.note}</p>}
+              {gloss.isBasic && (
+                <div className="small muted" style={{ marginTop: 8 }}>
+                  <Sparkles size={12} aria-hidden style={{ verticalAlign: '-1px' }} />{' '}
+                  Basic translation. <Link to="/settings#ai">Connect an AI</Link> for grammar context.
+                </div>
+              )}
             </>
           ) : loading ? (
             <div className="lk-card__loading">
-              <LoaderCircle size={15} className="spin" aria-hidden /> Meaning in this sentence…
+              <LoaderCircle size={15} className="spin" aria-hidden /> {ai ? 'Meaning in this sentence…' : 'Translating…'}
             </div>
           ) : (
             <p className="small text-danger">
@@ -347,13 +358,6 @@ function WordCard({
             </div>
           ))}
         </div>
-      )}
-
-      {!ai && !builtin && !gloss && (
-        <p className="small muted" style={{ margin: '4px 0 8px' }}>
-          <Sparkles size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> <Link to="/settings#ai">Connect an AI</Link> to see
-          meanings in context.
-        </p>
       )}
 
       {gloss?.sentenceTranslation && (

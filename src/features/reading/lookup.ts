@@ -186,3 +186,28 @@ export async function glossInContext(word: string, sentence: string, config?: Ai
   cache.set(k, g)
   return g
 }
+
+export async function fallbackTranslate(text: string, signal?: AbortSignal): Promise<string> {
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=en&dt=t&q=${encodeURIComponent(text)}`
+  const res = await fetch(url, { signal })
+  if (!res.ok) throw new Error('Basic translation failed.')
+  const data = await res.json()
+  return data[0]?.map((row: any) => row[0]).join('') || text
+}
+
+export async function fallbackGloss(phrase: string, sentence: string, signal?: AbortSignal): Promise<Gloss> {
+  const [meaning, sentenceTranslation] = await Promise.all([
+    fallbackTranslate(phrase, signal),
+    fallbackTranslate(sentence, signal),
+  ])
+  
+  return {
+    lemma: phrase,
+    pos: 'other',
+    gender: '',
+    meaning,
+    note: '',
+    sentenceTranslation,
+    isBasic: true
+  }
+}
