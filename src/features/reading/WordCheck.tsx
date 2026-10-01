@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Check, EyeOff, X } from 'lucide-react'
+import { Check, EyeOff, Languages, LoaderCircle, X } from 'lucide-react'
 import { GenderTag, ProgressBar } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
 import { displayFr, frTypo, speakText } from '../../lib/words'
+import { useAiConfig } from '../../lib/ai'
 import { dirsFor, wordStatus } from '../vocab/selectors'
+import { fallbackTranslate, glossInContext } from './lookup'
 import type { TextWord } from './textVocab'
 
 const PAGE = 25
@@ -44,6 +46,24 @@ export function WordCheck({ words, onDone }: { words: TextWord[]; onDone: () => 
   const [items, setItems] = useState(() => [...words].sort((a, b) => b.rank - a.rank))
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
   const [shown, setShown] = useState(PAGE)
+  // Translations: the word's meaning (from the dictionary) and its sentence (fetched on demand).
+  const ai = useAiConfig()
+  const [showAll, setShowAll] = useState(false)
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({})
+  const [sentenceEn, setSentenceEn] = useState<Record<string, string | 'loading' | 'error'>>({})
+  const translate = async (t: TextWord) => {
+    const id = t.word.id
+    setRevealed((r) => ({ ...r, [id]: true }))
+    const cur = sentenceEn[id]
+    if (cur && cur !== 'error') return
+    setSentenceEn((m) => ({ ...m, [id]: 'loading' }))
+    try {
+      const en = ai ? (await glossInContext(t.form, t.sentence, ai)).sentenceTranslation : await fallbackTranslate(t.sentence)
+      setSentenceEn((m) => ({ ...m, [id]: en || 'error' }))
+    } catch {
+      setSentenceEn((m) => ({ ...m, [id]: 'error' }))
+    }
+  }
 
   const answered = items.filter((t) => t.word.id in answers).length
   const unanswered = items.length - answered
@@ -84,8 +104,12 @@ export function WordCheck({ words, onDone }: { words: TextWord[]; onDone: () => 
           </div>
           <p className="small muted" style={{ margin: 0 }}>
             Did you recognise them? Words you know are scheduled for later; the others start learning today. The meaning
-            shows once you answer.
+            shows once you answer, or tap <Languages size={13} aria-label="translate" style={{ verticalAlign: '-2px' }} /> to
+            translate a word and its sentence.
           </p>
+          <label className="row small" style={{ gap: 6, marginTop: 6, cursor: 'pointer' }}>
+            <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> Show all meanings
+          </label>
         </div>
         <div className="reader-check__progress">
           <ProgressBar value={items.length ? answered / items.length : 0} label={`${answered} of ${items.length} checked`} thin />
@@ -113,9 +137,37 @@ export function WordCheck({ words, onDone }: { words: TextWord[]; onDone: () => 
                 <div className="reader-check__context fr small subtle" lang="fr">
                   <Context t={t} />
                 </div>
-                <div className="reader-check__en small">{done ? w.en : ' '}</div>
+                <div className="reader-check__en small">{done || showAll || revealed[w.id] ? w.en : ' '}</div>
+                {revealed[w.id] && sentenceEn[w.id] && (
+                  <div className="reader-check__sentence-en small subtle">
+                    {sentenceEn[w.id] === 'loading' ? (
+                      <>
+                        <LoaderCircle size={12} className="spin" aria-hidden /> Translating…
+                      </>
+                    ) : sentenceEn[w.id] === 'error' ? (
+                      <>
+                        Couldn’t translate the sentence.{' '}
+                        <button type="button" className="link-btn" onClick={() => translate(t)}>
+                          Retry
+                        </button>
+                      </>
+                    ) : (
+                      <>“{sentenceEn[w.id]}”</>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="reader-check__actions">
+                <button
+                  type="button"
+                  className="icon-btn icon-btn--sm"
+                  onClick={() => translate(t)}
+                  aria-pressed={!!revealed[w.id]}
+                  aria-label={`Translate ${w.fr} and its sentence`}
+                  title="Translate the word and its sentence"
+                >
+                  <Languages size={15} aria-hidden />
+                </button>
                 <div className="segmented" role="group" aria-label={`Did you recognise ${w.fr}?`}>
                   <button type="button" aria-pressed={a === true} onClick={() => answer(w.id, true)}>
                     <Check size={14} aria-hidden /> Know
