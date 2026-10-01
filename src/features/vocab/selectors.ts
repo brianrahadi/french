@@ -44,6 +44,26 @@ export function newAvailableToday(s: State): number {
   return Math.min(remaining, newWordQueue(s).length)
 }
 
+export function dueCounts(cards: Record<string, StoredCard>, customWords: Word[], now = new Date()) {
+  const ids = dueCardIds(cards, customWords, now)
+  let learning = 0, review = 0
+  for (const id of ids) {
+    const c = cards[id]
+    // ts-fsrs State: New=0, Learning=1, Review=2, Relearning=3
+    if (c.state === 1 || c.state === 3) learning++
+    else review++
+  }
+  return { learning, review, total: ids.length }
+}
+
+export function wordStats(wordId: string, cards: Record<string, StoredCard>) {
+  const r = cards[cardId(wordId, 'r')]
+  const p = cards[cardId(wordId, 'p')]
+  const nextDue = [r, p].filter(Boolean).map((c) => new Date(c!.due)).sort((a, b) => +a - +b)[0]
+  const interval = Math.max(...[r, p].filter(Boolean).map((c) => c!.scheduled_days || 0), 0)
+  return { nextDue, interval }
+}
+
 /** Reviews due on each of the next `days` days (index 0 = today, includes overdue). */
 export function forecast(cards: Record<string, StoredCard>, days = 7): number[] {
   const out = new Array(days).fill(0)

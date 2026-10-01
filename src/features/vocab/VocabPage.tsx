@@ -12,7 +12,7 @@ import { customWord, definite, frTypo, matchesSearch, parseImport, speakText } f
 import { relativeDay } from '../../lib/date'
 import { cardId } from '../../lib/srs'
 import { useNavigate } from 'react-router'
-import { dueCardIds, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus } from './selectors'
+import { dueCounts, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus, wordStats } from './selectors'
 
 type Tab = 'decks' | 'browse' | 'add'
 
@@ -24,7 +24,7 @@ export default function VocabPage() {
   const state = useStore()
   const navigate = useNavigate()
 
-  const due = useMemo(() => dueCardIds(state.cards, state.customWords).length, [state.cards, state.customWords])
+  const { learning, review, total: due } = useMemo(() => dueCounts(state.cards, state.customWords), [state.cards, state.customWords])
   const fresh = newAvailableToday(state)
   const { learned, mature } = useMemo(() => vocabCounts(state), [state])
   const fc = useMemo(() => forecast(state.cards, 7), [state.cards])
@@ -48,12 +48,16 @@ export default function VocabPage() {
         <div className="study-card__main">
           <div className="study-card__counts">
             <div>
-              <div className="study-card__num tnum">{due}</div>
-              <div className="subtle small">due</div>
+              <div className="study-card__num tnum" style={{ color: 'var(--primary)' }}>{fresh}</div>
+              <div className="subtle small">new</div>
             </div>
             <div>
-              <div className="study-card__num study-card__num--new tnum">{fresh}</div>
-              <div className="subtle small">new today</div>
+              <div className="study-card__num tnum" style={{ color: 'var(--warning)' }}>{learning}</div>
+              <div className="subtle small">learn</div>
+            </div>
+            <div>
+              <div className="study-card__num tnum" style={{ color: 'var(--success)' }}>{review}</div>
+              <div className="subtle small">review</div>
             </div>
           </div>
           {canStudy ? (
@@ -212,19 +216,37 @@ function BrowseTab() {
   const removeCustomWord = useStore((s) => s.removeCustomWord)
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'new' | 'learning' | 'young' | 'mature' | 'custom'>('all')
+  const [sortBy, setSortBy] = useState<'due-asc' | 'due-desc' | 'strength-asc' | 'strength-desc' | 'default'>('default')
   const [limit, setLimit] = useState(60)
 
   const deckFilter = params.get('deck') || 'all'
 
   const words = useMemo(() => {
     const list = allWords(customWords).filter((w) => matchesSearch(w, q))
-    return list.filter((w) => {
+    const filtered = list.filter((w) => {
       if (deckFilter !== 'all' && w.deck !== deckFilter) return false
       if (filter === 'all') return true
       if (filter === 'custom') return w.custom
       return wordStatus(w.id, cards) === filter
     })
-  }, [customWords, q, filter, cards, deckFilter])
+
+    if (sortBy === 'default') return filtered
+
+    return filtered.sort((a, b) => {
+      const statsA = wordStats(a.id, cards)
+      const statsB = wordStats(b.id, cards)
+      
+      if (sortBy.startsWith('due')) {
+        const timeA = statsA.nextDue ? statsA.nextDue.getTime() : Infinity
+        const timeB = statsB.nextDue ? statsB.nextDue.getTime() : Infinity
+        return sortBy === 'due-asc' ? timeA - timeB : timeB - timeA
+      } else {
+        const strA = statsA.interval || 0
+        const strB = statsB.interval || 0
+        return sortBy === 'strength-asc' ? strA - strB : strB - strA
+      }
+    })
+  }, [customWords, q, filter, cards, deckFilter, sortBy])
 
   return (
     <div className="stack">
@@ -271,6 +293,13 @@ function BrowseTab() {
           <option value="mature">Known</option>
           <option value="custom">My words</option>
         </select>
+        <select className="select" style={{ width: 'auto' }} value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} aria-label="Sort by">
+          <option value="default">Default order</option>
+          <option value="due-asc">Next review (Earliest)</option>
+          <option value="due-desc">Next review (Latest)</option>
+          <option value="strength-desc">Strength (Highest)</option>
+          <option value="strength-asc">Strength (Lowest)</option>
+        </select>
       </div>
       <div className="subtle small">{words.length} words</div>
       {words.length === 0 ? (
@@ -282,9 +311,7 @@ function BrowseTab() {
           <ul className="list word-list">
             {words.slice(0, limit).map((w) => {
               const st = wordStatus(w.id, cards)
-              const r = cards[cardId(w.id, 'r')]
-              const p = cards[cardId(w.id, 'p')]
-              const nextDue = [r, p].filter(Boolean).map((c) => new Date(c!.due)).sort((a, b) => +a - +b)[0]
+              const { nextDue, interval } = wordStats(w.id, cards)
               return (
                 <li key={w.id} className="list-row word-row">
                   <SpeakButton text={speakText(w)} size="sm" />
@@ -295,9 +322,16 @@ function BrowseTab() {
                     {w.pos === 'n' && !w.both && (w.pl || /^l'/.test(definite(w))) && <GenderTag g={w.g} />}
                   </div>
                   <div className="word-row__en muted">{w.en}</div>
-                  <div className="word-row__meta">
-                    {STATUS_BADGE[st]}
-                    {nextDue && st !== 'new' && <span className="subtle small">{relativeDay(nextDue)}</span>}
+                  <div className="word-row__meta" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                    <div>
+                      {STATUS_BADGE[st]}
+                    </div>
+                    {st !== 'new' && (
+                      <div className="subtle small" style={{ display: 'flex', gap: 6 }}>
+                        {interval > 0 && <span title="Current interval">Str: {interval}d</span>}
+                        {nextDue && <span title="Next review date">Due: {relativeDay(nextDue)}</span>}
+                      </div>
+                    )}
                   </div>
                   <div className="word-row__actions">
                     {st !== 'new' && (

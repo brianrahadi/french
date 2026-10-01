@@ -8,7 +8,7 @@ import { GenderTag, Kbd } from '../../components/ui'
 import { checkAnswer, normalize } from '../../lib/answer'
 import { useStore } from '../../lib/store'
 import { useHotkeys } from '../../lib/hooks'
-import { previewIntervals, Rating, type Grade } from '../../lib/srs'
+import { previewIntervals, Rating, State, type Grade } from '../../lib/srs'
 import { definite, displayFr, frTypo, glossParts, posLabel, productionAnswers, speakText, startsWithVowelSound } from '../../lib/words'
 
 /* Flashcard building blocks shared by the vocabulary session and the mixed daily session. */
@@ -106,22 +106,29 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
     Space: () => onRate(def),
   })
   return (
-    <div className="rating-bar" role="group" aria-label="How well did you remember?">
-      {buttons.map((b, i) => (
-        <button
-          key={b.g}
-          type="button"
-          className={`rate-btn rate-btn--${b.cls}${b.g === suggested ? ' rate-btn--suggested' : ''}`}
-          onClick={() => onRate(b.g)}
-          aria-keyshortcuts={String(i + 1)}
-        >
-          {b.label}
-          <small>
-            {labels?.[b.g] ?? ''}
-            <span className="kbd-hint"> · {i + 1}</span>
-          </small>
-        </button>
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="rating-bar" role="group" aria-label="How well did you remember?">
+        {buttons.map((b, i) => (
+          <button
+            key={b.g}
+            type="button"
+            className={`rate-btn rate-btn--${b.cls}${b.g === suggested ? ' rate-btn--suggested' : ''}`}
+            onClick={() => onRate(b.g)}
+            aria-keyshortcuts={String(i + 1)}
+          >
+            {b.label}
+            <small>
+              {labels?.[b.g] ?? ''}
+              <span className="kbd-hint"> · {i + 1}</span>
+            </small>
+          </button>
+        ))}
+      </div>
+      {card && card.state !== State.New && (
+        <div className="subtle small" style={{ textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+          Interval: {card.scheduled_days}d · Stability: {card.stability.toFixed(2)}
+        </div>
+      )}
     </div>
   )
 }
