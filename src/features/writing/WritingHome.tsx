@@ -8,7 +8,7 @@ import { useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { ConnectAiCard } from '../../components/AiSetup'
 
-/** Suggest a prompt that practises grammar the learner has recently mastered. */
+/** Suggest a prompt that practices grammar the learner has recently mastered. */
 function suggest(lessons: Record<string, LessonProgress>, written: Set<string>, startLevel: string | null): WritingPrompt | undefined {
   const mastered = Object.entries(lessons)
     .filter(([, p]) => p.best >= 0.8)
@@ -69,7 +69,7 @@ export default function WritingHome() {
             </div>
             <div className="muted">{pick.task}</div>
             <div className="subtle small" style={{ marginTop: 8 }}>
-              Practises {pick.focus}
+              Practices {pick.focus}
             </div>
             <span className="btn btn--primary btn--sm" style={{ marginTop: 14, pointerEvents: 'none' }} aria-hidden>
               Start writing <ArrowRight size={15} />

@@ -1,6 +1,6 @@
 # Petit à petit — French study
 
-A focused, keyboard-friendly web app for learning French: **grammar**, **vocabulary** and **verb conjugation** to learn, then **listening**, **speaking**, **reading**, **writing** and **conversation** to practise — plus **weak spots**, which gathers every mistake you make and drills the rules behind them. It’s built to sit alongside input-heavy tools like LingQ, Alexa and Anki and cover what they don’t.
+A focused, keyboard-friendly web app for learning French: **grammar**, **vocabulary** and **verb conjugation** to learn, then **listening**, **speaking**, **reading**, **writing** and **conversation** to practice — plus **weak spots**, which gathers every mistake you make and drills the rules behind them. It’s built to sit alongside input-heavy tools like LingQ, Alexa and Anki and cover what they don’t.
 
 > *Petit à petit, l’oiseau fait son nid* — little by little, the bird builds its nest.
 
@@ -24,7 +24,7 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 **Weak spots — every mistake in one place**
 - Mistakes from grammar drills, conjugation, flashcards (cards you forget), writing corrections, conversation corrections, dictation and speaking are logged together.
 - They’re grouped by the rule behind them: grammar points you keep missing, verb/tense pairs with low recent accuracy, words that keep slipping, and the kinds of sounds you mishear. Recent mistakes weigh more; three right answers in a row make a spot fade.
-- **Practise** builds a targeted session: exercises from your weakest lessons, the verb forms you miss, your slippery words, “fix your own sentence” items made from your writing and conversation corrections, and sentences you misheard.
+- **Practice** builds a targeted session: exercises from your weakest lessons, the verb forms you miss, your slippery words, “fix your own sentence” items made from your writing and conversation corrections, and sentences you misheard.
 
 **Listening — dictation**
 - Hear a sentence (normal or slow, as often as you like), type it, and see each word marked: right, accent slip, wrong, missed or extra.
@@ -76,7 +76,7 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 
 **Everything else**
 - Daily goal, streak and an activity heatmap.
-- Keyboard-first: `Enter` check/continue (and starts today’s session) · `Space` flip / start and stop the microphone · `1–4` rate / choose · `K` known · `Esc` leave · `S` study · `P` practise · `⇧↵` replay in dictation · `⌘↵` send writing · `Enter` send in conversation (`⇧↵` new line).
+- Keyboard-first: `Enter` check/continue (and starts today’s session) · `Space` flip / start and stop the microphone · `1–4` rate / choose · `K` known · `Esc` leave · `S` study · `P` practice · `⇧↵` replay in dictation · `⌘↵` send writing · `Enter` send in conversation (`⇧↵` new line).
 - On-screen accent keys (é è ê à ç ô û ù œ …), accent-tolerant marking (configurable), French typography (narrow spaces before `? ! : ;`).
 - Text-to-speech in French via the Web Speech API — pick the best voice in Settings (on macOS, download an *Enhanced* or *Premium* French voice).
 - Light and dark themes, responsive down to phone size, installable as a PWA and works offline.

@@ -174,7 +174,7 @@ export default function LessonPage() {
       <div className="practice-cta">
         <div className="practice-cta__inner">
           <div className="practice-cta__text">
-            <strong>{status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practise?'}</strong>
+            <strong>{status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}</strong>
             <span className="muted small">{lesson.exercises.length} exercises · instant feedback</span>
           </div>
           <Link to={`/grammar/${lesson.id}/practice`} className="btn btn--primary btn--lg">

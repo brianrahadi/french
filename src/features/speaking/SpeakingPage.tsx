@@ -64,7 +64,7 @@ export default function SpeakingPage() {
 
       <section className="card practice-setup" aria-labelledby="say-setup">
         <h2 id="say-setup" className="card__title">
-          Practise sentences
+          Practice sentences
         </h2>
         <div className="practice-setup__row">
           <span className="setup-label">Exercise</span>

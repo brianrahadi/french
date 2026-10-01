@@ -139,25 +139,34 @@ async function main() {
   // Let's modify the system prompt slightly for this specific run.
   const modifiedPrompt = SYSTEM_PROMPT.replace('Respond ONLY with a JSON array of objects.', 'Respond ONLY with a JSON object containing a "words" array.')
   
-  const apiKey = process.env.OPENAI_API_KEY
+  const apiKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY
   if (!apiKey) {
-    console.error('ERROR: OPENAI_API_KEY environment variable is missing.')
-    console.log(`Run: OPENAI_API_KEY=your_key node --experimental-strip-types scripts/add-vocab.ts`)
+    console.error('ERROR: OPENAI_API_KEY or AI_API_KEY environment variable is missing.')
+    console.log(`Run: AI_API_KEY=your_key node --experimental-strip-types scripts/add-vocab.ts`)
     process.exit(1)
   }
   
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const baseUrl = process.env.AI_BASE_URL || 'https://api.openai.com/v1'
+  const model = process.env.AI_MODEL || 'gpt-4o-mini'
+
+  console.log(`Using model ${model} at ${baseUrl}...`)
+
+  const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Authorization': `Bearer ${apiKey}`,
+      // Required for OpenRouter to identify the app
+      'HTTP-Referer': 'http://localhost:3000',
+      'X-Title': 'Petit a petit'
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: model,
       messages: [
         { role: 'system', content: modifiedPrompt },
         { role: 'user', content: JSON.stringify(batch) }
       ],
+      // OpenRouter doesn't always support response_format strict json, but we'll request json mode
       response_format: { type: 'json_object' }
     })
   })

@@ -42,7 +42,7 @@ export interface WeakSummary {
   verbs: WeakVerb[]
   words: WeakWord[]
   listening: { category: ListenCategory; count: number }[]
-  /** Corrections from writing and conversation that can be practised again. */
+  /** Corrections from writing and conversation that can be practiced again. */
   fixables: Mistake[]
   recent: Mistake[]
   /** Number of distinct weak spots (lessons + verb/tense pairs + words). */
@@ -89,7 +89,7 @@ export function computeWeakSpots(s: Pick<State, 'mistakes' | 'skills' | 'conj' |
     }
   const listening = [...counts.entries()].map(([category, count]) => ({ category, count })).sort((a, b) => b.count - a.count)
 
-  // Corrections to practise again — one per distinct fix.
+  // Corrections to practice again — one per distinct fix.
   const seenFix = new Set<string>()
   const fixables = live.filter((m) => {
     if (!m.fixable || now - new Date(m.at).getTime() > 30 * DAY) return false

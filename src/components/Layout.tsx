@@ -101,7 +101,7 @@ export function Layout() {
           </div>
           <div className="nav-group">
             <NavLink to="/practice" className="nav-group__label nav-group__label--link">
-              Practise
+              Practice
             </NavLink>
             <div className="stack" style={{ gap: 2 }}>
               {PRACTISE.map(link)}

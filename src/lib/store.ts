@@ -127,7 +127,7 @@ export interface Mistake {
   given: string
   expected: string
   note?: string
-  /** A correction from writing or conversation that can be practised as "fix the sentence". */
+  /** A correction from writing or conversation that can be practiced as "fix the sentence". */
   fixable?: boolean
   /** Fixed later in practice, or dismissed by the learner. */
   resolved?: boolean

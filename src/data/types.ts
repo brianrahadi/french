@@ -148,7 +148,7 @@ export interface Scenario {
   goals: { id: string; text: string }[]
   /** Useful phrases for the learner (French + English). */
   phrases: { fr: string; en: string }[]
-  /** Ids of grammar lessons the scenario practises. */
+  /** Ids of grammar lessons the scenario practices. */
   lessons: string[]
 }
 
@@ -161,7 +161,7 @@ export interface WritingPrompt {
   title: string
   /** What to write, in English. */
   task: string
-  /** The grammar this prompt practises. */
+  /** The grammar this prompt practices. */
   focus: string
   lessons: string[]
   words: [number, number]

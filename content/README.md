@@ -203,7 +203,7 @@ Bonjour ! Qu'est-ce que je peux faire pour vous ?
 ```
 
 - **icon:** one of `coffee`, `croissant`, `map`, `hotel`, `stethoscope`, `shopping`, `phone`, `briefcase`, `home`, `train`, `party`, `package`, `utensils`, `handshake`, `newspaper`, `plane`, `user`, `ticket`.
-- **lessons:** ids of the grammar lessons it practises, separated by commas.
+- **lessons:** ids of the grammar lessons it practices, separated by commas.
 - **Goals:** `- short-id: what to do`. Like `id`, a goal id is permanent once used.
 
 ---

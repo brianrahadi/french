@@ -92,7 +92,7 @@ export function feedbackSchema(lessonIds: string[]) {
 export function systemPrompt(req: Pick<WritingRequest, 'task' | 'focus' | 'level' | 'lessons'>): string {
   return `You are a warm, precise French teacher correcting a short text written by an English-speaking learner (around CEFR ${req.level}).
 
-Task the learner was given: ${req.task}${req.focus ? `\nGrammar the task practises: ${req.focus}` : ''}
+Task the learner was given: ${req.task}${req.focus ? `\nGrammar the task practices: ${req.focus}` : ''}
 
 How to correct:
 - List every real error: grammar, agreement, conjugation, spelling, missing or wrong accents, wrong word or anglicism, word order, missing words, and French punctuation only when it matters. Do not list correct sentences just because you would phrase them differently — put stylistic improvements in "improved" only.

@@ -30,7 +30,7 @@ export function systemPrompt(s: TalkSetup): string {
     : `## Your role\nYou are Camille, a friendly, curious French person chatting with the learner${
         s.topic ? ` about: ${s.topic}` : ' about whatever they like'
       }. Share your own (invented) opinions and experiences briefly, react naturally, and ask follow-up questions. There are no fixed goals.`
-  return `You are role-playing with an English-speaking learner of French so they can practise conversation.
+  return `You are role-playing with an English-speaking learner of French so they can practice conversation.
 
 ${role}
 

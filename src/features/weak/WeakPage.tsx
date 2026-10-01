@@ -85,7 +85,7 @@ export default function WeakPage() {
       {nothing ? (
         <div className="card">
           <Empty icon={<Target size={32} />} title="Nothing here yet">
-            As you practise, mistakes from every exercise are gathered here, grouped by the rule behind them.{' '}
+            As you practice, mistakes from every exercise are gathered here, grouped by the rule behind them.{' '}
             <Link to="/">Start today’s session</Link>
           </Empty>
         </div>
@@ -116,7 +116,7 @@ export default function WeakPage() {
           {hasSession && (
             <div className="session-hero__cta">
               <Link to="/session?mode=weak" className="btn btn--primary btn--lg">
-                <Play size={18} aria-hidden /> Practise <Kbd>↵</Kbd>
+                <Play size={18} aria-hidden /> Practice <Kbd>↵</Kbd>
               </Link>
             </div>
           )}
@@ -162,7 +162,7 @@ export default function WeakPage() {
                       Lesson
                     </Link>
                     <Link to={`/grammar/${l.id}/practice`} className="btn btn--secondary btn--sm">
-                      Practise <ArrowRight size={14} aria-hidden />
+                      Practice <ArrowRight size={14} aria-hidden />
                     </Link>
                   </div>
                 </article>

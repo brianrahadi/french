@@ -168,7 +168,7 @@ export default function WritingEditor() {
             </h1>
             <p className="writing-task__text">{prompt!.task}</p>
             <div className="row-wrap small" style={{ marginTop: 10 }}>
-              <span className="subtle">Practises:</span>
+              <span className="subtle">Practices:</span>
               {prompt!.lessons.map((id) => (
                 <Link key={id} to={`/grammar/${id}`} className="chip chip--sm">
                   {LESSON_BY_ID[id]?.title ?? id}

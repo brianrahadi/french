@@ -226,7 +226,7 @@ export default function TodayPage() {
 
       <section className="section" aria-labelledby="skills-title">
         <div className="section-title">
-          <span id="skills-title">Practise a skill</span>
+          <span id="skills-title">Practice a skill</span>
           <Link to="/practice" className="small">
             All practice <ArrowRight size={14} aria-hidden style={{ verticalAlign: '-2px' }} />
           </Link>

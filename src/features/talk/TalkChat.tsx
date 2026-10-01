@@ -773,7 +773,7 @@ function FeedbackPanel({
 
       <div className="row-wrap" style={{ gap: 8, marginTop: 18 }}>
         <button type="button" className="btn btn--primary" onClick={onAgain}>
-          <RotateCcw size={16} aria-hidden /> Practise again
+          <RotateCcw size={16} aria-hidden /> Practice again
         </button>
         <Link to="/talk" className="btn btn--secondary">
           Other situations
