@@ -3,41 +3,107 @@ id: subjonctif-vs-indicatif
 title: Subjunctive or indicative?
 titleFr: Subjonctif ou indicatif ?
 summary: Opinion, certainty, probability and conjunctions — the tricky cases.
-minutes: 10
+minutes: 16
 ---
 
-## Opinion and certainty
+## The underlying logic
 
-| Indicative (fact, belief)           | Subjunctive (doubt, denial)            |
-| ----------------------------------- | -------------------------------------- |
-| Je pense qu’il vient.               | Je ne pense pas qu’il vienne.          |
-| Je crois que c’est vrai.            | Crois-tu que ce soit vrai ?            |
-| Il est sûr / certain / évident que… | Il n’est pas sûr que… / Je doute que…  |
-| Il est probable que… (likely)       | Il est possible que… (merely possible) |
-| Il me semble que…                   | Il semble que… (usually)               |
+The basic principle: the **indicative** presents something as **real, certain or probable**; the **subjunctive** presents it as **uncertain, wished, felt, or not yet real**. Most tricky cases make sense once you ask: *is the speaker asserting this as a fact?*
+
+## Opinion: penser, croire, trouver
+
+**Affirmative** opinions assert something as true → **indicative**. **Negative** or **interrogative** (with inversion) opinions cast doubt → **subjunctive**.
+
+| Indicative (asserted)          | Subjunctive (doubted)                 |
+| ------------------------------ | ------------------------------------- |
+| Je pense qu’il a raison.       | Je ne pense pas qu’il ait raison.     |
+| Je crois que c’est vrai.       | Je ne crois pas que ce soit vrai.     |
+| Je trouve qu’il est sympa.     | Je ne trouve pas qu’il soit sympa.    |
+| Il me semble que tu as tort.   | Il semble que tu aies tort.           |
+| Penses-tu qu’il viendra ? (possible) | Penses-tu qu’il vienne ? (formal doubt) |
 
 > [!TIP]
-> **espérer que** takes the indicative: *J’espère que tu **vas** bien.*
+> **il me semble que** (it seems to me) = opinion → indicative. **il semble que** (it seems, it appears) = impression → usually subjunctive.
 
-## Conjunctions
+## Certainty vs. possibility
 
-| + subjunctive                      | + indicative                    |
-| ---------------------------------- | ------------------------------- |
-| bien que, quoique (although)       | parce que, puisque (because)    |
-| pour que, afin que (so that)       | pendant que, alors que (while)  |
-| avant que (before)                 | après que (after) — indicative! |
-| jusqu’à ce que (until)             | depuis que (since)              |
-| à condition que, pourvu que        | si, même si                     |
-| à moins que, de peur que, sans que | dès que, aussitôt que           |
+| Indicative                                    | Subjunctive                                  |
+| --------------------------------------------- | -------------------------------------------- |
+| Il est certain / sûr / évident que…           | Il est possible / impossible que…            |
+| Il est probable que… (likely → treated as real) | Il se peut que… (it may be)                |
+| Il est vrai / clair que…                      | Il est peu probable que…                     |
+| Je suis sûr que…                              | Je ne suis pas sûr que…                      |
+| Il paraît que… (apparently)                   | Je doute que… / Il est douteux que…          |
+
+- Il est probable qu’il viendra. | He’ll probably come.
+- Il est possible qu’il vienne. | He might come.
+- Je suis sûr qu’elle a raison. | I’m sure she’s right.
+- Je doute qu’elle ait raison. | I doubt she’s right.
 
 > [!WARNING]
-> **après que** takes the indicative in careful French: *après qu’il **est** parti*. **avant que** takes the subjunctive: *avant qu’il **parte***.
+> **douter que** takes the subjunctive, but **se douter que** (to suspect, to guess) takes the indicative: *Je me doutais qu’il **était** là.*
+
+## espérer vs. souhaiter
+
+Two verbs of hoping, two moods — **espérer** sees the outcome as likely (indicative, often future), **souhaiter** is a wish (subjunctive):
+
+- J’espère que tu viendras. | I hope you’ll come.
+- Je souhaite que tu viennes. | I wish you would come.
+
+## Conjunctions: the big list
+
+| + indicative                         | + subjunctive                               |
+| ------------------------------------ | ------------------------------------------- |
+| parce que, puisque, comme (cause)    | pour que, afin que (purpose)                |
+| pendant que, tandis que (while)      | bien que, quoique (although)                |
+| après que (after)                    | avant que (before)                          |
+| depuis que (since)                   | jusqu’à ce que (until)                      |
+| dès que, aussitôt que (as soon as)   | à condition que, pourvu que (provided that) |
+| si bien que, de sorte que (so that = result) | de sorte que (so that = purpose)    |
+| même si (even if)                    | à moins que (unless)                        |
+| alors que (whereas)                  | sans que (without), de peur que (for fear that) |
+
+- Je t’attends jusqu’à ce que tu reviennes. | I’ll wait until you come back.
+- Je l’ai vu après qu’il est parti. | I saw him after he left.
+- Partons avant qu’il pleuve. | Let’s leave before it rains.
+- Je viendrai à condition que tu m’invites. | I’ll come provided you invite me.
+- Il est parti sans que je le voie. | He left without my seeing him.
+
+> [!WARNING]
+> **après que** takes the indicative (the action has happened — it’s a fact), while **avant que** takes the subjunctive (it hasn’t happened yet). Many French speakers use the subjunctive after *après que* in conversation, but the standard is the indicative.
 
 ## Superlatives and “the only”
 
-After a superlative or **le seul, le premier, le dernier, l’unique** + qui/que, the subjunctive expresses a subjective judgment:
+After a **superlative**, **le seul, l’unique, le premier, le dernier**, the relative clause usually takes the **subjunctive** — it expresses a subjective judgement:
 
-- C’est le meilleur livre que j’aie jamais lu. | It’s the best book I’ve ever read.
+- C’est le plus beau film que j’aie jamais vu. | It’s the most beautiful film I’ve ever seen.
+- C’est la seule personne qui me comprenne. | She’s the only person who understands me.
+
+If you’re stating an objective fact, the indicative is possible: *C’est le plus grand pays que j’**ai** visité* (simply the largest one on my list).
+
+## Relative clauses: real or hypothetical?
+
+The mood in a relative clause shows whether the thing **exists** or is only **sought**:
+
+- Je cherche un appartement qui a un balcon. | I’m looking for an apartment that has a balcony. (I know one exists)
+- Je cherche un appartement qui ait un balcon. | I’m looking for an apartment that would have a balcony. (any one — if such a thing exists)
+- Il n’y a personne qui puisse m’aider. | There’s nobody who can help me.
+
+## The past subjunctive
+
+For an action **completed before** the main verb, use **avoir / être in the subjunctive + participle**:
+
+- Je suis content que tu sois venu. | I’m glad you came.
+- Je doute qu’il ait compris. | I doubt he understood.
+- Bien qu’elle ait beaucoup travaillé, elle n’a pas réussi. | Although she worked hard, she didn’t succeed.
+
+## Quick summary
+
+- Affirmative penser/croire/trouver → indicative; negative/question → subjunctive.
+- probable, sûr, certain → indicative; possible, douter → subjunctive.
+- espérer → indicative; souhaiter → subjunctive.
+- après que → indicative; avant que, jusqu’à ce que, bien que → subjunctive.
+- Superlatives and le seul → usually subjunctive.
 
 ## Exercises
 
@@ -119,3 +185,58 @@ After a superlative or **le seul, le premier, le dernier, l’unique** + qui/que
 - answer: Bien qu’il pleuve, nous sortons
 - answer: Bien qu’il pleuve, on sort
 - answer: Quoiqu’il pleuve, nous sortons
+
+### cloze
+- sentence: Je suis sûr qu’elle ___ raison.
+- hint: avoir
+- answer: a
+- en: I’m sure she’s right.
+- explain: Certainty → indicative.
+
+### cloze
+- sentence: Je cherche quelqu’un qui ___ parler chinois.
+- hint: savoir
+- answer: sache
+- en: I’m looking for someone who can speak Chinese.
+- explain: The person is hypothetical (we don’t know if they exist) → subjunctive.
+
+### cloze
+- sentence: Je suis content que tu ___ venu.
+- hint: être
+- answer: sois
+- en: I’m glad you came.
+- explain: Past subjunctive: sois venu — emotion about a completed action.
+
+### cloze
+- sentence: Je me doutais qu’il ___ là.
+- hint: être
+- answer: était
+- en: I suspected he was there.
+- explain: se douter que (to suspect) takes the indicative.
+
+### mcq
+- prompt: “I wish you would come.”
+- [ ] Je souhaite que tu viendras.
+- [x] Je souhaite que tu viennes.
+- [ ] J’espère que tu viennes.
+- explain: souhaiter → subjunctive. (espérer would take the indicative: j’espère que tu viendras.)
+
+### mcq
+- prompt: Which needs the subjunctive?
+- [ ] Il est probable que…
+- [ ] Je pense que…
+- [x] Il est possible que…
+- [ ] Il paraît que…
+- explain: Possibility → subjunctive; probability and assertions → indicative.
+
+### transform
+- instruction: Make the opinion negative.
+- source: Je crois que c’est vrai.
+- answer: Je ne crois pas que ce soit vrai
+- explain: Negative opinion → subjunctive: être → soit.
+
+### translate
+- en: She is the only person who understands me.
+- answer: C’est la seule personne qui me comprenne
+- answer: Elle est la seule personne qui me comprenne
+- explain: After le seul / la seule → subjunctive.

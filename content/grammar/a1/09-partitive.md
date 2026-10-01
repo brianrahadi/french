@@ -3,12 +3,12 @@ id: partitive
 title: Partitive articles & quantities
 titleFr: Du, de la, des
 summary: How to say “some”, and why quantities just take de.
-minutes: 7
+minutes: 13
 ---
 
 ## Some (of something)
 
-For an unspecified amount of something you can’t count, French uses the **partitive article** — often where English uses no article at all.
+When you talk about an **unspecified amount** of something — some bread, some water, some music — French uses the **partitive article**. English often uses no article at all (“I drink coffee”), but French almost never leaves a noun bare.
 
 |                | Article | Example                        |
 | -------------- | ------- | ------------------------------ |
@@ -19,27 +19,66 @@ For an unspecified amount of something you can’t count, French uses the **part
 
 - Je mange du pain. | I eat (some) bread.
 - Tu veux de l’eau ? | Do you want (some) water?
+- Il a de la patience. | He has patience.
+- Il faut du courage. | It takes courage.
 
-## Partitive vs. definite
+The partitive works for food and drink, but also for abstract things (*du courage, de la chance, du temps*), weather (*Il y a du vent, du soleil*) and materials (*C’est du coton*).
 
-Talking about a thing **in general** (likes, dislikes, facts) → **le / la / les**. Talking about **some** of it → **du / de la / des**.
+## Partitive vs. definite vs. indefinite
 
-- J’aime le fromage. | I like cheese (in general).
-- J’achète du fromage. | I’m buying (some) cheese.
+Three articles, three meanings:
 
-## Negatives and quantities → de
+| Article            | Meaning                         | Example                            |
+| ------------------ | ------------------------------- | ---------------------------------- |
+| le / la / les      | the thing in general, or a specific one | J’aime le fromage.         |
+| du / de la / des   | some, an amount of               | J’achète du fromage.              |
+| un / une           | one whole, countable item        | J’achète un fromage (a whole cheese). |
+
+- J’aime le café. | I like coffee. (in general)
+- Je bois du café. | I drink coffee. (some)
+- Je voudrais un café. | I’d like a coffee. (one cup)
+- Le café est froid. | The coffee is cold. (that coffee)
+
+> [!TIP]
+> A handy test: if you could add “some” in English, use du/de la/des. After **aimer, adorer, détester, préférer** you talk about things in general, so always use **le/la/les**: *Je déteste **les** épinards.*
+
+## Negatives → de
+
+After a negative, all the partitives become **de** (d’ before a vowel) — because you’re saying there’s none at all:
 
 - Je ne bois pas de café. | I don’t drink coffee.
+- Il n’y a plus de lait. | There’s no more milk.
+- Nous n’avons pas d’argent. | We don’t have any money.
+
+But with **être** and with likes, nothing changes: *Ce n’est pas **du** sucre, c’est **du** sel. Je n’aime pas **le** lait.*
+
+## Quantities → de
+
+Expressions of quantity are followed by plain **de** — no article — whatever the gender or number:
+
 - beaucoup de monde, un peu de sucre | a lot of people, a little sugar
+- trop de travail, assez d’argent | too much work, enough money
 - un kilo de pommes, une bouteille d’eau | a kilo of apples, a bottle of water
-- assez d’argent, trop de travail | enough money, too much work
+- une tasse de thé, un morceau de gâteau | a cup of tea, a piece of cake
+- combien de personnes ? | how many people?
+- plus de temps, moins de bruit | more time, less noise
 
-## Activities
+> [!WARNING]
+> Two exceptions take **des**: ***la plupart des** gens* (most people) and ***bien des** fois* (many times). And if the noun is specific, you get *de + le*: *beaucoup **des** amis **de Paul*** (many of Paul’s friends).
 
-**faire de** + activity, **jouer de** + instrument, **jouer à** + game or sport:
+## Activities: faire de, jouer de, jouer à
 
-- Je fais du yoga et de la natation. | I do yoga and swimming.
-- Elle joue du piano. / Il joue au tennis. | She plays the piano. / He plays tennis.
+- **faire de** + activity or sport (partitive): *Je fais du yoga, de la natation et des randonnées.*
+- **jouer de** + musical instrument: *Elle joue du piano, de la guitare.*
+- **jouer à** + game or sport: *Il joue au tennis, aux cartes, à la pétanque.*
+- In the negative: *Je ne fais pas **de** sport.*
+
+## Quick summary
+
+- du / de la / de l’ / des = some (an unspecified amount).
+- le / la / les for things in general and after aimer.
+- After a negative or a quantity: plain de.
+- faire du sport, jouer du piano, jouer au foot.
 
 ## Exercises
 
@@ -103,3 +142,52 @@ Talking about a thing **in general** (likes, dislikes, facts) → **le / la / le
 - en: I drink coffee every morning.
 - answer: Je bois du café tous les matins
 - answer: Je bois du café chaque matin
+
+### cloze
+- sentence: Il y a ___ vent aujourd’hui.
+- answer: du
+- en: It’s windy today.
+- explain: Weather with il y a uses the partitive: du vent, du soleil.
+
+### cloze
+- sentence: Je voudrais ___ café, s’il vous plaît.
+- answer: un
+- en: I’d like a coffee, please.
+- explain: Ordering one cup → un café. Du café = some coffee in general.
+
+### cloze
+- sentence: Il n’y a plus ___ lait.
+- answer: de
+- en: There’s no more milk.
+- explain: After a negative, du → de.
+
+### cloze
+- sentence: La plupart ___ gens sont gentils.
+- answer: des
+- en: Most people are nice.
+- explain: la plupart is an exception: it takes des.
+
+### mcq
+- prompt: “I don’t do any sport.”
+- [ ] Je ne fais pas du sport.
+- [x] Je ne fais pas de sport.
+- [ ] Je ne fais pas le sport.
+- explain: After a negative, du → de.
+
+### mcq
+- prompt: “He plays cards.”
+- [ ] Il joue des cartes.
+- [x] Il joue aux cartes.
+- [ ] Il joue les cartes.
+- explain: jouer à + game: à + les = aux.
+
+### transform
+- instruction: Make the sentence negative.
+- source: J’ai de l’argent.
+- answer: Je n’ai pas d’argent
+- explain: de l’ → d’ after a negative.
+
+### translate
+- en: I would like a little sugar.
+- answer: Je voudrais un peu de sucre
+- explain: Quantity + de, no article.

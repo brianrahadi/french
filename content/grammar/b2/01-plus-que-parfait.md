@@ -3,35 +3,96 @@ id: plus-que-parfait
 title: Plus-que-parfait & past conditional
 titleFr: Le plus-que-parfait et le conditionnel passé
 summary: Talk about the past before the past — and regrets about what could have been.
-minutes: 10
+minutes: 16
 ---
 
-## Plus-que-parfait: had done
+## The past before the past
 
-**imparfait of avoir / être + past participle**. Same auxiliary and agreement rules as the passé composé.
+The **plus-que-parfait** (pluperfect) describes an action that happened **before another past action** — English “had done”. It lets you step further back in a story.
 
-- Quand je suis arrivé, le film avait déjà commencé. | When I arrived, the film had already started.
-- Elle était partie avant midi. | She had left before noon.
-- Il m’a dit qu’il avait perdu ses clés. | He told me he had lost his keys.
+Formation: **avoir or être in the imparfait + past participle**. The same verbs take être as in the passé composé, with the same agreement rules.
 
-## Conditionnel passé: would have done
+|                | finir (avoir) | partir (être)      | se lever             |
+| -------------- | ------------- | ------------------ | -------------------- |
+| je / j’        | avais fini    | étais parti(e)     | m’étais levé(e)      |
+| tu             | avais fini    | étais parti(e)     | t’étais levé(e)      |
+| il / elle / on | avait fini    | était parti(e)     | s’était levé(e)      |
+| nous           | avions fini   | étions parti(e)s   | nous étions levé(e)s |
+| vous           | aviez fini    | étiez parti(e)(s)  | vous étiez levé(e)(s) |
+| ils / elles    | avaient fini  | étaient parti(e)s  | s’étaient levé(e)s   |
 
-**conditional of avoir / être + past participle**.
+## Using the plus-que-parfait
+
+**1. An earlier action in a past story:**
+
+- Quand je suis arrivé, ils avaient déjà mangé. | When I arrived, they had already eaten.
+- Elle était fatiguée parce qu’elle avait mal dormi. | She was tired because she had slept badly.
+- J’ai perdu le livre que tu m’avais prêté. | I lost the book you had lent me.
+
+**2. Reported speech** — what someone said in the past about an even earlier past (passé composé → plus-que-parfait):
+
+- « J’ai raté le train. » → Il a dit qu’il avait raté le train. | He said he had missed the train.
+- Elle m’a expliqué qu’elle n’avait pas reçu mon message. | She explained that she hadn’t received my message.
+
+**3. Regrets with si seulement** (if only):
+
+- Si seulement j’avais su ! | If only I had known!
+- Si seulement tu m’avais écouté ! | If only you had listened to me!
+
+> [!TIP]
+> French uses the plus-que-parfait more strictly than English, which often slips into the simple past (“When I arrived, they **ate** already”). In French, if the order matters, mark it: *ils **avaient** mangé*.
+
+## The past conditional: would have done
+
+Formation: **avoir or être in the conditional + past participle**.
+
+|                | aimer (avoir) | venir (être)        |
+| -------------- | ------------- | ------------------- |
+| je / j’        | aurais aimé   | serais venu(e)      |
+| tu             | aurais aimé   | serais venu(e)      |
+| il / elle / on | aurait aimé   | serait venu(e)      |
+| nous           | aurions aimé  | serions venu(e)s    |
+| vous           | auriez aimé   | seriez venu(e)(s)   |
+| ils / elles    | auraient aimé | seraient venu(e)s   |
+
+It expresses things that **didn’t happen** — regrets, reproaches, missed opportunities:
 
 - J’aurais aimé venir. | I would have liked to come.
-- Nous serions partis plus tôt. | We would have left earlier.
-- Tu aurais dû me le dire ! | You should have told me!
-- Tu aurais pu m’appeler. | You could have called me.
+- Tu aurais dû me prévenir ! | You should have warned me! (devoir)
+- On aurait pu gagner. | We could have won. (pouvoir)
+- À ta place, je ne serais pas parti. | In your position, I wouldn’t have left.
+- Il aurait mieux valu attendre. | It would have been better to wait.
+
+Like the present conditional, it also reports **unconfirmed** past facts in the news: *Le voleur **aurait pris** la fuite* (The thief reportedly fled).
 
 ## Si clauses about the past
 
-| si + …           | Main clause          | Example                                  |
-| ---------------- | -------------------- | ---------------------------------------- |
-| présent          | futur                | Si tu travailles, tu réussiras.          |
-| imparfait        | conditionnel présent | Si tu travaillais, tu réussirais.        |
-| plus-que-parfait | conditionnel passé   | Si tu avais travaillé, tu aurais réussi. |
+To imagine a different past: **si + plus-que-parfait → past conditional**.
 
-Mixed: past condition, present result — *Si j’avais pris le parapluie, je ne serais pas trempé maintenant.*
+| si clause                 | result                         |
+| ------------------------- | ------------------------------ |
+| si + plus-que-parfait     | past conditional               |
+| Si j’avais su,            | je serais venu.                |
+| Si tu étais parti plus tôt, | tu aurais eu le train.       |
+| S’il avait plu,           | on serait restés à la maison.  |
+
+You can also mix times — a past condition with a **present** result: *Si j’avais étudié la médecine, je **serais** médecin aujourd’hui* (If I had studied medicine, I would be a doctor now).
+
+> [!WARNING]
+> As always, **no conditional after si**: ~~Si j’aurais su~~ is wrong. The conditional goes in the result clause: ***Si j’avais su**, je **serais** venu.*
+
+## The full set of si sentences
+
+- Si tu viens, on ira au parc. | If you come, we’ll go to the park. (present → future)
+- Si tu venais, on irait au parc. | If you came, we would go to the park. (imparfait → conditional)
+- Si tu étais venu, on serait allés au parc. | If you had come, we would have gone to the park. (plus-que-parfait → past conditional)
+
+## Quick summary
+
+- Plus-que-parfait = imparfait of avoir/être + participle: j’avais fini, j’étais parti.
+- Use it for an earlier past, reported speech, and si seulement.
+- Past conditional = conditional of avoir/être + participle: j’aurais aimé, tu aurais dû.
+- si + plus-que-parfait → past conditional.
 
 ## Exercises
 
@@ -105,3 +166,60 @@ Mixed: past condition, present result — *Si j’avais pris le parapluie, je ne
 - en: I would have liked to come.
 - answer: J’aurais aimé venir
 - answer: J’aurais voulu venir
+
+### cloze
+- sentence: J’ai perdu le livre que tu m’___ prêté.
+- hint: avoir
+- answer: avais
+- en: I lost the book you had lent me.
+- explain: Lending happened before losing → plus-que-parfait: avais prêté.
+
+### cloze
+- sentence: Il a dit qu’il ___ le train.
+- hint: rater
+- answer: avait raté
+- en: He said he had missed the train.
+- explain: Reported speech: passé composé → plus-que-parfait.
+
+### cloze
+- sentence: On ___ gagner !
+- hint: pouvoir
+- answer: aurait pu
+- en: We could have won!
+- explain: pouvoir in the past conditional: aurait pu.
+
+### cloze
+- sentence: Si seulement j’___ su !
+- hint: avoir
+- answer: avais
+- en: If only I had known!
+- explain: si seulement + plus-que-parfait for a past regret.
+
+### mcq
+- prompt: “If I had studied medicine, I would be a doctor today.”
+- [x] Si j’avais étudié la médecine, je serais médecin aujourd’hui.
+- [ ] Si j’aurais étudié la médecine, je serais médecin aujourd’hui.
+- [ ] Si j’étudiais la médecine, j’aurais été médecin aujourd’hui.
+- explain: Past condition (plus-que-parfait) with a present result (conditional).
+
+### mcq
+- prompt: “Elle était partie” is…
+- [ ] passé composé
+- [x] plus-que-parfait
+- [ ] past conditional
+- explain: imparfait of être + participle = plus-que-parfait.
+
+### transform
+- instruction: Move the sentence into the past (if I had…).
+- source: Si tu m’appelais, je viendrais.
+- answer: Si tu m’avais appelé, je serais venu
+- answer: Si tu m’avais appelée, je serais venue
+- answer: Si tu m’avais appelé, je serais venue
+- answer: Si tu m’avais appelée, je serais venu
+- explain: si + plus-que-parfait → past conditional.
+
+### translate
+- en: You should have told me!
+- answer: Tu aurais dû me le dire !
+- answer: Vous auriez dû me le dire !
+- explain: devoir in the past conditional = should have.

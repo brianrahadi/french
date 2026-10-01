@@ -3,10 +3,12 @@ id: questions
 title: Asking questions
 titleFr: Poser des questions
 summary: Three ways to ask yes/no questions, plus the question words.
-minutes: 8
+minutes: 14
 ---
 
 ## Yes/no questions: three registers
+
+French has three ways to ask the same yes/no question. They mean the same thing; what changes is how formal you sound.
 
 | Style             | Example               | When                         |
 | ----------------- | --------------------- | ---------------------------- |
@@ -14,7 +16,16 @@ minutes: 8
 | est-ce que        | Est-ce que tu viens ? | Neutral — speech and writing |
 | Inversion         | Viens-tu ?            | Formal, writing              |
 
-With inversion, the pronoun goes after the verb with a hyphen. If the verb ends in a vowel before **il / elle / on**, add **-t-**: *Parle-**t**-il français ? A-**t**-elle faim ?*
+- **Intonation**: keep the statement as it is and make your voice go up at the end. This is by far the most common in conversation.
+- **est-ce que** (“is it that”): put it in front of the statement. It becomes **est-ce qu’** before a vowel: *Est-ce qu’il pleut ?* It works everywhere and is never wrong.
+- **Inversion**: swap the subject pronoun and the verb, joined by a hyphen. Typical of writing, formal speech and set phrases (*Comment allez-vous ? Quelle heure est-il ?*).
+
+## Inversion: the details
+
+- If the verb ends in a vowel before **il / elle / on**, add **-t-** to make it pronounceable: *Parle-**t**-il français ? A-**t**-elle faim ? Va-**t**-on au cinéma ?*
+- With a **noun** subject, keep the noun first and add a pronoun after the verb: *Marie est-**elle** là ?* *Tes parents viennent-**ils** ?*
+- In compound tenses, invert the auxiliary: *As-tu mangé ? Est-elle partie ?*
+- Inversion with **je** sounds old-fashioned except in a few fixed forms (*Puis-je… ?* May I…?). Use est-ce que instead.
 
 ## Question words
 
@@ -24,14 +35,43 @@ With inversion, the pronoun goes after the verb with a hyphen. If the verb ends 
 | que / qu’est-ce que             | what                    | Qu’est-ce que tu fais ?            |
 | quoi                            | what (after verb/prep.) | Tu fais quoi ? De quoi tu parles ? |
 | où                              | where                   | Où est la gare ?                   |
+| d’où                            | where from              | D’où viens-tu ?                    |
 | quand                           | when                    | Quand est-ce que tu pars ?         |
 | comment                         | how                     | Comment tu t’appelles ?            |
 | pourquoi                        | why                     | Pourquoi tu ris ?                  |
 | combien (de)                    | how much / many         | Combien ça coûte ?                 |
 | quel / quelle / quels / quelles | which, what             | Quelle heure est-il ?              |
 
-> [!TIP]
-> **quel** agrees with the noun it goes with: *quel film, quelle heure, quels livres, quelles chaussures* — they all sound the same.
+## What: que, qu’est-ce que or quoi?
+
+“What” is the trickiest question word because it has three forms depending on where it stands:
+
+- Qu’est-ce que tu veux ? | What do you want? (neutral — at the start)
+- Que veux-tu ? | What do you want? (formal — with inversion)
+- Tu veux quoi ? | What do you want? (casual — at the end)
+- À quoi tu penses ? | What are you thinking about? (after a preposition)
+- Qu’est-ce qui se passe ? | What’s happening? (what as the subject)
+
+## Quel: which / what + noun
+
+**quel** agrees with the noun it goes with: *quel film, quelle heure, quels livres, quelles chaussures* — they all sound the same. Use it before a noun or before **être**:
+
+- Quel est ton numéro ? | What’s your number?
+- Quelle est la date aujourd’hui ? | What’s the date today?
+- Tu prends quel train ? | Which train are you taking?
+- Quelle belle journée ! | What a beautiful day! (exclamation)
+
+> [!WARNING]
+> “What is your name / address / number?” uses **quel**, not *qu’est-ce que*: ***Quelle** est ton adresse ?* — never ~~Qu’est-ce que ton adresse ?~~
+
+## Prepositions come first
+
+In French, a preposition can never be left at the end of a question, as in English “Who are you talking **to**?”. It moves to the front with the question word:
+
+- À qui tu parles ? / Tu parles à qui ? | Who are you talking to?
+- Avec qui est-ce que tu sors ? | Who are you going out with?
+- De quoi avez-vous besoin ? | What do you need?
+- Pour combien de personnes ? | For how many people?
 
 ## Same question, four ways
 
@@ -39,6 +79,13 @@ With inversion, the pronoun goes after the verb with a hyphen. If the verb ends 
 - Où tu habites ? | casual
 - Où est-ce que tu habites ? | neutral
 - Où habites-tu ? | formal
+
+## Quick summary
+
+- Yes/no: intonation (casual), est-ce que (neutral), inversion (formal).
+- Inversion: add -t- between vowels: parle-t-il.
+- what = qu’est-ce que / que / quoi; what + noun or être = quel(le)(s).
+- Prepositions go in front: à qui, avec quoi, de quoi.
 
 ## Exercises
 
@@ -109,3 +156,55 @@ With inversion, the pronoun goes after the verb with a hyphen. If the verb ends 
 - answer: Où est-ce que tu habites ?
 - answer: Tu habites où ?
 - answer: Où tu habites ?
+
+### transform
+- instruction: Turn it into a question with inversion.
+- source: Elle a faim.
+- answer: A-t-elle faim ?
+- explain: a ends in a vowel, so add -t-: a-t-elle.
+
+### transform
+- instruction: Turn it into a question with est-ce que.
+- source: Il pleut.
+- answer: Est-ce qu’il pleut ?
+- explain: est-ce que → est-ce qu’ before a vowel.
+
+### cloze
+- sentence: ___ est ton adresse ?
+- answer: Quelle
+- en: What is your address?
+- explain: “What is + noun” uses quel; adresse is feminine → quelle.
+
+### cloze
+- sentence: Avec ___ tu pars en vacances ?
+- answer: qui
+- en: Who are you going on holiday with?
+- explain: The preposition comes first: avec qui.
+
+### cloze
+- sentence: ___ qui se passe ?
+- answer: Qu’est-ce
+- en: What’s happening?
+- explain: What as the subject → qu’est-ce qui.
+
+### mcq
+- prompt: “What are you thinking about?”
+- [ ] Qu’est-ce que tu penses à ?
+- [x] À quoi tu penses ?
+- [ ] À que tu penses ?
+- explain: After a preposition, what = quoi: à quoi.
+
+### mcq
+- prompt: Which question is casual?
+- [x] Tu fais quoi ce soir ?
+- [ ] Que faites-vous ce soir ?
+- [ ] Qu’est-ce que vous faites ce soir ?
+- explain: quoi at the end with intonation is the casual register.
+
+### translate
+- en: How much does it cost?
+- answer: Combien ça coûte ?
+- answer: Ça coûte combien ?
+- answer: Combien est-ce que ça coûte ?
+- answer: Combien coûte-t-il ?
+- explain: combien = how much.

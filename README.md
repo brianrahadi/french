@@ -55,8 +55,8 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Every mistake is marked inline, explained in English and linked to the lesson that teaches it. You also get a minimally corrected version, a more natural version, what you did well, and words worth keeping — added to your flashcards in one click.
 - “Rewrite it yourself” lets you fix the text using the feedback and compares the two scores.
 
-**Grammar — 30 lessons, A1 → B2, 320 exercises**
-- Short explanations with tables, audio examples, “watch out” boxes for classic mistakes.
+**Grammar — 30 lessons, A1 → B2, 562 exercises**
+- Full lessons, not just rules: when and why to use each structure, formation tables, irregular forms, word order, contrasts with English, dozens of audio examples per lesson, “watch out” boxes for classic mistakes and a quick summary at the end.
 - Five exercise types: fill-in-the-blank, multiple choice, sentence building, translation, transformation.
 - Instant feedback with a character-level diff and an explanation on every item. Wrong answers come back once at the end of the session.
 - Score 80% to master a lesson; mastered lessons return for spaced review (1 → 3 → 7 → 16 → 35 → 90 days).

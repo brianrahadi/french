@@ -3,51 +3,116 @@ id: irregular-present
 title: Key irregular verbs
 titleFr: Les verbes irréguliers essentiels
 summary: aller, faire, venir, prendre, pouvoir, vouloir, devoir — the verbs you’ll use every day.
-minutes: 10
+minutes: 16
 ---
 
-## aller, faire, venir, prendre
+## Why these verbs
 
-|                | aller  | faire   | venir    | prendre  |
-| -------------- | ------ | ------- | -------- | -------- |
-| je             | vais   | fais    | viens    | prends   |
-| tu             | vas    | fais    | viens    | prends   |
-| il / elle / on | va     | fait    | vient    | prend    |
-| nous           | allons | faisons | venons   | prenons  |
-| vous           | allez  | faites  | venez    | prenez   |
-| ils / elles    | vont   | font    | viennent | prennent |
+The most frequent French verbs are also the most irregular — and you’ll use them in almost every sentence. They don’t follow the -er pattern, so learn them as whole tables, out loud. The good news: many other verbs copy them (*revenir, devenir* like *venir*; *apprendre, comprendre* like *prendre*).
 
-Verbs built on these follow the same pattern: **devenir, revenir, se souvenir** like venir; **comprendre, apprendre, surprendre** like prendre.
+## aller, faire, venir
 
-## Modal verbs: pouvoir, vouloir, devoir
+|             | aller (go) | faire (do, make) | venir (come) |
+| ----------- | ---------- | ---------------- | ------------ |
+| je          | vais       | fais             | viens        |
+| tu          | vas        | fais             | viens        |
+| il/elle/on  | va         | fait             | vient        |
+| nous        | allons     | faisons          | venons       |
+| vous        | allez      | faites           | venez        |
+| ils/elles   | vont       | font             | viennent     |
 
-|                | pouvoir (can) | vouloir (want) | devoir (must) |
-| -------------- | ------------- | -------------- | ------------- |
-| je             | peux          | veux           | dois          |
-| tu             | peux          | veux           | dois          |
-| il / elle / on | peut          | veut           | doit          |
-| nous           | pouvons       | voulons        | devons        |
-| vous           | pouvez        | voulez         | devez         |
-| ils / elles    | peuvent       | veulent        | doivent       |
+- Comment ça va ? — Ça va bien. | How are you? — Fine.
+- Qu’est-ce que tu fais ce week-end ? | What are you doing this weekend?
+- Il fait beau / froid / nuit. | It’s nice / cold / dark.
+- Je viens de Belgique. | I’m from Belgium.
 
-They are followed directly by an **infinitive**: *Je peux venir. Tu veux manger ? Nous devons partir.*
+**faire** is used for weather (*il fait chaud*), activities (*faire du sport, faire la cuisine, faire les courses*) and in many expressions (*faire attention, faire la queue, faire une promenade*). Like venir: *revenir, devenir, se souvenir, tenir, obtenir*.
+
+> [!WARNING]
+> *vous faites* and *vous dites* end in -tes, not -ez: never ~~vous faisez~~.
+
+## prendre, mettre
+
+|             | prendre (take) | mettre (put) |
+| ----------- | -------------- | ------------ |
+| je          | prends         | mets         |
+| tu          | prends         | mets         |
+| il/elle/on  | prend          | met          |
+| nous        | prenons        | mettons      |
+| vous        | prenez         | mettez       |
+| ils/elles   | prennent       | mettent      |
+
+**prendre** is used for transport, food and drink: *prendre le bus, prendre un café, prendre une douche*. Like it: *apprendre* (learn), *comprendre* (understand), *surprendre*. **mettre** means put, put on (clothes), and take (time): *Je mets une veste. On met deux heures.*
+
+## The modal verbs: pouvoir, vouloir, devoir
+
+|             | pouvoir (can) | vouloir (want) | devoir (must) |
+| ----------- | ------------- | -------------- | ------------- |
+| je          | peux          | veux           | dois          |
+| tu          | peux          | veux           | dois          |
+| il/elle/on  | peut          | veut           | doit          |
+| nous        | pouvons       | voulons        | devons        |
+| vous        | pouvez        | voulez         | devez         |
+| ils/elles   | peuvent       | veulent        | doivent       |
+
+All three are followed directly by an **infinitive**, with no “to”:
+
+- Je peux t’aider ? | Can I help you?
+- Ils veulent partir tôt. | They want to leave early.
+- Vous devez remplir ce formulaire. | You must fill in this form.
+- Tu dois être fatigué. | You must be tired. (probability)
+- Je dois 20 euros à Marc. | I owe Marc 20 euros.
 
 > [!TIP]
-> For politeness, use the conditional: **je voudrais** (I’d like), **pourriez-vous** (could you)…
+> For polite requests, use the conditional: ***Je voudrais** un café* (I’d like), ***Pourriez-vous** m’aider ?* (Could you help me?), ***Tu devrais** dormir* (You should sleep). **Je veux** sounds blunt when ordering.
 
-## savoir vs. connaître
+## savoir or connaître?
 
-| savoir                                    | connaître                                                |
-| ----------------------------------------- | -------------------------------------------------------- |
-| facts, information: Je sais où il habite. | people: Je connais Marie.                                |
-| how to do something: Je sais nager.       | places: Tu connais Lyon ?                                |
-| + que, si, où, quand…                     | works, things you’re familiar with: Je connais ce livre. |
+Both mean “to know”, but they are not interchangeable:
 
-## Expressions with faire
+|             | savoir | connaître |
+| ----------- | ------ | --------- |
+| je          | sais   | connais   |
+| tu          | sais   | connais   |
+| il/elle/on  | sait   | connaît   |
+| nous        | savons | connaissons |
+| vous        | savez  | connaissez |
+| ils/elles   | savent | connaissent |
 
-- faire les courses, faire la cuisine, faire la vaisselle | to do the shopping, to cook, to do the dishes
-- Il fait beau / froid / chaud. | The weather is nice / cold / hot.
-- faire attention, faire la queue | to be careful, to queue
+- **savoir** = to know a fact, or how to do something (+ infinitive, + que, + question word): *Je sais nager. Je sais qu’il est là. Tu sais où il habite ?*
+- **connaître** = to be familiar with a person, place or thing (+ noun): *Je connais Marie. Tu connais Lyon ? Je connais ce livre.*
+
+- Je sais conduire. | I know how to drive. (never “je sais comment conduire”)
+- Je connais un bon restaurant. | I know a good restaurant.
+- Je ne sais pas. | I don’t know.
+
+## More essential irregulars
+
+| Infinitive        | je / nous / ils                 |
+| ----------------- | ------------------------------- |
+| dire (say)        | dis / disons / disent (vous dites) |
+| voir (see)        | vois / voyons / voient          |
+| sortir (go out)   | sors / sortons / sortent        |
+| partir (leave)    | pars / partons / partent        |
+| dormir (sleep)    | dors / dormons / dorment        |
+| lire (read)       | lis / lisons / lisent           |
+| écrire (write)    | écris / écrivons / écrivent     |
+| boire (drink)     | bois / buvons / boivent         |
+| croire (believe)  | crois / croyons / croient       |
+| recevoir (receive) | reçois / recevons / reçoivent  |
+
+## Patterns that help
+
+- Singular endings are usually **-s, -s, -t** (je fais, tu fais, il fait) — except pouvoir/vouloir with **-x** (je peux, je veux) and verbs in -dre with **-ds, -ds, -d** (je prends, il prend).
+- The **ils** form often looks like a “boot” verb: the stem of je/tu/il/ils changes, nous/vous keep the infinitive stem: *je bois, nous buvons, ils boivent*; *je viens, nous venons, ils viennent*.
+- Four verbs have **ils … -ont**: ils **vont, font, sont, ont**.
+
+## Quick summary
+
+- aller, faire, venir, prendre, mettre, pouvoir, vouloir, devoir: learn the full tables.
+- Modals + infinitive: je peux venir, je veux partir, je dois travailler.
+- savoir = facts and skills; connaître = people, places, things.
+- vous faites, vous dites, vous êtes — no -ez.
 
 ## Exercises
 
@@ -125,3 +190,58 @@ They are followed directly by an **infinitive**: *Je peux venir. Tu veux manger 
 - answer: Je voudrais un café, s’il vous plaît
 - answer: Je voudrais un café s’il vous plaît
 - answer: Je voudrais un café, s’il te plaît
+
+### cloze
+- sentence: Je ___ un pull, il fait froid.
+- hint: mettre
+- answer: mets
+- en: I’m putting on a jumper, it’s cold.
+- explain: mettre: je mets, tu mets, il met.
+
+### cloze
+- sentence: Nous ___ de l’eau.
+- hint: boire
+- answer: buvons
+- en: We drink water.
+- explain: boire: je bois, nous buvons, ils boivent.
+
+### cloze
+- sentence: Vous ___ la vérité ?
+- hint: dire
+- answer: dites
+- en: Are you telling the truth?
+- explain: vous dites — like vous faites, vous êtes, no -ez.
+
+### cloze
+- sentence: Tu ___ où est la gare ?
+- hint: savoir
+- answer: sais
+- en: Do you know where the station is?
+- explain: A fact / question word → savoir.
+
+### mcq
+- prompt: “I know a good restaurant.”
+- [ ] Je sais un bon restaurant.
+- [x] Je connais un bon restaurant.
+- explain: Being familiar with a place or thing → connaître.
+
+### mcq
+- prompt: “You must be tired.” (a guess)
+- [x] Tu dois être fatigué.
+- [ ] Tu as être fatigué.
+- [ ] Tu es devoir fatigué.
+- explain: devoir + infinitive can express probability.
+
+### transform
+- instruction: Change the subject to ils.
+- source: Il prend le métro.
+- answer: Ils prennent le métro
+- explain: prendre: ils prennent (double n).
+
+### translate
+- en: Can you help me? (vous)
+- answer: Pouvez-vous m’aider ?
+- answer: Vous pouvez m’aider ?
+- answer: Pourriez-vous m’aider ?
+- answer: Est-ce que vous pouvez m’aider ?
+- explain: pouvoir + infinitive; pourriez-vous is even more polite.

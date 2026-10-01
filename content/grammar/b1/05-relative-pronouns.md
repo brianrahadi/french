@@ -3,34 +3,91 @@ id: relative-pronouns
 title: Relative pronouns: qui, que, où, dont
 titleFr: Les pronoms relatifs simples
 summary: Join two sentences into one — the choice depends on the pronoun’s role.
-minutes: 10
+minutes: 16
 ---
 
-## Choosing the pronoun
+## Joining two sentences
 
-| Pronoun   | Replaces                                  | Example                                                   |
-| --------- | ----------------------------------------- | --------------------------------------------------------- |
-| qui       | the subject (followed by a verb)          | L’homme qui parle est mon oncle.                          |
-| que (qu’) | the direct object (followed by a subject) | Le livre que je lis est génial.                           |
-| où        | a place or a time                         | La ville où j’habite. Le jour où je suis né.              |
-| dont      | de + noun                                 | Le film dont je parle. La fille dont le père est médecin. |
+Relative pronouns let you combine two sentences that share a noun, so you can describe something without repeating it: *J’ai un ami. **Il** habite à Rome.* → *J’ai un ami **qui** habite à Rome.* The noun being described is the **antecedent**; the pronoun’s form depends on its **role** in the second sentence — not on whether it’s a person or a thing.
+
+Unlike English, French **never drops** the relative pronoun: “the film I saw” must be *le film **que** j’ai vu*.
+
+## qui: the subject
+
+Use **qui** when the antecedent is the **subject** of the relative clause — it’s followed directly by a verb (or by ne / a pronoun + verb). It works for people and things, and never elides: *qui est*, not ~~qu’est~~.
+
+- La femme qui chante est ma sœur. | The woman who is singing is my sister.
+- Le train qui part à 8 heures est direct. | The train that leaves at 8 is direct.
+- C’est moi qui ai raison. | I’m the one who is right. (the verb agrees with moi)
+- J’ai un ami qui ne mange pas de viande. | I have a friend who doesn’t eat meat.
+
+## que: the direct object
+
+Use **que** (qu’ before a vowel) when the antecedent is the **direct object** — it’s followed by a subject + verb.
+
+- Le film que nous avons vu était nul. | The film (that) we saw was terrible.
+- La personne que tu cherches est partie. | The person you’re looking for has left.
+- C’est le livre qu’il m’a offert. | It’s the book he gave me.
+
+In compound tenses with avoir, the past participle **agrees** with the antecedent of que: *Les photos **que** j’ai pris**es***. *La robe **que** j’ai achet**ée***.
 
 > [!TIP]
-> Quick test: if a **verb** comes right after, it’s usually **qui**; if a **subject** (je, tu, Marie…) comes after, it’s **que**.
+> Quick test: **qui** + verb, **que** + subject. *L’homme qui parle* (qui → verb) vs. *l’homme que je connais* (que → je).
 
-## dont
+## où: place and time
 
-Use **dont** with verbs and expressions built with **de**: *parler de, avoir besoin de, avoir peur de, se souvenir de, être fier de* — and for possession (whose).
+**où** replaces a place (where) — and also a moment in time (when), where English uses “when”:
 
-- C’est l’outil dont j’ai besoin. | It’s the tool (that) I need.
-- Voici l’ami dont je t’ai parlé. | Here’s the friend I told you about.
-- Une femme dont le fils est acteur. | A woman whose son is an actor.
+- La ville où je suis né est petite. | The town where I was born is small.
+- Le restaurant où on a dîné était excellent. | The restaurant where we had dinner was excellent.
+- Je me souviens du jour où on s’est rencontrés. | I remember the day (when) we met.
+- À l’époque où j’habitais à Paris… | At the time when I lived in Paris…
 
-## Agreement with que
+> [!WARNING]
+> For time, it’s **où**, not quand: *le jour **où**, l’année **où**, le moment **où*** — never ~~le jour quand~~.
 
-que is never dropped in French (English often drops “that”). In compound tenses, the past participle agrees with the noun que replaces: *Les photos **que** j’ai pris**es***.
+## dont: replaces de + noun
 
-**ce qui / ce que / ce dont** = what (the thing that): *Dis-moi **ce que** tu veux. **Ce qui** m’intéresse, c’est l’histoire.*
+**dont** replaces a noun introduced by **de**. It’s used with verbs and expressions built with de, and to express possession (“whose”):
+
+| Construction with de        | Relative clause with dont                        |
+| --------------------------- | ------------------------------------------------ |
+| parler de                   | le livre dont je t’ai parlé (the book I told you about) |
+| avoir besoin de             | l’ordinateur dont j’ai besoin (the computer I need) |
+| avoir peur de               | la chose dont j’ai peur (the thing I’m afraid of) |
+| se souvenir de              | le voyage dont je me souviens                    |
+| être fier de                | le travail dont il est fier                      |
+| possession (le fils de…)    | la femme dont le fils est médecin (whose son)    |
+
+- C’est un homme dont tout le monde parle. | He’s a man everyone talks about.
+- J’ai une amie dont le père est pilote. | I have a friend whose father is a pilot.
+- Voici le prix dont je suis le plus fier. | Here’s the prize I’m proudest of.
+
+## What: ce qui, ce que, ce dont
+
+When there’s **no noun** to refer back to (English “what” or “which” referring to a whole idea), add **ce** before the relative pronoun — same roles as before:
+
+- Ce qui m’intéresse, c’est l’histoire. | What interests me is history. (subject)
+- Dis-moi ce que tu penses. | Tell me what you think. (object)
+- Ce dont j’ai besoin, c’est de repos. | What I need is rest. (de)
+- Il est en retard, ce qui est rare. | He’s late, which is rare.
+- Tout ce que je veux, c’est dormir. | All I want is to sleep.
+
+## Choosing the right pronoun
+
+- Is it followed by a **verb**? → **qui**
+- Is it followed by a **subject + verb**, and the verb takes a direct object? → **que**
+- Is it a **place or time**? → **où**
+- Does the verb or expression use **de**? → **dont**
+- No noun before it? → **ce qui / ce que / ce dont**
+- After another preposition (avec, pour, sur…)? → *qui* for people, *lequel* for things (see the B2 lesson).
+
+## Quick summary
+
+- qui = subject (+ verb); que = object (+ subject + verb).
+- où = where and when; dont = de + noun, whose.
+- ce qui / ce que / ce dont = what.
+- Never drop the relative pronoun.
 
 ## Exercises
 
@@ -99,3 +156,56 @@ que is never dropped in French (English often drops “that”). In compound ten
 - source: Voici la robe. J’ai acheté la robe hier.
 - answer: Voici la robe que j’ai achetée hier
 - explain: que + agreement of the participle (robe is feminine).
+
+### cloze
+- sentence: J’ai une amie ___ le père est pilote.
+- answer: dont
+- en: I have a friend whose father is a pilot.
+- explain: Possession (le père de mon amie) → dont.
+
+### cloze
+- sentence: ___ m’intéresse, c’est l’histoire.
+- answer: Ce qui
+- en: What interests me is history.
+- explain: No antecedent + subject → ce qui.
+
+### cloze
+- sentence: Je me souviens de l’année ___ il est parti.
+- answer: où
+- en: I remember the year (when) he left.
+- explain: A moment in time → où, not quand.
+
+### cloze
+- sentence: C’est moi qui ___ raison.
+- hint: avoir
+- answer: ai
+- en: I’m the one who is right.
+- explain: After moi qui, the verb agrees with moi: j’ai → qui ai.
+
+### mcq
+- prompt: “Tell me what you want.”
+- [ ] Dis-moi que tu veux.
+- [x] Dis-moi ce que tu veux.
+- [ ] Dis-moi ce qui tu veux.
+- explain: No antecedent + object → ce que.
+
+### mcq
+- prompt: “The thing I’m afraid of.”
+- [ ] La chose que j’ai peur.
+- [x] La chose dont j’ai peur.
+- [ ] La chose où j’ai peur.
+- explain: avoir peur de → dont.
+
+### transform
+- instruction: Join the two sentences with a relative pronoun.
+- source: C’est un film. Tout le monde parle de ce film.
+- answer: C’est un film dont tout le monde parle
+- explain: parler de → dont.
+
+### translate
+- en: The film we saw was great.
+- answer: Le film que nous avons vu était génial
+- answer: Le film qu’on a vu était génial
+- answer: Le film que nous avons vu était super
+- answer: Le film qu’on a vu était super
+- explain: French never drops que: le film que…

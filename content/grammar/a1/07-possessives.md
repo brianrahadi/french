@@ -3,7 +3,7 @@ id: possessives
 title: Possessive adjectives
 titleFr: Les adjectifs possessifs
 summary: my, your, his, her… — they agree with the thing owned, not the owner.
-minutes: 6
+minutes: 12
 ---
 
 ## The forms
@@ -17,19 +17,65 @@ minutes: 6
 | your (vous)     | votre          | votre         | vos    |
 | their           | leur           | leur          | leurs  |
 
-## Agreement with the object
+Possessive adjectives replace the article: *~~le mon~~ livre* → **mon livre**. Choose **ton / ta / tes** when you say *tu* to the person, and **votre / vos** when you say *vous* (or speak to a group).
 
-The possessive agrees with the **noun that follows**, not with the owner. So **sa mère** can mean *his mother* or *her mother*; **son père** can mean *his father* or *her father*.
+## They agree with the thing owned
 
-- Julie aime son frère. | Julie loves her brother.
-- Marc adore sa voiture. | Marc loves his car.
+This is the big difference from English. The possessive agrees with the **noun that follows** — its gender and number — **not with the owner**.
+
+- Julie aime son frère. | Julie loves her brother. (frère is masculine)
+- Marc adore sa voiture. | Marc loves his car. (voiture is feminine)
+- Paul et ses enfants. / Marie et ses enfants. | Paul and his children. / Marie and her children.
+
+So **sa mère** can mean *his mother* or *her mother*, and **son père** *his father* or *her father*. Context normally makes it clear.
 
 > [!TIP]
-> To make it clear, add **à lui / à elle**: *C’est sa voiture à elle.*
+> To make the owner explicit, add **à lui / à elle**: *C’est sa voiture **à elle**, pas à lui* (It’s her car, not his).
 
-## ma, ta, sa before a vowel
+## mon, ton, son before a vowel
 
-Before a feminine noun starting with a vowel or silent h, use **mon, ton, son** to avoid two vowels clashing: *mon amie, ton école, son histoire*.
+Before a **feminine** noun starting with a vowel or silent h, use **mon, ton, son** instead of ma, ta, sa — to avoid two vowels clashing:
+
+- mon amie Julie | my friend Julie (amie is feminine)
+- ton école | your school
+- son histoire | his/her story
+- mon idée | my idea
+
+The noun is still feminine: *mon amie est **contente***. In the plural there’s no problem: *mes amies*, with liaison: *mes‿amies*.
+
+## notre / nos, votre / vos, leur / leurs
+
+- **notre, votre, leur** = one thing; **nos, vos, leurs** = several.
+- **leur** never takes an -s for one thing, even with several owners: *les enfants et **leur** chien* (one dog). *Les enfants et **leurs** chiens* (several dogs).
+- The o sounds differ: *notre, votre* have an open o; *le nôtre, le vôtre* (pronouns, see below) have a closed ô.
+
+## Body parts: le, not mon
+
+With body parts, French usually uses **le / la / les** when it’s obvious whose body it is — especially with reflexive verbs and *avoir mal à*:
+
+- Je me lave les mains. | I wash my hands.
+- Il s’est cassé la jambe. | He broke his leg.
+- J’ai mal à la tête. | My head hurts.
+- Elle a les yeux bleus. | She has blue eyes.
+
+## Other ways to show possession
+
+- **de** + owner (English ’s): *le livre **de** Paul* (Paul’s book), *la voiture **de** mes parents* (my parents’ car), *la maison **du** voisin*.
+- **être à** + person: *Ce stylo est **à** moi* (This pen is mine), *C’est à qui ? — C’est à Léa.*
+- **Possessive pronouns** (mine, yours…) replace the noun and agree with it: *le mien, la mienne, les miens, les miennes; le tien…; le sien…; le nôtre, la nôtre, les nôtres; le vôtre…; le leur, la leur, les leurs*.
+
+- C’est ton sac ? — Non, c’est le sien. | Is that your bag? — No, it’s his/hers.
+- Ma voiture est vieille, la tienne est neuve. | My car is old; yours is new.
+
+> [!WARNING]
+> There’s no ’s in French: “Paul’s mother” is **la mère de Paul**, never ~~Paul mère~~.
+
+## Quick summary
+
+- mon/ma/mes, ton/ta/tes, son/sa/ses, notre/nos, votre/vos, leur/leurs.
+- Agree with the thing owned, not the owner: son = his or her.
+- mon, ton, son before a feminine vowel: mon amie.
+- Body parts: le/la/les. Owner’s name: la voiture de Paul.
 
 ## Exercises
 
@@ -100,3 +146,53 @@ Before a feminine noun starting with a vowel or silent h, use **mon, ton, son** 
 - en: Our parents are here.
 - answer: Nos parents sont ici
 - answer: Nos parents sont là
+
+### cloze
+- sentence: C’est ___ idée !
+- hint: my
+- answer: mon
+- en: It’s my idea!
+- explain: idée is feminine but starts with a vowel → mon.
+
+### cloze
+- sentence: Ce stylo est à ___.
+- hint: me
+- answer: moi
+- en: This pen is mine.
+- explain: être à + stressed pronoun shows who owns something.
+
+### cloze
+- sentence: Je me lave ___ mains.
+- answer: les
+- en: I’m washing my hands.
+- explain: With body parts and a reflexive verb, French uses the definite article.
+
+### mcq
+- prompt: “Paul’s mother”
+- [ ] Paul mère
+- [ ] la Paul mère
+- [x] la mère de Paul
+- explain: French uses de + owner instead of ’s.
+
+### mcq
+- prompt: “the children and their dog” (one dog)
+- [x] les enfants et leur chien
+- [ ] les enfants et leurs chien
+- [ ] les enfants et leurs chiens
+- explain: One thing owned → leur, whatever the number of owners.
+
+### cloze
+- sentence: C’est ton sac ? — Non, c’est le ___ (his).
+- answer: sien
+- en: Is it your bag? — No, it’s his.
+- explain: sac is masculine → le sien.
+
+### translate
+- en: Our house is small.
+- answer: Notre maison est petite
+- explain: One house → notre; petite agrees with maison.
+
+### translate
+- en: My head hurts.
+- answer: J’ai mal à la tête
+- explain: avoir mal à + definite article for body parts.
