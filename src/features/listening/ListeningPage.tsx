@@ -8,6 +8,7 @@ import { Shelf } from '../../components/Shelf'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore, type SentenceStat } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
+import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { speechSupported, useFrenchVoices } from '../../lib/speech'
 import { LISTEN_CATEGORIES, type ListenCategory } from '../../lib/french'
 import { frTypo } from '../../lib/words'
@@ -24,9 +25,19 @@ export default function ListeningPage() {
   const results = state.stories ?? {}
 
   // Stories: not yet done first (your level first), done ones on the last shelves.
-  const levelOrder = state.startLevel ? [state.startLevel, ...LEVELS.filter((l) => l !== state.startLevel)] : LEVELS
-  const rank = (l: Level) => levelOrder.indexOf(l)
-  const todo = STORIES.filter((s) => !results[s.id]).sort((a, b) => rank(a.level) - rank(b.level))
+  // Your level and below by default (your level first); harder ones only when asked for.
+  const level = useCurrentLevel()
+  const [showHarder, setShowHarder] = useState(false)
+  const harder = harderLevels(level)
+  const shown = (l: Level) => showHarder || withinLevel(l, level)
+  const rank = (l: Level) => (withinLevel(l, level) ? LEVELS.indexOf(level) - LEVELS.indexOf(l) : 10 + LEVELS.indexOf(l))
+  const levelOrder = [...LEVELS].filter(shown).sort((a, b) => rank(a) - rank(b))
+  const todo = STORIES.filter((s) => !results[s.id] && shown(s.level)).sort((a, b) => rank(a.level) - rank(b.level))
+  const harderToggle = harder.length > 0 && (
+    <button type="button" className="btn btn--ghost btn--sm" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
+      {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
+    </button>
+  )
   const done = STORIES.filter((s) => results[s.id]).sort((a, b) => results[b.id].at.localeCompare(results[a.id].at))
 
   // Dictation sets, most useful first.
@@ -85,21 +96,31 @@ export default function ListeningPage() {
         )
       )}
 
-      {todo.length > 0 && (
-        <Shelf
-          title={
-            <>
-              <BookAudio size={17} aria-hidden style={{ verticalAlign: '-3px' }} /> Short stories
-            </>
-          }
-          count={todo.length}
-          hint="1–2 minutes, no text: listen as often as you like, then answer the questions."
-        >
-          {todo.map((s) => (
-            <StoryTile key={s.id} s={s} />
-          ))}
-        </Shelf>
-      )}
+      <Shelf
+        title={
+          <>
+            <BookAudio size={17} aria-hidden style={{ verticalAlign: '-3px' }} /> Short stories
+          </>
+        }
+        count={todo.length}
+        hint={<>1–2 minutes, no text: listen as often as you like, then answer the questions. For your level ({level}) and below.</>}
+        action={harderToggle}
+      >
+        {todo.map((s) => (
+          <StoryTile key={s.id} s={s} />
+        ))}
+        {todo.length === 0 && (
+          <div className="stile stile--action">
+            <span className="stile__icon">
+              <Check size={18} aria-hidden />
+            </span>
+            <span className="stile__title" style={{ fontSize: 15 }}>
+              All {level} stories done!
+            </span>
+            <span className="stile__sub">{harder.length ? `Try ${harder[0]}, or replay them below.` : 'Replay them below to beat your score.'}</span>
+          </div>
+        )}
+      </Shelf>
 
       <Shelf
         title={
@@ -109,13 +130,16 @@ export default function ListeningPage() {
         }
         hint="Hear a sentence, type it, and see which sounds you missed."
         action={
-          <div className="segmented" role="group" aria-label="Sentences per session">
-            {LENGTHS.map((x) => (
-              <button key={x} type="button" aria-pressed={n === x} onClick={() => setN(x)}>
-                {x}
-              </button>
-            ))}
-          </div>
+          <>
+            {harderToggle}
+            <div className="segmented" role="group" aria-label="Sentences per session">
+              {LENGTHS.map((x) => (
+                <button key={x} type="button" aria-pressed={n === x} onClick={() => setN(x)}>
+                  {x}
+                </button>
+              ))}
+            </div>
+          </>
         }
       >
         {sources.map((src) => (

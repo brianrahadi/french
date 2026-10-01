@@ -13,6 +13,7 @@ import { newId, useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { countWords } from '../../lib/ai/writing'
 import { useDocumentTitle } from '../../lib/hooks'
+import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { parseCardId, State } from '../../lib/srs'
 import { displayFr, frTypo } from '../../lib/words'
 import { ago } from '../weak/WeakPage'
@@ -30,7 +31,6 @@ export default function ReadingHome() {
   const texts = useStore((s) => s.texts)
   const read = useStore((s) => s.read)
   const deleteText = useStore((s) => s.deleteText)
-  const startLevel = useStore((s) => s.startLevel)
   const [confirm, setConfirm] = useState<string | null>(null)
   const [paste, setPaste] = useState(false)
   const [generate, setGenerate] = useState<Level | null>(null)
@@ -38,7 +38,12 @@ export default function ReadingHome() {
   // Unfinished things first, shelf by shelf; everything finished goes to the last shelf.
   const opened = texts.filter((t) => !read[t.id] && t.openedAt).sort((a, b) => (b.openedAt ?? '').localeCompare(a.openedAt ?? ''))
   const fresh = texts.filter((t) => !read[t.id] && !t.openedAt)
-  const levels = startLevel ? [startLevel, ...LEVELS.filter((l) => l !== startLevel)] : LEVELS
+  const level = useCurrentLevel()
+  const [showHarder, setShowHarder] = useState(false)
+  const harder = harderLevels(level)
+  // Your level first, then easier ones; harder levels only when asked for.
+  const rank = (l: Level) => (withinLevel(l, level) ? LEVELS.indexOf(level) - LEVELS.indexOf(l) : 10 + LEVELS.indexOf(l))
+  const graded = BUILTIN_TEXTS.filter((t) => !read[t.id] && (showHarder || withinLevel(t.level, level))).sort((a, b) => rank(a.level) - rank(b.level))
   const done = [
     ...texts.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: t, builtin: undefined })),
     ...BUILTIN_TEXTS.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: undefined, builtin: t })),
@@ -56,7 +61,7 @@ export default function ReadingHome() {
           <button type="button" className="btn btn--secondary" onClick={() => setPaste(true)}>
             <ClipboardPaste size={16} aria-hidden /> Paste a text
           </button>
-          <button type="button" className="btn btn--primary" onClick={() => setGenerate(startLevel ?? 'A2')}>
+          <button type="button" className="btn btn--primary" onClick={() => setGenerate(level)}>
             <WandSparkles size={16} aria-hidden /> Write me a story
           </button>
         </div>
@@ -78,25 +83,35 @@ export default function ReadingHome() {
         </Shelf>
       )}
 
-      {levels.map((level) => {
-        const list = BUILTIN_TEXTS.filter((t) => t.level === level && !read[t.id])
-        return (
-          <Shelf key={level} title={<>Graded texts · {level}</>} count={list.length}>
-            {list.map((t) => (
-              <GradedTile key={t.id} t={t} />
-            ))}
-            <button type="button" className="stile stile--action" onClick={() => setGenerate(level)}>
-              <span className="stile__icon">
-                <WandSparkles size={18} aria-hidden />
-              </span>
-              <span className="stile__title" style={{ fontSize: 15 }}>
-                {list.length ? 'Want more?' : 'All read!'} Write a new {level} story
-              </span>
-              <span className="stile__sub">On any topic, with your words</span>
+      <Shelf
+        title="Graded texts"
+        count={graded.length}
+        hint={
+          <>
+            For your level ({level}) and below{showHarder && harder.length > 0 ? <>, plus harder ones</> : null}.
+          </>
+        }
+        action={
+          harder.length > 0 && (
+            <button type="button" className="btn btn--ghost btn--sm" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
+              {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
             </button>
-          </Shelf>
-        )
-      })}
+          )
+        }
+      >
+        {graded.map((t) => (
+          <GradedTile key={t.id} t={t} />
+        ))}
+        <button type="button" className="stile stile--action" onClick={() => setGenerate(level)}>
+          <span className="stile__icon">
+            <WandSparkles size={18} aria-hidden />
+          </span>
+          <span className="stile__title" style={{ fontSize: 15 }}>
+            {graded.length ? 'Want more?' : 'All read!'} Write a new {level} story
+          </span>
+          <span className="stile__sub">On any topic, with your words</span>
+        </button>
+      </Shelf>
 
       {done.length > 0 && (
         <Shelf title="Completed" count={done.length} hint="Read them again any time — you’ll be surprised how much easier they get.">
@@ -111,7 +126,7 @@ export default function ReadingHome() {
       )}
 
       <PasteDialog open={paste} onClose={() => setPaste(false)} />
-      <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? startLevel ?? 'A2'} />
+      <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? level} />
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
