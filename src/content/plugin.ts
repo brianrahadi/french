@@ -26,8 +26,8 @@ export function contentPlugin(): Plugin {
       try {
         if (where.kind === 'vocab') {
           // Decks ship as compact rows and are expanded in the browser, as before.
-          const d = parseDeckRows(parseMarkdown(source), where.level!)
-          const args = JSON.stringify([d.id, d.level, d.title, d.titleFr, d.rows])
+          const d = parseDeckRows(parseMarkdown(source), where.level, where.group)
+          const args = JSON.stringify([d.id, d.level, d.title, d.titleFr, d.rows, d.group])
           return { code: `import { deck } from ${JSON.stringify(BUILD)}\nexport default deck(...JSON.parse(${JSON.stringify(args)}))`, map: null }
         }
         const data = parseContent(source, id)

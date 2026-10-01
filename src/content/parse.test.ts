@@ -154,6 +154,8 @@ describe('other content files', () => {
     expect(describePath('/p/content/README.md')).toBeNull()
     expect(describePath('/p/src/notes.md')).toBeNull()
     expect(() => describePath('/p/content/grammar/03-x.md')).toThrow(/level folder/)
+    expect(describePath('/p/content/vocab/top5000/01-x.md')).toEqual({ kind: 'vocab', group: 'frequency', file: 'content/vocab/top5000/01-x.md' })
+    expect(() => describePath('/p/content/grammar/top5000/01-x.md')).toThrow(/level folder/)
     expect(() => describePath('/p/content/pronunciation/sub/x.md')).toThrow(/directly in content\/pronunciation/)
   })
 

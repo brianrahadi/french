@@ -17,7 +17,7 @@ import {
   Target,
   Wrench,
 } from 'lucide-react'
-import { DECKS } from '../../data/vocab'
+import { THEMED_DECKS } from '../../data/vocab'
 import { LESSONS, lessonsByLevel } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS, type Level } from '../../data/types'
 import { TENSE_BY_ID } from '../../lib/conjugate'
@@ -89,7 +89,7 @@ export default function TodayPage() {
       <SyncPrompt />
 
       {firstRun && <Welcome onPick={(lvl) => {
-        const decks = DECKS.filter((d) => d.level === lvl).map((d) => d.id)
+        const decks = THEMED_DECKS.filter((d) => d.level === lvl).map((d) => d.id)
         state.setStartLevel(lvl, decks)
         navigate(`/grammar/${lessonsByLevel(lvl)[0].id}`)
       }} />}

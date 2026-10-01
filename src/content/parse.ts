@@ -29,10 +29,14 @@ export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'conversations', 'w
 export type ContentKind = (typeof CONTENT_KINDS)[number]
 const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'conversations', 'writing']
 const LEVEL_DIRS: Record<string, Level> = { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' }
+/** Vocabulary decks that aren't sorted by level or theme (the level comes from their front matter). */
+export const FREQUENCY_DIR = 'top5000'
 
 export interface ContentPath {
   kind: ContentKind
   level?: Level
+  /** Set for decks in content/vocab/top5000/ (the 5000 most frequent words). */
+  group?: 'frequency'
   /** Path from the project root, e.g. content/grammar/a1/01-etre-avoir.md */
   file: string
 }
@@ -50,9 +54,13 @@ export function describePath(path: string): ContentPath | null {
     if (parts.length !== 2) throw new ContentError(`Put ${kind} files directly in content/${kind}/.`, 1)
     return { kind, file }
   }
+  if (kind === 'vocab' && parts[1] === FREQUENCY_DIR && parts.length === 3) return { kind, group: 'frequency', file }
   const level = LEVEL_DIRS[parts[1]]
   if (parts.length !== 3 || !level)
-    throw new ContentError(`Put ${kind} files in a level folder: content/${kind}/a1/, a2/, b1/ or b2/.`, 1)
+    throw new ContentError(
+      `Put ${kind} files in a level folder: content/${kind}/a1/, a2/, b1/ or b2/${kind === 'vocab' ? ` (or ${FREQUENCY_DIR}/)` : ''}.`,
+      1,
+    )
   return { kind, level, file }
 }
 
@@ -66,7 +74,7 @@ export function parseContent(source: string, path: string): Lesson | Deck | Read
     case 'grammar':
       return parseLesson(doc, level)
     case 'vocab':
-      return parseDeck(doc, level)
+      return parseDeck(doc, level, where.group)
     case 'reading':
       return parseText(doc, level)
     case 'conversations':
@@ -308,9 +316,9 @@ function parseExercise(type: string, items: ListItem[], line: number): Exercise 
 
 const KINDS = /^(m|f|mf|mpl|fpl|adj(:.+)?|v|adv|prep|conj|pron|expr|num|det|interj)$/
 
-export function parseDeck(doc: MdDocument, level: Level): Deck {
-  const d = parseDeckRows(doc, level)
-  return deck(d.id, d.level, d.title, d.titleFr, d.rows)
+export function parseDeck(doc: MdDocument, level?: Level, group?: 'frequency'): Deck {
+  const d = parseDeckRows(doc, level, group)
+  return deck(d.id, d.level, d.title, d.titleFr, d.rows, d.group)
 }
 
 /** A deck in its compact form (the app expands the rows with deck()). */
@@ -320,10 +328,19 @@ export interface DeckRows {
   title: string
   titleFr: string
   rows: Row[]
+  group?: 'frequency'
 }
 
-export function parseDeckRows(doc: MdDocument, level: Level): DeckRows {
-  const m = readMeta(doc, ['id', 'title', 'titleFr'])
+/**
+ * Decks in a level folder take their level from the folder. Frequency decks
+ * (content/vocab/top5000/) aren't in one, so they say it in the front matter.
+ */
+export function parseDeckRows(doc: MdDocument, level?: Level, group?: 'frequency'): DeckRows {
+  const m = readMeta(doc, group ? ['id', 'title', 'titleFr', 'level'] : ['id', 'title', 'titleFr'])
+  if (group) {
+    level = LEVEL_DIRS[m.level.value.toLowerCase()]
+    if (!level) fail(`"${m.level.value}" isn't a level. Use A1, A2, B1 or B2.`, m.level.line)
+  }
   const tables = doc.blocks.filter((b) => b.kind === 'table')
   for (const b of doc.blocks) if (b.kind !== 'table') fail('A deck file holds just its front matter and one table of words.', b.line)
   if (tables.length !== 1) fail('A deck file needs exactly one table of words.', tables[1]?.line ?? 1)
@@ -352,7 +369,7 @@ export function parseDeckRows(doc: MdDocument, level: Level): DeckRows {
     return row
   })
   if (!rows.length) fail('The deck has no words yet.', t.line)
-  return { id: readId(m.id), level, title: m.title.value, titleFr: m.titleFr.value, rows }
+  return { id: readId(m.id), level: level!, title: m.title.value, titleFr: m.titleFr.value, rows, ...(group && { group }) }
 }
 
 // ───────────── Reading texts ─────────────

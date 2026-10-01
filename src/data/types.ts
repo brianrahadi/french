@@ -39,6 +39,8 @@ export interface Deck {
   title: string
   titleFr: string
   words: Word[]
+  /** 'frequency': one of the "5000 most frequent words" decks rather than a themed deck. */
+  group?: 'frequency'
 }
 
 // ───────────── Grammar ─────────────

@@ -5,7 +5,8 @@ Everything learners study lives here as Markdown files: grammar lessons, vocabul
 ```
 content/
   grammar/        a1/ a2/ b1/ b2/   lessons: explanations + exercises
-  vocab/          a1/ a2/ b1/ b2/   word decks (one table per deck)
+  vocab/          a1/ a2/ b1/ b2/   themed word decks (one table per deck)
+                  top5000/          the 5000 most frequent words, 100 per deck
   reading/        a1/ a2/ b1/ b2/   graded texts with translations
   conversations/  a1/ a2/ b1/ b2/   AI role-plays
   writing/        a1/ a2/ b1/ b2/   writing prompts
@@ -139,6 +140,22 @@ titleFr: La nourriture
 - **Type:** `m` or `f` for nouns, `mf` for either gender (le/la collègue), `mpl` / `fpl` for plural-only nouns (les gens); `adj` for adjectives with the same feminine, `adj:feminine-form` otherwise; or `v`, `adv`, `prep`, `conj`, `pron`, `expr`, `num`, `det`, `interj`.
 - **Example / Translation** are optional but recommended. An example needs its translation. **Note** is optional (you can leave the column out).
 - The columns don't need to line up; they're just easier to read when they do.
+
+### The 5000 most frequent words — `vocab/top5000/NN-words-….md`
+
+The same table format, but these decks aren't sorted by level folder or theme: they follow a frequency list, most common word first, 100 words per file. In the app they're a single "Top 5000 words" switch, and the files are introduced in file-name order, so keep the numbering. Because there's no level folder, the front matter says the level (used for the "New word · A2" label and for dictation):
+
+```markdown
+---
+id: top5000-01
+title: Words 1–100
+titleFr: le, de, être, un…
+level: A1
+---
+```
+
+- A word that's also in a themed deck must be the **same row** (same French, English, Type and Example). It's then one word with one set of cards, shown in both decks; `npm test` checks this.
+- The ranking comes from the lemma frequencies in [Lexique 3.83](http://www.lexique.org) (film subtitles + books, CC BY-SA 4.0), with function words merged (le/la/les → le) and a few artefacts and slurs removed. Glosses and examples were written for the app.
 
 ---
 

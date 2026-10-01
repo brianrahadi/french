@@ -15,11 +15,21 @@ export function wordStatus(wordId: string, cards: Record<string, StoredCard>): W
   return combineStatus([r, p].filter(Boolean).map((c) => cardStatus(c)))
 }
 
-/** New words from active decks (curriculum order), then the learner's own words. */
+/**
+ * New words from active decks (curriculum order), then the learner's own words.
+ * A word in two active decks (themed + frequency) is queued once.
+ */
 export function newWordQueue(s: Pick<State, 'activeDecks' | 'introduced' | 'customWords'>): Word[] {
   const active = new Set(s.activeDecks)
   const out: Word[] = []
-  for (const d of DECKS) if (active.has(d.id)) for (const w of d.words) if (!s.introduced[w.id]) out.push(w)
+  const queued = new Set<string>()
+  for (const d of DECKS)
+    if (active.has(d.id))
+      for (const w of d.words)
+        if (!s.introduced[w.id] && !queued.has(w.id)) {
+          queued.add(w.id)
+          out.push(findWord(w.id, []) ?? w)
+        }
   if (active.has(CUSTOM_DECK_ID)) for (const w of s.customWords) if (!s.introduced[w.id]) out.push(w)
   return out
 }

@@ -60,7 +60,8 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Instant feedback with a character-level diff and an explanation on every item. Wrong answers come back once at the end of the session.
 - Score 80% to master a lesson; mastered lessons return for spaced review (1 → 3 → 7 → 16 → 35 → 90 days).
 
-**Vocabulary — 617 high-frequency words in 25 themed decks**
+**Vocabulary — 5,000+ words: 25 themed decks plus the 5,000 most frequent French words**
+- **Top 5000** is one switch: the most frequent French words, introduced strictly in frequency order (most common first), without themes or levels. Words that are also in a themed deck are shared, so you never learn one twice.
 - Scheduled with **FSRS** (the modern algorithm Anki now uses) via [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs).
 - Every word is learned both ways: *recognition* (FR → EN, self-graded) and *production* (EN → FR, typed and auto-graded, then you confirm the rating).
 - Nouns are always learned with their article; gender is colour-coded **and** labelled (m/f) so it doesn’t rely on colour alone.
@@ -158,7 +159,7 @@ It’s a static site — any static host works.
 ```
 content/          everything learners study, as Markdown — see content/README.md
   grammar/        30 lessons: explanations + exercises (a1/ … b2/)
-  vocab/          25 word decks, one table each (a1/ … b2/)
+  vocab/          25 themed decks (a1/ … b2/) + 50 frequency decks (top5000/)
   reading/        10 graded texts with translations
   conversations/  16 AI role-plays (goals, phrases, character brief)
   writing/        20 writing prompts linked to lessons

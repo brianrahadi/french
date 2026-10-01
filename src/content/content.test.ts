@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { LESSONS, LESSON_BY_ID } from '../data/grammar'
-import { DECKS } from '../data/vocab'
+import { DECKS, THEMED_DECKS } from '../data/vocab'
 import { BUILTIN_TEXTS } from '../data/texts'
 import { SCENARIOS } from '../data/scenarios'
 import { WRITING_PROMPTS } from '../data/writing'
@@ -43,7 +43,7 @@ describe('content folder', () => {
 
   it('keeps each level in order', () => {
     const order = ['A1', 'A2', 'B1', 'B2']
-    for (const list of [LESSONS, DECKS, BUILTIN_TEXTS, SCENARIOS, WRITING_PROMPTS]) {
+    for (const list of [LESSONS, THEMED_DECKS, BUILTIN_TEXTS, SCENARIOS, WRITING_PROMPTS]) {
       const levels = list.map((x) => order.indexOf(x.level))
       expect(levels).toEqual([...levels].sort((a, b) => a - b))
     }

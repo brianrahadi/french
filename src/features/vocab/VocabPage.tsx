@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Layers, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
-import { DECKS, CUSTOM_DECK_ID, allWords } from '../../data/vocab'
+import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, allWords, deckWords } from '../../data/vocab'
 import { LEVELS, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
@@ -10,7 +10,6 @@ import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { customWord, definite, frTypo, matchesSearch, parseImport, speakText } from '../../lib/words'
 import { relativeDay } from '../../lib/date'
-import { cardId } from '../../lib/srs'
 import { useNavigate } from 'react-router'
 import { dueCounts, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus, wordStats } from './selectors'
 
@@ -167,7 +166,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
         </button>
       </div>
       {LEVELS.map((level) => {
-        const levelDecks = DECKS.filter((d) => d.level === level)
+        const levelDecks = THEMED_DECKS.filter((d) => d.level === level)
 
         return (
           <section key={level}>
@@ -180,6 +179,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
           </section>
         )
       })}
+      {FREQUENCY_DECKS.length > 0 && <FrequencySection onView={() => onView(FREQUENCY_ID)} />}
       <section>
         <div className="level-head row" style={{ marginBottom: 10, justifyContent: 'space-between' }}>
           <span className="badge">Yours</span>
@@ -198,6 +198,51 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
         </div>
       </section>
     </div>
+  )
+}
+
+/**
+ * The "5000 most frequent words": one switch for all of them. They're stored as
+ * 100-word decks, which are switched on and off together and introduced in order,
+ * most frequent first.
+ */
+function FrequencySection({ onView }: { onView: () => void }) {
+  const activeDecks = useStore((s) => s.activeDecks)
+  const introduced = useStore((s) => s.introduced)
+  const cards = useStore((s) => s.cards)
+  const setDecksActive = useStore((s) => s.setDecksActive)
+  const active = FREQUENCY_DECK_IDS.every((id) => activeDecks.includes(id))
+  const total = FREQUENCY_WORDS.length
+  const started = FREQUENCY_WORDS.filter((w) => introduced[w.id]).length
+  const known = FREQUENCY_WORDS.filter((w) => wordStatus(w.id, cards) === 'mature').length
+  const title = `Top ${total.toLocaleString('en')} words`
+  return (
+    <section>
+      <div className="level-head row" style={{ marginBottom: 10, justifyContent: 'space-between' }}>
+        <span className="badge">Most frequent</span>
+      </div>
+      <div className="deck-grid">
+        <div className={`deck${active ? ' deck--active' : ''}`}>
+          <div className="deck__text" onClick={onView} style={{ cursor: 'pointer' }} title="View words">
+            <div className="deck__title">{title}</div>
+            <div className="deck__fr fr" lang="fr">
+              Les mots les plus fréquents
+            </div>
+            <div className="muted small" style={{ marginTop: 4 }}>
+              Most common first. Words already in a themed deck are shared, so you learn each one once.
+            </div>
+            <div className="deck__progress">
+              <ProgressBar value={total ? started / total : 0} label={`${title}: ${started} of ${total} words started`} thin />
+              <span className="subtle small tnum">
+                {started}/{total}
+                {known > 0 && ` · ${known} known`}
+              </span>
+            </div>
+          </div>
+          <Switch checked={active} onChange={() => setDecksActive(FREQUENCY_DECK_IDS, !active)} label={`Include “${title}” in new words`} />
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -222,9 +267,10 @@ function BrowseTab() {
   const deckFilter = params.get('deck') || 'all'
 
   const words = useMemo(() => {
-    const list = allWords(customWords).filter((w) => matchesSearch(w, q))
+    // A deck's words in its own order (frequency order for the top 5000).
+    const base = deckFilter === 'all' ? allWords(customWords) : deckWords(deckFilter, customWords)
+    const list = base.filter((w) => matchesSearch(w, q))
     const filtered = list.filter((w) => {
-      if (deckFilter !== 'all' && w.deck !== deckFilter) return false
       if (filter === 'all') return true
       if (filter === 'custom') return w.custom
       return wordStatus(w.id, cards) === filter
@@ -278,11 +324,14 @@ function BrowseTab() {
           aria-label="Filter by deck"
         >
           <option value="all">All decks</option>
-          {DECKS.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.title}
-            </option>
-          ))}
+          <optgroup label="Themed">
+            {THEMED_DECKS.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.title}
+              </option>
+            ))}
+          </optgroup>
+          {FREQUENCY_DECKS.length > 0 && <option value={FREQUENCY_ID}>Top {FREQUENCY_WORDS.length.toLocaleString('en')} words</option>}
           <option value={CUSTOM_DECK_ID}>My words</option>
         </select>
         <select className="select" style={{ width: 'auto' }} value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)} aria-label="Filter by status">

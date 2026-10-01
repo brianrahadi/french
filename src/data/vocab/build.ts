@@ -18,7 +18,7 @@ export function slug(s: string): string {
     .replace(/^-|-$/g, '')
 }
 
-export function deck(id: string, level: Level, title: string, titleFr: string, rows: Row[]): Deck {
+export function deck(id: string, level: Level, title: string, titleFr: string, rows: Row[], group?: 'frequency'): Deck {
   const words: Word[] = rows.map(([fr, en, kind, ex, exEn, note]) => {
     const w: Word = { id: '', fr, en, pos: 'n', level, deck: id, ex, exEn, note }
     if (kind === 'm' || kind === 'f') w.g = kind
@@ -35,5 +35,5 @@ export function deck(id: string, level: Level, title: string, titleFr: string, r
     w.id = `${slug(fr)}-${w.pos === 'n' ? 'n' : w.pos}`
     return w
   })
-  return { id, level, title, titleFr, words }
+  return group ? { id, level, title, titleFr, words, group } : { id, level, title, titleFr, words }
 }
