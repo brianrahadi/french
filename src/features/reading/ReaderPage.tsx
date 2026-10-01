@@ -14,6 +14,8 @@ import { speak, speechSupported, stopSpeaking } from '../../lib/speech'
 import { frTypo } from '../../lib/words'
 import { LookupText } from './LookupText'
 import { translateParagraphs } from './ai'
+import { WordCheck } from './WordCheck'
+import { useWordsToCheck } from './useWordsToCheck'
 
 interface Doc {
   id: string
@@ -117,6 +119,10 @@ function Reader({ doc }: { doc: Doc }) {
   const words = useMemo(() => countWords(doc.paragraphs.join(' ')), [doc.paragraphs])
   const saved = customWords.filter((w) => w.from === `text:${doc.id}`)
 
+  // After "Mark as read": which of the text's vocabulary-bank words did you recognise?
+  const toCheck = useWordsToCheck(doc.paragraphs)
+  const [checking, setChecking] = useState(false)
+
   const toggleTranslation = async () => {
     if (showEn) return setShowEn(false)
     if (doc.translation?.length) return setShowEn(true)
@@ -193,6 +199,11 @@ function Reader({ doc }: { doc: Doc }) {
     if (!read) logActivityBulk(Math.max(1, Math.round(words / 25)), Math.max(1, Math.round(words / 25)))
     markRead(doc.id)
     toast('Texte terminé — bravo !')
+  }
+
+  const handleMarkAsRead = () => {
+    finish()
+    if (toCheck.length) setChecking(true)
   }
 
   return (
@@ -273,29 +284,38 @@ function Reader({ doc }: { doc: Doc }) {
         ))}
       </article>
 
-      <footer className="reader-foot card">
-        <div style={{ minWidth: 0 }}>
-          <div className="card__title">{read ? 'Finished' : 'Done reading?'}</div>
-          <p className="small muted">
-            {saved.length
-              ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
-                  .slice(0, 6)
-                  .map((w) => frTypo(w.fr))
-                  .join(', ')}${saved.length > 6 ? '…' : ''}`
-              : 'Tap words you don’t know to add them to your flashcards.'}
-          </p>
-        </div>
-        <div className="row" style={{ gap: 8 }}>
-          {saved.length > 0 && (
-            <Link to="/vocab/study" className="btn btn--secondary">
-              Study them
-            </Link>
-          )}
-          <button type="button" className="btn btn--primary" onClick={finish}>
-            <Check size={16} aria-hidden /> {read ? 'Read again' : 'Mark as read'}
-          </button>
-        </div>
-      </footer>
+      {checking ? (
+        <WordCheck words={toCheck} onDone={() => setChecking(false)} />
+      ) : (
+        <footer className="reader-foot card">
+          <div style={{ minWidth: 0 }}>
+            <div className="card__title">{read ? 'Finished' : 'Done reading?'}</div>
+            <p className="small muted">
+              {saved.length
+                ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
+                    .slice(0, 6)
+                    .map((w) => frTypo(w.fr))
+                    .join(', ')}${saved.length > 6 ? '…' : ''}`
+                : 'Tap words you don’t know to add them to your flashcards.'}
+            </p>
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            {read && toCheck.length > 0 && (
+              <button type="button" className="btn btn--secondary" onClick={() => setChecking(true)}>
+                Check {toCheck.length} word{toCheck.length > 1 ? 's' : ''}
+              </button>
+            )}
+            {saved.length > 0 && (
+              <Link to="/vocab/study" className="btn btn--secondary">
+                Study them
+              </Link>
+            )}
+            <button type="button" className="btn btn--primary" onClick={handleMarkAsRead}>
+              <Check size={16} aria-hidden /> {read ? 'Read again' : 'Mark as read'}
+            </button>
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

@@ -41,6 +41,7 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Tap any word: the dictionary entry, which verb and tense a form comes from (*allée* → past participle of *aller*), and — with an AI connected — what it means in *this* sentence. Extend the selection with ‹ › to look up whole expressions.
 - Add words to your flashcards with the sentence as the example. Words you’re learning are underlined as you read.
 - Listen to the text with sentence-by-sentence highlighting; show the translation paragraph by paragraph.
+- **After reading**, every word from the text that's in your vocabulary bank is listed (rarest first) and you say whether you recognised it: known words get a recognition card scheduled days ahead, the rest start learning today (and don't use up your daily new words if you knew them). Words already in your reviews count as a review when they're due; hide any word you never want asked about.
 
 **Conversation — role-play with an AI partner**
 - 16 real situations from A1 to B2 (café, bakery, directions, hotel, doctor, job interview, flat visit, returning a product, negotiating, a debate on remote work…), each with goals to reach and useful phrases, plus free conversation on any topic.

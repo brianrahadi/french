@@ -61,9 +61,15 @@ export interface ConjConfig {
 export interface State {
   settings: Settings
   cards: Record<string, StoredCard>
-  introduced: Record<string, string> // wordId → dayKey
+  /**
+   * wordId → dayKey of the day the word was started. A trailing 'k' ("2026-09-30k")
+   * marks a word the learner already knew when it was added (e.g. checked after
+   * reading): it doesn't count toward the daily new-word limit.
+   */
+  introduced: Record<string, string>
   activeDecks: string[]
   customWords: Word[]
+  ignoredWords: Record<string, string> // wordId → timestamp
   lessons: Record<string, LessonProgress>
   conj: Record<string, ConjStat> // `${inf}|${tense}`
   conjConfig: ConjConfig
@@ -171,6 +177,13 @@ interface Actions {
   updateSettings: (patch: Partial<Settings>) => void
   introduceWord: (wordId: string, dirs: CardDir[], alreadyKnown?: boolean) => void
   addCard: (wordId: string, dir: CardDir) => void
+  /**
+   * The learner says whether they recognised each word (e.g. after reading).
+   * Sets the recognition card: a new word they know is scheduled days ahead, a
+   * word they don't know starts learning now (with a production card too if
+   * they study that direction); a word already in their reviews counts as a review.
+   */
+  checkWords: (results: { wordId: string; known: boolean }[], dirs: CardDir[]) => void
   rateCard: (id: string, grade: Grade) => StoredCard
   toggleDeck: (deckId: string) => void
   setDecksActive: (deckIds: string[], active: boolean) => void
@@ -182,6 +195,7 @@ interface Actions {
   setConjConfig: (c: Partial<ConjConfig>) => void
   logActivity: (correct: boolean, opts?: { newWord?: boolean }) => void
   importData: (data: unknown) => void
+  ignoreWord: (wordId: string) => void
   resetAll: () => void
 }
 
@@ -208,6 +222,7 @@ export const initialState: State = {
   introduced: {},
   activeDecks: ['a1-essentials', 'a1-people', 'a1-verbs'],
   customWords: [],
+  ignoredWords: {},
   lessons: {},
   conj: {},
   conjConfig: { tenses: ['present'], set: 'essential', custom: [], length: 20 },
@@ -357,6 +372,24 @@ export const useStore = create<State & Actions>()(
           return { cards, introduced: { ...s.introduced, [wordId]: s.introduced[wordId] ?? dayKey(now) } }
         }),
 
+      checkWords: (results, dirs) =>
+        set((s) => {
+          const now = new Date()
+          const today = dayKey(now)
+          const cards = { ...s.cards }
+          const introduced = { ...s.introduced }
+          for (const { wordId, known } of results) {
+            const rId = cardId(wordId, 'r')
+            const existing = cards[rId]
+            if (existing) cards[rId] = review(existing, known ? Rating.Good : Rating.Again, now, s.settings.retention)
+            else cards[rId] = review(newCard(now), known ? Rating.Easy : Rating.Again, now, s.settings.retention)
+            const pId = cardId(wordId, 'p')
+            if (!known && dirs.includes('p') && !cards[pId]) cards[pId] = newCard(now)
+            if (!introduced[wordId]) introduced[wordId] = known ? `${today}k` : today
+          }
+          return { cards, introduced }
+        }),
+
       addCard: (wordId, dir) =>
         set((s) => {
           const id = cardId(wordId, dir)
@@ -431,6 +464,11 @@ export const useStore = create<State & Actions>()(
           delete introduced[wordId]
           return { cards, introduced, ...tombstone(s, [`card:${cardId(wordId, 'r')}`, `card:${cardId(wordId, 'p')}`]) }
         }),
+
+      ignoreWord: (wordId) =>
+        set((s) => ({
+          ignoredWords: { ...s.ignoredWords, [wordId]: new Date().toISOString() }
+        })),
 
       recordLesson: (lessonId, score) =>
         set((s) => {
@@ -531,6 +569,7 @@ export function exportData(): string {
     introduced: s.introduced,
     activeDecks: s.activeDecks,
     customWords: s.customWords,
+    ignoredWords: s.ignoredWords,
     lessons: s.lessons,
     conj: s.conj,
     conjConfig: s.conjConfig,

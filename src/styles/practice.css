@@ -1484,3 +1484,84 @@
     display: none;
   }
 }
+
+/* ───────────── After reading: which words did you recognise? ───────────── */
+.reader-check {
+  display: block;
+}
+.reader-check__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.reader-check__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+}
+.reader-check__progress > :first-child {
+  flex: 1;
+}
+.reader-check__list {
+  margin: 0 -14px;
+}
+.reader-check__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  border-left: 3px solid transparent;
+}
+.reader-check__row.is-known {
+  border-left-color: var(--success);
+}
+.reader-check__row.is-unknown {
+  border-left-color: var(--warning);
+}
+.reader-check__fr {
+  font-size: 17px;
+}
+.reader-check__context {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reader-check__context strong {
+  color: var(--text);
+}
+.reader-check__en {
+  color: var(--text-2);
+  min-height: 1.4em;
+}
+.reader-check__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.reader-check__actions .segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.reader-check__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+@media (max-width: 640px) {
+  .reader-check__row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .reader-check__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}

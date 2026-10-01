@@ -54,6 +54,7 @@ export function toDoc(s: State): SyncDoc {
     introduced: s.introduced,
     activeDecks: s.activeDecks,
     customWords: s.customWords,
+    ignoredWords: s.ignoredWords ?? {},
     lessons: s.lessons,
     conj: s.conj,
     conjConfig: s.conjConfig,
@@ -185,6 +186,7 @@ export function mergeDocs(local: SyncDoc, remote: SyncDoc, now = new Date()): Sy
     cards,
     introduced,
     customWords,
+    ignoredWords: byKey(local.ignoredWords ?? {}, remote.ignoredWords ?? {}, (x, y) => (x >= y ? x : y)),
     lessons: byKey(local.lessons, remote.lessons, (x, y) => newest(x, y, x.lastAt, y.lastAt)),
     conj: byKey(local.conj, remote.conj, (x, y) => newest(x, y, x.lastAt, y.lastAt)),
     writings: byId(local.writings, remote.writings, (x, y) => newest(x, y))

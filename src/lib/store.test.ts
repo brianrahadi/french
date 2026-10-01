@@ -46,3 +46,27 @@ describe('sync bookkeeping in the store', () => {
     expect(useStore.getState().sync.epoch).not.toBe('')
   })
 })
+
+describe('checking words after reading', () => {
+  it('schedules known words for later and starts the unknown ones, without using up new words', async () => {
+    const { State: S } = await import('./srs')
+    const { newAvailableToday } = await import('../features/vocab/selectors')
+    const before = newAvailableToday(useStore.getState())
+    useStore.getState().checkWords([{ wordId: 'maison-n', known: true }, { wordId: 'gare-n', known: false }], ['r', 'p'])
+    const s = useStore.getState()
+    const known = s.cards['maison-n|r']
+    expect(known.state).toBe(S.Review)
+    expect(new Date(known.due).getTime() - Date.now()).toBeGreaterThan(24 * 3600e3)
+    expect(s.cards['maison-n|p']).toBeUndefined()
+    expect(s.cards['gare-n|r'].state).toBe(S.Learning)
+    expect(s.cards['gare-n|p']).toBeDefined()
+    expect(s.introduced['maison-n']).toBe(`${dayKey()}k`)
+    expect(s.introduced['gare-n']).toBe(dayKey())
+    expect(newAvailableToday(s)).toBe(Math.max(0, before - 1))
+  })
+  it('counts as a review for a word already being learned', () => {
+    useStore.getState().introduceWord('maison-n', ['r'])
+    useStore.getState().checkWords([{ wordId: 'maison-n', known: false }], ['r'])
+    expect(useStore.getState().cards['maison-n|r'].lapses + useStore.getState().cards['maison-n|r'].reps).toBeGreaterThan(0)
+  })
+})
