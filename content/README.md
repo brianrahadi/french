@@ -204,13 +204,13 @@ Madame Martin habite au troisième étage. Elle a un chat.
 ## Questions
 
 ### mcq
-- prompt: Where does Mrs Martin live?
-- [ ] on the ground floor
-- [x] on the third floor
+- prompt: Où habite madame Martin ?
+- [ ] au rez-de-chaussée
+- [x] au troisième étage
 - explain: « Madame Martin habite au troisième étage. »
 ```
 
-Write questions in English for A1–A2 and in French from B1. Ask about the main events and a few details, in story order.
+Write the questions in French at every level — simple wording at A1–A2 (Où… ? Qui… ? Pourquoi… ?). Ask about the main events and a few details, in story order.
 
 ---
 

@@ -26,36 +26,36 @@ Nous avons tout mélangé et nous avons mis le gâteau au four. Ensuite, nous av
 ## Questions
 
 ### mcq
-- prompt: How old was the mother turning?
-- [ ] forty
-- [x] fifty
-- [ ] sixty
+- prompt: Quel âge avait la mère ?
+- [ ] quarante ans
+- [x] cinquante ans
+- [ ] soixante ans
 - explain: « Elle avait cinquante ans. »
 
 ### mcq
-- prompt: Where did they find the recipe?
-- [ ] in their mother’s cookbook
-- [x] on the internet
-- [ ] from their grandmother
+- prompt: Où ont-ils trouvé la recette ?
+- [ ] dans le livre de cuisine de leur mère
+- [x] sur Internet
+- [ ] chez leur grand-mère
 - explain: « J’ai trouvé une recette sur Internet. »
 
 ### mcq
-- prompt: Why did the cake burn?
-- [ ] The oven was broken.
-- [ ] The recipe was wrong.
-- [x] They were decorating and forgot it.
+- prompt: Pourquoi le gâteau a-t-il brûlé ?
+- [ ] Le four était cassé.
+- [ ] La recette était fausse.
+- [x] Ils décoraient le salon et ils l’ont oublié.
 - explain: « Nous étions tellement occupés que nous avons oublié le gâteau ! »
 
 ### mcq
-- prompt: How did their mother react?
-- [ ] She was angry.
-- [x] She laughed and took them to a restaurant.
-- [ ] She made a new cake.
+- prompt: Comment la mère a-t-elle réagi ?
+- [ ] Elle était en colère.
+- [x] Elle a ri et ils sont allés au restaurant.
+- [ ] Elle a fait un nouveau gâteau.
 - explain: « Elle a ri pendant cinq minutes… on va au restaurant ! »
 
 ### mcq
-- prompt: What will they do next year?
-- [ ] try the recipe again
-- [ ] go to the same restaurant
-- [x] buy the cake at a cake shop
+- prompt: Que vont-ils faire l’année prochaine ?
+- [ ] refaire la même recette
+- [ ] retourner au même restaurant
+- [x] acheter le gâteau à la pâtisserie
 - explain: « l’année prochaine, nous achèterons le gâteau à la pâtisserie. »

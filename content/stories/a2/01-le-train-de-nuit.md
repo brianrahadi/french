@@ -26,36 +26,36 @@ Le matin, quand elle s’est réveillée, elle a regardé par la fenêtre : il y
 ## Questions
 
 ### mcq
-- prompt: Why did Camille take the train?
-- [ ] It was cheaper.
-- [x] She doesn’t like flying.
-- [ ] Her friends were on it.
+- prompt: Pourquoi Camille a-t-elle pris le train ?
+- [ ] C’était moins cher.
+- [x] Elle n’aime pas l’avion.
+- [ ] Ses amis étaient dans le train.
 - explain: « Elle n’aime pas l’avion, alors elle a pris le train de nuit. »
 
 ### mcq
-- prompt: Who was in her compartment?
-- [ ] two German students and a Canadian man
-- [x] two Canadian sisters and an old German man
-- [ ] a French family
+- prompt: Qui était dans sa cabine ?
+- [ ] deux étudiants allemands et un Canadien
+- [x] deux sœurs canadiennes et un vieux monsieur allemand
+- [ ] une famille française
 - explain: « deux sœurs canadiennes et un vieux monsieur allemand. »
 
 ### mcq
-- prompt: What broke the ice?
-- [ ] The sisters offered chocolate.
-- [x] The old man suggested playing cards.
-- [ ] Camille asked a question.
+- prompt: Qu’est-ce qui a commencé la conversation ?
+- [ ] Les sœurs ont offert du chocolat.
+- [x] Le monsieur a proposé de jouer aux cartes.
+- [ ] Camille a posé une question.
 - explain: Le monsieur a sorti un jeu de cartes : « Vous voulez jouer ? »
 
 ### mcq
-- prompt: Why didn’t Camille sleep well?
-- [ ] The bed was too small.
-- [ ] The others were talking.
-- [x] The train was noisy.
+- prompt: Pourquoi Camille n’a-t-elle pas bien dormi ?
+- [ ] Le lit était trop petit.
+- [ ] Les autres parlaient.
+- [x] Le train faisait du bruit.
 - explain: « parce que le train faisait du bruit. »
 
 ### mcq
-- prompt: What did she see from the window in the morning?
-- [x] mountains and a lake
-- [ ] the sea
-- [ ] Venice’s canals
+- prompt: Qu’est-ce qu’elle a vu par la fenêtre le matin ?
+- [x] des montagnes et un lac
+- [ ] la mer
+- [ ] les canaux de Venise
 - explain: « il y avait des montagnes et un lac magnifique. »

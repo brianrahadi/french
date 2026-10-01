@@ -26,37 +26,37 @@ Madame Martin rit. « Ah, Biscuit ! Tu aimes bien Thomas ! » Maintenant, tous l
 ## Questions
 
 ### mcq
-- prompt: What colour is Biscuit?
-- [ ] black
-- [ ] grey
+- prompt: De quelle couleur est Biscuit ?
+- [ ] noir
+- [ ] gris
 - [x] orange
-- [ ] white
+- [ ] blanc
 - explain: « Il est gros, il est orange… »
 
 ### mcq
-- prompt: Where does Mrs Martin look first?
-- [x] in the kitchen
-- [ ] in the garden
-- [ ] in the street
+- prompt: Où madame Martin cherche-t-elle d’abord ?
+- [x] dans la cuisine
+- [ ] dans le jardin
+- [ ] dans la rue
 - explain: « Il n’est pas dans la cuisine. »
 
 ### mcq
-- prompt: Who is Thomas?
-- [ ] her son, a teacher
-- [x] her neighbour, a student
-- [ ] her doctor
+- prompt: Qui est Thomas ?
+- [ ] son fils, il est professeur
+- [x] son voisin, il est étudiant
+- [ ] son médecin
 - explain: « son voisin, Thomas. Thomas est étudiant. »
 
 ### mcq
-- prompt: Where is the cat?
-- [ ] under Thomas’s bed
-- [ ] on the balcony
-- [x] on Thomas’s sofa
+- prompt: Où est le chat ?
+- [ ] sous le lit de Thomas
+- [ ] sur le balcon
+- [x] sur le canapé de Thomas
 - explain: « Il dort sur mon canapé. »
 
 ### mcq
-- prompt: What happens every Sunday now?
-- [ ] Thomas looks after the cat.
-- [x] Thomas has a coffee at Mrs Martin’s.
-- [ ] Mrs Martin cooks for Thomas.
+- prompt: Qu’est-ce qui se passe maintenant tous les dimanches ?
+- [ ] Thomas garde le chat.
+- [x] Thomas prend un café chez madame Martin.
+- [ ] Madame Martin fait la cuisine pour Thomas.
 - explain: « tous les dimanches, Thomas prend un café chez madame Martin. »

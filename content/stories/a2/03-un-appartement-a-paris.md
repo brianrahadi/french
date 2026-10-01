@@ -26,37 +26,37 @@ Julien a visité l’appartement le lendemain. La chambre était petite, mais il
 ## Questions
 
 ### mcq
-- prompt: Why did Julien need a flat?
-- [ ] He was starting university.
-- [x] He found a job in Paris.
-- [ ] His old flat was too small.
+- prompt: Pourquoi Julien cherchait-il un appartement ?
+- [ ] Il commençait l’université.
+- [x] Il avait trouvé un travail à Paris.
+- [ ] Son ancien appartement était trop petit.
 - explain: « Quand Julien a trouvé un travail à Paris, il a dû chercher un appartement. »
 
 ### mcq
-- prompt: What was the problem with the studio?
-- [ ] It was dirty.
-- [x] It was tiny and had no lift.
-- [ ] It was too expensive.
+- prompt: Quel était le problème du studio ?
+- [ ] Il était sale.
+- [x] Il était tout petit et il n’y avait pas d’ascenseur.
+- [ ] Il était trop cher.
 - explain: « il faisait seulement quinze mètres carrés, et il n’y avait pas d’ascenseur. »
 
 ### mcq
-- prompt: Why didn’t he take the flat near the Bastille?
-- [ ] It was too dark.
-- [ ] It was too far from work.
-- [x] The rent was too high.
+- prompt: Pourquoi n’a-t-il pas pris l’appartement près de la Bastille ?
+- [ ] Il était trop sombre.
+- [ ] Il était trop loin du travail.
+- [x] Le loyer était trop cher.
 - explain: « le loyer était beaucoup trop cher pour lui. »
 
 ### mcq
-- prompt: Who is Inès?
-- [x] a colleague
-- [ ] a landlady
-- [ ] his sister
+- prompt: Qui est Inès ?
+- [x] une collègue
+- [ ] la propriétaire
+- [ ] sa sœur
 - explain: « une collègue, Inès. »
 
 ### mcq
-- prompt: Which is NOT mentioned about the new flat?
-- [ ] a big kitchen
-- [ ] a balcony with plants
-- [x] a garden
-- [ ] a cat
-- explain: The story mentions a kitchen, a balcony and a cat — not a garden.
+- prompt: Qu’est-ce qui n’est PAS mentionné dans le nouvel appartement ?
+- [ ] une grande cuisine
+- [ ] un balcon avec des plantes
+- [x] un jardin
+- [ ] un chat
+- explain: Le texte parle d’une cuisine, d’un balcon et d’un chat — pas d’un jardin.

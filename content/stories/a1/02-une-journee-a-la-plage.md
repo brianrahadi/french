@@ -26,37 +26,37 @@ L’après-midi, Léa et Hugo jouent au ballon avec d’autres enfants. À six h
 ## Questions
 
 ### mcq
-- prompt: How do they get to the beach?
-- [ ] by train
-- [x] by car
-- [ ] by bike
+- prompt: Comment la famille va-t-elle à la plage ?
+- [ ] en train
+- [x] en voiture
+- [ ] à vélo
 - explain: « Ils prennent la voiture. »
 
 ### mcq
-- prompt: Why doesn’t Hugo enjoy swimming at first?
-- [ ] There are too many people.
-- [ ] He’s hungry.
-- [x] The water is cold.
+- prompt: Pourquoi Hugo ne nage-t-il pas tout de suite ?
+- [ ] Il y a trop de monde.
+- [ ] Il a faim.
+- [x] L’eau est froide.
 - explain: « Hugo veut nager tout de suite, mais l’eau est froide ! »
 
 ### mcq
-- prompt: What do they have for dessert?
-- [ ] ice cream
-- [x] strawberries
-- [ ] apples
-- [ ] cake
+- prompt: Qu’est-ce qu’ils mangent comme dessert ?
+- [ ] de la glace
+- [x] des fraises
+- [ ] des pommes
+- [ ] du gâteau
 - explain: « Comme dessert, il y a des fraises. »
 
 ### mcq
-- prompt: What does Dad do after lunch?
-- [x] He sleeps.
-- [ ] He swims.
-- [ ] He reads a book.
-- explain: « papa dort sous le parasol. » (Mum is the one who reads.)
+- prompt: Que fait papa après le repas ?
+- [x] Il dort.
+- [ ] Il nage.
+- [ ] Il lit un livre.
+- explain: « papa dort sous le parasol. » (C’est maman qui lit.)
 
 ### mcq
-- prompt: What does Léa ask at the end?
-- [ ] Can we stay longer?
-- [x] Shall we come back tomorrow?
-- [ ] Can we eat now?
+- prompt: Que demande Léa à la fin ?
+- [ ] On reste encore un peu ?
+- [x] On revient demain ?
+- [ ] On mange maintenant ?
 - explain: « On revient demain ? »

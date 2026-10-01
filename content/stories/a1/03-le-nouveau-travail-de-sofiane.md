@@ -26,36 +26,36 @@ Le matin, il y a beaucoup de clients. Ils achètent des baguettes et des croissa
 ## Questions
 
 ### mcq
-- prompt: Where is the bakery?
-- [x] near the station
-- [ ] near the school
-- [ ] in the city centre
+- prompt: Où est la boulangerie ?
+- [x] près de la gare
+- [ ] près de l’école
+- [ ] dans le centre-ville
 - explain: « dans une boulangerie, près de la gare. »
 
 ### mcq
-- prompt: What time does Sofiane get up?
-- [ ] at 6
-- [ ] at 5
-- [x] at 4
+- prompt: À quelle heure Sofiane se lève-t-il ?
+- [ ] à six heures
+- [ ] à cinq heures
+- [x] à quatre heures
 - explain: « Il se lève à quatre heures du matin. »
 
 ### mcq
-- prompt: How does he go to work?
-- [ ] by bus
-- [x] on foot
-- [ ] by bike
+- prompt: Comment va-t-il au travail ?
+- [ ] en bus
+- [x] à pied
+- [ ] à vélo
 - explain: « il part à pied. »
 
 ### mcq
-- prompt: How is Mr Dubois described?
-- [ ] small and funny
-- [x] tall, a bit strict, but kind
-- [ ] young and very strict
+- prompt: Comment est monsieur Dubois ?
+- [ ] petit et drôle
+- [x] grand, un peu sévère, mais gentil
+- [ ] jeune et très sévère
 - explain: « Il est grand et un peu sévère, mais il est gentil. »
 
 ### mcq
-- prompt: How does Sofiane feel at noon?
-- [ ] bored
-- [ ] angry with the customers
-- [x] tired, but he likes his job
+- prompt: Comment Sofiane se sent-il à midi ?
+- [ ] Il s’ennuie.
+- [ ] Il est en colère contre les clients.
+- [x] Il est fatigué, mais il aime son travail.
 - explain: « À midi, il est fatigué, mais il aime son travail. »
