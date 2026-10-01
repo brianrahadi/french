@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowRight, Headphones, Play } from 'lucide-react'
-import { LEVELS } from '../../data/types'
-import { Callout, Kbd, Stat } from '../../components/ui'
+import { ArrowRight, BookAudio, Check, Headphones, Play } from 'lucide-react'
+import { LEVELS, type Level } from '../../data/types'
+import { STORIES, storyMinutes } from '../../data/stories'
+import { Callout, Kbd, LevelBadge, Stat } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
@@ -50,8 +51,8 @@ export default function ListeningPage() {
           <div className="page-eyebrow">Compréhension orale</div>
           <h1 className="page-title">Listening</h1>
           <p className="page-subtitle">
-            Dictation trains your ear and your spelling at once: hear a sentence, write it down, and see exactly which sounds you
-            missed — silent endings, sound-alikes, swallowed little words.
+            Two ways to train your ear: short stories to follow from start to finish and answer questions about, and
+            dictation to hear every sound and spelling.
           </p>
         </div>
       </header>
@@ -67,10 +68,16 @@ export default function ListeningPage() {
         )
       )}
 
+      {STORIES.length > 0 && <Stories />}
+
       <section className="card practice-setup" aria-labelledby="dict-setup">
         <h2 id="dict-setup" className="card__title">
           Dictée
         </h2>
+        <p className="small muted" style={{ marginTop: -4 }}>
+          Hear a sentence, write it down, and see exactly which sounds you missed — silent endings, sound-alikes, swallowed
+          little words.
+        </p>
         <div className="practice-setup__row">
           <span className="setup-label">Sentences from</span>
           <div className="row-wrap" style={{ gap: 6 }} role="group" aria-label="Sentences from">
@@ -167,5 +174,63 @@ export default function ListeningPage() {
         </section>
       )}
     </div>
+  )
+}
+
+/** Short stories (1–2 minutes) to listen to, then answer questions about. */
+function Stories() {
+  const results = useStore((s) => s.stories ?? {})
+  const startLevel = useStore((s) => s.startLevel)
+  const [level, setLevel] = useState<Level | 'all'>(startLevel ?? 'all')
+  const shown = STORIES.filter((s) => level === 'all' || s.level === level)
+  return (
+    <section className="section" aria-labelledby="stories-title" style={{ marginTop: 0, marginBottom: 24 }}>
+      <div className="section-title">
+        <span id="stories-title">
+          <BookAudio size={16} aria-hidden style={{ verticalAlign: '-3px', marginRight: 6 }} />
+          Histoires — short stories
+        </span>
+        <div className="row-wrap" style={{ gap: 6 }} role="group" aria-label="Level">
+          <button type="button" className="chip" aria-pressed={level === 'all'} onClick={() => setLevel('all')}>
+            All
+          </button>
+          {LEVELS.map((l) => (
+            <button key={l} type="button" className="chip" aria-pressed={level === l} onClick={() => setLevel(l)}>
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="small muted" style={{ margin: '0 0 12px' }}>
+        Listen to a 1–2 minute story without the text, as many times as you need, then answer comprehension questions.
+        The transcript and translation come after.
+      </p>
+      <div className="card card--flush">
+        {shown.map((s) => {
+          const r = results[s.id]
+          return (
+            <Link key={s.id} to={`/listening/story/${s.id}`} className="list-row story-list__row">
+              <LevelBadge level={s.level} />
+              <div className="story-list__text">
+                <div className="fr" lang="fr">
+                  {frTypo(s.title)}
+                </div>
+                <div className="small subtle">
+                  {s.titleEn} · {s.topic} · {storyMinutes(s)} min
+                </div>
+              </div>
+              {r ? (
+                <span className={`badge tnum ${r.best === 100 ? 'badge--success' : r.best >= 60 ? 'badge--warning' : 'badge--danger'}`}>
+                  {r.best === 100 && <Check size={12} aria-hidden />} {r.best}%
+                </span>
+              ) : (
+                <Play size={16} aria-hidden className="subtle" />
+              )}
+            </Link>
+          )
+        })}
+        {shown.length === 0 && <div className="list-row small muted">No stories at this level yet.</div>}
+      </div>
+    </section>
   )
 }

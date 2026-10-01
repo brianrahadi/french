@@ -86,6 +86,8 @@ export interface State {
   listening: Record<string, SentenceStat>
   /** Read-aloud results per sentence id. */
   speaking: Record<string, SentenceStat>
+  /** Listening-story results (comprehension score, %) per story id. */
+  stories: Record<string, SentenceStat>
   conversations: Conversation[]
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
@@ -165,7 +167,7 @@ interface Actions {
   logMistakes: (ms: NewMistake[]) => void
   resolveMistake: (id: string, resolved?: boolean) => void
   recordSkill: (skill: string, ok: boolean) => void
-  recordSentence: (kind: 'listening' | 'speaking', id: string, score: number) => void
+  recordSentence: (kind: 'listening' | 'speaking' | 'stories', id: string, score: number) => void
   saveConversation: (c: Conversation) => void
   deleteConversation: (id: string) => void
   saveText: (t: ReaderText) => void
@@ -234,6 +236,7 @@ export const initialState: State = {
   mistakes: [],
   skills: {},
   listening: {},
+  stories: {},
   speaking: {},
   conversations: [],
   texts: [],
@@ -330,14 +333,14 @@ export const useStore = create<State & Actions>()(
 
       recordSentence: (kind, id, score) =>
         set((s) => {
-          const prev = s[kind][id]
+          const prev = s[kind]?.[id]
           const stat: SentenceStat = {
             n: (prev?.n ?? 0) + 1,
             best: Math.max(prev?.best ?? 0, score),
             last: score,
             at: new Date().toISOString(),
           }
-          return { [kind]: { ...s[kind], [id]: stat } } as Partial<State>
+          return { [kind]: { ...(s[kind] ?? {}), [id]: stat } } as Partial<State>
         }),
 
       saveConversation: (c) =>
@@ -603,6 +606,7 @@ export function exportData(): string {
     mistakes: s.mistakes,
     skills: s.skills,
     listening: s.listening,
+    stories: s.stories,
     speaking: s.speaking,
     conversations: s.conversations,
     texts: s.texts,

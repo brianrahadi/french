@@ -18,6 +18,7 @@ import {
   type Scenario,
   type ScenarioIcon,
   type SoundSet,
+  type StoryDef,
   type WritingPrompt,
 } from '../data/types.ts'
 import { deck, type Row } from '../data/vocab/build.ts'
@@ -25,9 +26,9 @@ import { ContentError, parseMarkdown, type Field, type ListItem, type MdBlock, t
 
 export { ContentError }
 
-export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'conversations', 'writing', 'pronunciation'] as const
+export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'pronunciation'] as const
 export type ContentKind = (typeof CONTENT_KINDS)[number]
-const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'conversations', 'writing']
+const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing']
 const LEVEL_DIRS: Record<string, Level> = { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' }
 /** Vocabulary decks that aren't sorted by level or theme (the level comes from their front matter). */
 export const FREQUENCY_DIR = 'top5000'
@@ -65,7 +66,7 @@ export function describePath(path: string): ContentPath | null {
 }
 
 /** Parses one content file (by its path) into app data. */
-export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | Scenario | WritingPrompt | SoundSet {
+export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | StoryDef | Scenario | WritingPrompt | SoundSet {
   const where = describePath(path)
   if (!where) throw new ContentError('This file is not in a content folder the app knows about.', 1)
   const doc = parseMarkdown(source)
@@ -77,6 +78,8 @@ export function parseContent(source: string, path: string): Lesson | Deck | Read
       return parseDeck(doc, level, where.group)
     case 'reading':
       return parseText(doc, level)
+    case 'stories':
+      return parseStory(doc, level)
     case 'conversations':
       return parseScenario(doc, level)
     case 'writing':
@@ -391,6 +394,56 @@ export function parseText(doc: MdDocument, level: Level): ReaderTextDef {
   if (!paragraphs.length) fail('The text is empty.', 1)
   if (!paragraphs[paragraphs.length - 1].en) fail('The last paragraph needs its English translation ("> …").', doc.blocks[doc.blocks.length - 1].line)
   return { id: readId(m.id), level, title: m.title.value, titleEn: m.titleEn.value, topic: m.topic.value, paragraphs }
+}
+
+// ───────────── Listening stories ─────────────
+
+/**
+ * "## Story": French paragraphs, each followed by its translation on a "> " line.
+ * "## Questions": ### mcq exercises (prompt, options, explain).
+ */
+export function parseStory(doc: MdDocument, level: Level): StoryDef {
+  const m = readMeta(doc, ['id', 'title', 'titleEn', 'topic'])
+  const paragraphs: { fr: string; en: string }[] = []
+  const questions: StoryDef['questions'] = []
+  let part: '' | 'story' | 'questions' = ''
+  let current: { line: number; items: ListItem[] } | null = null
+  const finish = () => {
+    if (current) questions.push(parseExercise('mcq', current.items, current.line) as StoryDef['questions'][number])
+    current = null
+  }
+  for (const b of doc.blocks) {
+    if (b.kind === 'heading' && b.depth === 2) {
+      const k = key(b.text)
+      if (k === 'story' && !part) part = 'story'
+      else if (k === 'questions' && part === 'story') part = 'questions'
+      else fail('A story has two sections, in this order: "## Story" and "## Questions".', b.line)
+      continue
+    }
+    if (part === 'story') {
+      if (b.kind === 'paragraph') {
+        const last = paragraphs[paragraphs.length - 1]
+        if (last && !last.en) fail('Add the English translation of the paragraph above as a "> " line before starting the next one.', b.line)
+        paragraphs.push({ fr: b.text, en: '' })
+      } else if (b.kind === 'quote' && !b.alert) {
+        const last = paragraphs[paragraphs.length - 1]
+        if (!last || last.en) fail('A "> " translation must follow a French paragraph.', b.line)
+        last.en = b.text
+      } else fail('The story is French paragraphs, each followed by its English translation on a "> " line.', b.line)
+    } else if (part === 'questions') {
+      if (b.kind === 'heading' && b.depth === 3) {
+        finish()
+        if (b.text.trim().toLowerCase() !== 'mcq') fail('Story questions are multiple choice: start each with "### mcq".', b.line)
+        current = { line: b.line, items: [] }
+      } else if (b.kind === 'list' && current) current.items.push(...b.items)
+      else fail('Under "## Questions", start each question with "### mcq" followed by "- prompt: …" and the options.', b.line)
+    } else fail('Start with a "## Story" section.', b.line)
+  }
+  finish()
+  if (!paragraphs.length) fail('The story is empty.', 1)
+  if (!paragraphs[paragraphs.length - 1].en) fail('The last paragraph needs its English translation ("> …").', 1)
+  if (questions.length < 3) fail('Add at least 3 questions under "## Questions".', 1)
+  return { id: readId(m.id), level, title: m.title.value, titleEn: m.titleEn.value, topic: m.topic.value, paragraphs, questions }
 }
 
 // ───────────── Conversation scenarios ─────────────

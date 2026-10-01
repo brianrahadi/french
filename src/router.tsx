@@ -39,6 +39,7 @@ export const router = createBrowserRouter(
         { path: 'practice', lazy: page(() => import('./features/practice/PracticeHub')) },
         { path: 'weak', lazy: page(() => import('./features/weak/WeakPage')) },
         { path: 'listening', lazy: page(() => import('./features/listening/ListeningPage')) },
+        { path: 'listening/story/:id', lazy: page(() => import('./features/listening/StoryPage')) },
         { path: 'speaking', lazy: page(() => import('./features/speaking/SpeakingPage')) },
         { path: 'reading', lazy: page(() => import('./features/reading/ReadingHome')) },
         { path: 'reading/:id', lazy: page(() => import('./features/reading/ReaderPage')) },

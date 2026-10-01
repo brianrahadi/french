@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { LESSONS, LESSON_BY_ID } from '../data/grammar'
 import { DECKS, THEMED_DECKS } from '../data/vocab'
 import { BUILTIN_TEXTS } from '../data/texts'
+import { STORIES } from '../data/stories'
 import { SCENARIOS } from '../data/scenarios'
 import { WRITING_PROMPTS } from '../data/writing'
 import { SOUND_SETS } from '../data/sounds'
@@ -23,14 +24,15 @@ describe('content folder', () => {
     expect(LESSONS.length).toBe(count('grammar'))
     expect(DECKS.length).toBe(count('vocab'))
     expect(BUILTIN_TEXTS.length).toBe(count('reading'))
+    expect(STORIES.length).toBe(count('stories'))
     expect(SCENARIOS.length).toBe(count('conversations'))
     expect(WRITING_PROMPTS.length).toBe(count('writing'))
     expect(SOUND_SETS.length).toBe(count('pronunciation'))
-    expect(md.length).toBe(LESSONS.length + DECKS.length + BUILTIN_TEXTS.length + SCENARIOS.length + WRITING_PROMPTS.length + SOUND_SETS.length)
+    expect(md.length).toBe(LESSONS.length + DECKS.length + BUILTIN_TEXTS.length + STORIES.length + SCENARIOS.length + WRITING_PROMPTS.length + SOUND_SETS.length)
   })
 
   it('uses each id once per kind', () => {
-    for (const list of [LESSONS, DECKS, BUILTIN_TEXTS, SCENARIOS, WRITING_PROMPTS, SOUND_SETS]) {
+    for (const list of [LESSONS, DECKS, BUILTIN_TEXTS, STORIES, SCENARIOS, WRITING_PROMPTS, SOUND_SETS]) {
       const ids = list.map((x) => x.id)
       expect(ids.filter((id, i) => ids.indexOf(id) !== i), 'duplicate ids').toEqual([])
     }
@@ -43,9 +45,24 @@ describe('content folder', () => {
 
   it('keeps each level in order', () => {
     const order = ['A1', 'A2', 'B1', 'B2']
-    for (const list of [LESSONS, THEMED_DECKS, BUILTIN_TEXTS, SCENARIOS, WRITING_PROMPTS]) {
+    for (const list of [LESSONS, THEMED_DECKS, BUILTIN_TEXTS, STORIES, SCENARIOS, WRITING_PROMPTS]) {
       const levels = list.map((x) => order.indexOf(x.level))
       expect(levels).toEqual([...levels].sort((a, b) => a - b))
+    }
+  })
+})
+
+describe('listening stories', () => {
+  it('last 1–2 minutes and have well-formed questions', async () => {
+    const { storyMinutes } = await import('../data/stories')
+    for (const st of STORIES) {
+      expect(storyMinutes(st), st.id).toBeGreaterThanOrEqual(1)
+      expect(storyMinutes(st), st.id).toBeLessThanOrEqual(2)
+      expect(st.questions.length, st.id).toBeGreaterThanOrEqual(3)
+      for (const q of st.questions) {
+        expect(q.answer, `${st.id}: ${q.prompt}`).toBeLessThan(q.options.length)
+        expect(new Set(q.options).size, `${st.id}: ${q.prompt}`).toBe(q.options.length)
+      }
     }
   })
 })

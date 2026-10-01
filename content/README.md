@@ -8,6 +8,7 @@ content/
   vocab/          a1/ a2/ b1/ b2/   themed word decks (one table per deck)
                   top5000/          the 5000 most frequent words, 100 per deck
   reading/        a1/ a2/ b1/ b2/   graded texts with translations
+  stories/        a1/ a2/ b1/ b2/   listening stories (1–2 min) + questions
   conversations/  a1/ a2/ b1/ b2/   AI role-plays
   writing/        a1/ a2/ b1/ b2/   writing prompts
   pronunciation/                    sound practice sets
@@ -179,6 +180,37 @@ Nous avons visité la vieille ville et nous avons très bien mangé.
 
 > We visited the old town and ate very well.
 ```
+
+---
+
+## Listening stories — `stories/<level>/NN-name.md`
+
+A short story (about 120–240 words, 1–2 minutes read aloud) that learners hear without the text, then answer questions about. The story is French paragraphs each followed by a `>` translation, like a reading text; the questions are `### mcq` items (prompt, options with exactly one `[x]`, explain). At least 3 questions.
+
+```markdown
+---
+id: a1-le-chat
+title: Le chat de madame Martin
+titleEn: Mrs Martin’s cat
+topic: Neighbours
+---
+
+## Story
+
+Madame Martin habite au troisième étage. Elle a un chat.
+
+> Mrs Martin lives on the third floor. She has a cat.
+
+## Questions
+
+### mcq
+- prompt: Where does Mrs Martin live?
+- [ ] on the ground floor
+- [x] on the third floor
+- explain: « Madame Martin habite au troisième étage. »
+```
+
+Write questions in English for A1–A2 and in French from B1. Ask about the main events and a few details, in story order.
 
 ---
 

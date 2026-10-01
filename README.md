@@ -26,7 +26,8 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - They’re grouped by the rule behind them: grammar points you keep missing, verb/tense pairs with low recent accuracy, words that keep slipping, and the kinds of sounds you mishear. Recent mistakes weigh more; three right answers in a row make a spot fade.
 - **Practice** builds a targeted session: exercises from your weakest lessons, the verb forms you miss, your slippery words, “fix your own sentence” items made from your writing and conversation corrections, and sentences you misheard.
 
-**Listening — dictation**
+**Listening — short stories and dictation**
+- 12 short stories (A1 → B2, 1–2 minutes each) to listen to without the text: play, pause, skip back a sentence, slow / normal / fast. Then answer comprehension questions, check your score with explanations, and read the transcript (tap any word to look it up) with its translation. Your best score is kept for each story.
 - Hear a sentence (normal or slow, as often as you like), type it, and see each word marked: right, accent slip, wrong, missed or extra.
 - Mistakes are classified — silent endings (*parle / parlent*, *aimé / aimer*), sound-alikes (*a / à*, *et / est*, *ces / ses*), accents, missed little words, spelling — with a short tip for each.
 - Sentences come from the words you’re learning or from any level (≈700 sentences from the decks and lessons). Sentences that went badly come back.
@@ -162,6 +163,7 @@ content/          everything learners study, as Markdown — see content/README.
   grammar/        30 lessons: explanations + exercises (a1/ … b2/)
   vocab/          25 themed decks (a1/ … b2/) + 50 frequency decks (top5000/)
   reading/        10 graded texts with translations
+  stories/        12 listening stories with comprehension questions
   conversations/  16 AI role-plays (goals, phrases, character brief)
   writing/        20 writing prompts linked to lessons
   pronunciation/  8 sound practice sets

@@ -1568,3 +1568,77 @@
 .reader-check__sentence-en {
   font-style: italic;
 }
+
+/* ───────────── Listening stories ───────────── */
+.story-steps {
+  display: flex;
+  gap: 18px;
+  margin: 4px 0 16px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.story-steps__item.is-current {
+  color: var(--text);
+  font-weight: 650;
+}
+.story-player__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.story-player__main {
+  min-width: 150px;
+}
+.story-player__progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.story-player__progress > :first-child {
+  flex: 1;
+}
+.story-player--compact .story-player__main {
+  min-width: 0;
+}
+.story-q__prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 17px;
+  font-weight: 560;
+}
+.story-q .options {
+  margin-top: 14px;
+}
+.option--selected {
+  border-color: var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface)) !important;
+}
+.story-score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.story-score__num {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+.story-score > div:nth-child(2) {
+  flex: 1;
+  min-width: 200px;
+}
+.story-list__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.story-list__text {
+  flex: 1;
+  min-width: 0;
+}

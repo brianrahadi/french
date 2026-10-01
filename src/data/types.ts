@@ -115,6 +115,19 @@ export interface Lesson {
 
 // ───────────── Reading ─────────────
 
+/** A short story to listen to (1–2 minutes), with comprehension questions. */
+export interface StoryDef {
+  id: string
+  level: Level
+  title: string // French title
+  titleEn: string
+  topic: string
+  /** French paragraph + English translation; read aloud one sentence at a time. */
+  paragraphs: { fr: string; en: string }[]
+  /** Multiple-choice comprehension questions, answered after listening. */
+  questions: Extract<Exercise, { type: 'mcq' }>[]
+}
+
 export interface ReaderTextDef {
   id: string // kebab-case, prefixed with the level, e.g. 'a1-ma-famille'
   level: Level
