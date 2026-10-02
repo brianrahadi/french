@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Badge, Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core'
 import { CheckCircle2, RotateCcw } from 'lucide-react'
 import { FocusShell } from '../../components/FocusShell'
 import { SpeakButton } from '../../components/SpeakButton'
-import { Kbd } from '../../components/ui'
+import { Callout, Kbd } from '../../components/ui'
 import { SOUND_SETS } from '../../data/sounds'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
@@ -49,12 +50,14 @@ function SpeakingSession() {
   if (!items.length)
     return (
       <FocusShell progress={0} exitTo="/speaking" label="Speaking">
-        <div className="results">
-          <h1 className="results__title">No sentences here yet</h1>
-          <Link to="/speaking" className="btn btn--primary">
+        <Stack align="center" ta="center" gap="xs" pt="xl">
+          <Title order={1} className="fr" fz={28} fw={600}>
+            No sentences here yet
+          </Title>
+          <Button component={Link} to="/speaking" mt="sm">
             Choose other sentences
-          </Link>
-        </div>
+          </Button>
+        </Stack>
       </FocusShell>
     )
 
@@ -73,11 +76,9 @@ function SpeakingSession() {
         mode={mode}
         context={
           set && pos === 0 ? (
-            <div className="callout callout--tip" style={{ marginBottom: 14 }}>
-              <div>
-                <strong>{set.title}.</strong> {set.tip}
-              </div>
-            </div>
+            <Callout kind="tip">
+              <strong>{set.title}.</strong> {set.tip}
+            </Callout>
           ) : undefined
         }
         onAnswered={onAnswered}
@@ -94,43 +95,53 @@ function SpeakingSummary({ log }: { log: SpeakAnswer[] }) {
   const tried = log.filter((x) => x.attempts > 0)
   const avg = tried.length ? Math.round(tried.reduce((a, x) => a + x.score, 0) / tried.length) : 0
   return (
-    <div className="results">
-      <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-      <h1 className="results__title">Bien parlé&nbsp;!</h1>
-      <p className="muted">
+    <Stack align="center" ta="center" gap="xs" pt="xl">
+      <CheckCircle2 size={44} color="var(--mantine-color-green-6)" aria-hidden />
+      <Title order={1} className="fr" fz={28} fw={600}>
+        Bien parlé&nbsp;!
+      </Title>
+      <Text c="dimmed">
         {tried.length} sentence{tried.length === 1 ? '' : 's'} spoken{tried.length ? ` · average ${avg}%` : ''}
-      </p>
-      <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 22 }}>
-        <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate(`/speaking/session?${params.toString()}&r=${Date.now()}`)}>
-          <RotateCcw size={17} aria-hidden /> Again
-        </button>
-        <Link to="/speaking" className="btn btn--primary btn--lg">
-          Done <Kbd>↵</Kbd>
-        </Link>
-      </div>
-      <div className="card card--flush mistake-list">
+      </Text>
+      <Group justify="center" gap="sm" mt="md">
+        <Button size="lg" variant="default" onClick={() => navigate(`/speaking/session?${params.toString()}&r=${Date.now()}`)} leftSection={<RotateCcw size={17} aria-hidden />}>
+          Again
+        </Button>
+        <Button component={Link} to="/speaking" size="lg" rightSection={<Kbd>↵</Kbd>}>
+          Done
+        </Button>
+      </Group>
+      <Card padding={0} w="100%" ta="left" mt="lg">
         {log.map((x, i) => {
           const missed = x.match ? x.match.words.filter((_, k) => !x.match!.heard[k]) : []
           return (
-            <div key={i} className="mistake row" style={{ alignItems: 'flex-start', gap: 10 }}>
+            <Group
+              key={i}
+              align="flex-start"
+              wrap="nowrap"
+              gap={10}
+              px="md"
+              py="sm"
+              style={i ? { borderTop: '1px solid var(--mantine-color-default-border)' } : undefined}
+            >
               <SpeakButton text={x.sentence.fr} size="sm" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="mistake__a" lang="fr">
-                  <strong>{frTypo(x.sentence.fr)}</strong>
-                </div>
+              <Box flex={1} miw={0}>
+                <Text className="fr" lang="fr" fw={700} fz={17}>
+                  {frTypo(x.sentence.fr)}
+                </Text>
                 {missed.length > 0 && (
-                  <div className="small muted">
+                  <Text size="sm" c="dimmed">
                     Not caught: <span lang="fr">{missed.map(frTypo).join(', ')}</span>
-                  </div>
+                  </Text>
                 )}
-              </div>
-              <span className={`badge tnum ${x.attempts === 0 ? '' : x.score >= 90 ? 'badge--success' : x.score >= 60 ? 'badge--warning' : 'badge--danger'}`}>
+              </Box>
+              <Badge className="tnum" color={x.attempts === 0 ? 'gray' : x.score >= 90 ? 'green' : x.score >= 60 ? 'orange' : 'red'}>
                 {x.attempts === 0 ? 'skipped' : `${x.score}%`}
-              </span>
-            </div>
+              </Badge>
+            </Group>
           )
         })}
-      </div>
-    </div>
+      </Card>
+    </Stack>
   )
 }

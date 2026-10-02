@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
+import { Badge, Card, Container, Group, SimpleGrid, Text, ThemeIcon, type MantineColor } from '@mantine/core'
 import { ArrowRight, AudioLines, BookOpenText, Headphones, MessagesSquare, Mic, NotebookPen, Sparkles, Target } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
+import { PageHeader } from '../../components/PageHeader'
 import { computeWeakSpots } from '../weak/weak'
+
+const TONE_COLOR: Record<NonNullable<Skill['tone']>, MantineColor> = { green: 'green', pink: 'pink', amber: 'orange' }
 
 interface Skill {
   to: string
@@ -94,41 +98,46 @@ export default function PracticeHub() {
   ]
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">S’entraîner</div>
-          <h1 className="page-title">Practice</h1>
-          <p className="page-subtitle">Use what you’ve learned: listen, speak, read, write and talk — and fix what keeps going wrong.</p>
-        </div>
-      </header>
-      <div className="skill-grid">
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="S’entraîner"
+        title="Practice"
+        subtitle="Use what you’ve learned: listen, speak, read, write and talk — and fix what keeps going wrong."
+      />
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
         {skills.map((k) => (
-          <Link key={k.to} to={k.to} className="card card--interactive skill-card">
-            <div className="row" style={{ gap: 12 }}>
-              <div className={`hero-card__icon${k.tone ? ` hero-card__icon--${k.tone}` : ''}`}>{k.icon}</div>
+          <Card key={k.to} component={Link} to={k.to} display="flex" style={{ flexDirection: 'column', gap: 10, color: 'inherit', textDecoration: 'none' }}>
+            <Group gap="sm" wrap="nowrap">
+              <ThemeIcon variant="light" size={44} radius="md" color={k.tone ? TONE_COLOR[k.tone] : undefined}>
+                {k.icon}
+              </ThemeIcon>
               <div style={{ minWidth: 0 }}>
-                <div className="card__title">{k.title}</div>
-                <div className="small subtle fr" lang="fr">
+                <Text fw={650}>{k.title}</Text>
+                <Text size="sm" c="dimmed" className="fr" lang="fr">
                   {k.fr}
-                </div>
+                </Text>
               </div>
-            </div>
-            <p className="small muted skill-card__text">{k.text}</p>
-            <div className="row skill-card__foot">
-              <span className="small">{k.meta}</span>
-              <div className="spacer" />
-              {k.ai && !ai ? (
-                <span className="badge" title="Needs an AI provider">
-                  <Sparkles size={12} aria-hidden /> AI
-                </span>
-              ) : (
-                <ArrowRight size={16} aria-hidden className="subtle" />
-              )}
-            </div>
-          </Link>
+            </Group>
+            <Text size="sm" c="dimmed" style={{ flex: 1 }}>
+              {k.text}
+            </Text>
+            <Card.Section withBorder inheritPadding py="sm">
+              <Group gap="xs" justify="space-between" wrap="nowrap">
+                <Text size="sm">{k.meta}</Text>
+                {k.ai && !ai ? (
+                  <Badge color="gray" size="sm" title="Needs an AI provider" leftSection={<Sparkles size={12} aria-hidden />}>
+                    AI
+                  </Badge>
+                ) : (
+                  <Text c="dimmed" span display="inline-flex">
+                    <ArrowRight size={16} aria-hidden />
+                  </Text>
+                )}
+              </Group>
+            </Card.Section>
+          </Card>
         ))}
-      </div>
-    </div>
+      </SimpleGrid>
+    </Container>
   )
 }

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import { ArrowLeft, LoaderCircle, Send, Sparkles } from 'lucide-react'
+import { Anchor, Box, Button, Card, Collapse, Group, Loader, Paper, SegmentedControl, Text, Textarea, TextInput, Title, Container } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
+import { ArrowLeft, ChevronDown, Send, Sparkles } from 'lucide-react'
 import { PROMPT_BY_ID } from '../../data/writing'
 import { LESSONS, LESSON_BY_ID } from '../../data/grammar'
 import { LEVELS, type Level } from '../../data/types'
@@ -58,17 +60,14 @@ export default function WritingEditor() {
   const [error, setError] = useState('')
   const abort = useRef<AbortController | null>(null)
   const area = useRef<HTMLTextAreaElement>(null)
+  const [showPhrases, setShowPhrases] = useState(false)
+  // Same breakpoints as the app shell: the bottom nav appears at 860px, the submit bar stacks at 480px.
+  const withBottomNav = useMediaQuery('(max-width: 860px)')
+  const narrow = useMediaQuery('(max-width: 480px)')
 
   useEffect(() => saveDraft(draftKey, text === original?.text ? '' : text), [draftKey, text, original?.text])
   useEffect(() => () => abort.current?.abort(), [])
 
-  // Grow the textarea with its content.
-  useEffect(() => {
-    const el = area.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.max(260, el.scrollHeight + 2)}px`
-  }, [text])
 
   const words = countWords(text)
   const [min, max] = prompt?.words ?? [30, 250]
@@ -141,97 +140,131 @@ export default function WritingEditor() {
     })
   }
 
-  const counterClass = words === 0 ? '' : words < min ? 'text-warning' : words > max ? 'text-warning' : 'text-success'
+  const counterColor = words === 0 ? undefined : words < min || words > max ? 'orange' : 'green'
 
   return (
-    <div className="page page--narrow">
-      <Link to={original ? `/writing/${original.id}` : '/writing'} className="back-link">
+    <Container size={760} py="xl">
+      <Anchor
+        component={Link}
+        to={original ? `/writing/${original.id}` : '/writing'}
+        size="sm"
+        fw={600}
+        c="dimmed"
+        mb="sm"
+        display="inline-flex"
+        style={{ alignItems: 'center', gap: 6 }}
+      >
         <ArrowLeft size={16} aria-hidden /> {original ? 'Back to feedback' : 'Writing'}
-      </Link>
+      </Anchor>
 
-      <section className="card writing-task" aria-labelledby="task-title">
+      <Card component="section" aria-labelledby="task-title">
         {original && (
-          <div className="pill" style={{ marginBottom: 10 }}>
+          <Text size="sm" fw={600} c="indigo" mb={10}>
             Rewrite — use your corrections, but try not to copy them
-          </div>
+          </Text>
         )}
         {kind === 'prompt' ? (
           <>
-            <div className="row-wrap" style={{ marginBottom: 8 }}>
+            <Group gap="xs" mb={8}>
               <LevelBadge level={prompt!.level} />
-              <span className="subtle small">
+              <Text span size="sm" c="dimmed">
                 {min}–{max} words
-              </span>
-            </div>
-            <h1 id="task-title" className="writing-task__title fr" lang="fr">
+              </Text>
+            </Group>
+            <Title order={1} id="task-title" fz={28} fw={600} className="fr" lang="fr">
               {prompt!.titleFr}
-            </h1>
-            <p className="writing-task__text">{prompt!.task}</p>
-            <div className="row-wrap small" style={{ marginTop: 10 }}>
-              <span className="subtle">Practices:</span>
+            </Title>
+            <Text fz={16} c="dimmed" mt={6}>
+              {prompt!.task}
+            </Text>
+            <Group gap={6} mt={10}>
+              <Text span size="sm" c="dimmed">
+                Practices:
+              </Text>
               {prompt!.lessons.map((id) => (
-                <Link key={id} to={`/grammar/${id}`} className="chip chip--sm">
+                <Button key={id} component={Link} to={`/grammar/${id}`} variant="default" size="compact-sm" radius="xl" fw={500}>
                   {LESSON_BY_ID[id]?.title ?? id}
-                </Link>
+                </Button>
               ))}
-            </div>
-            <details className="phrases">
-              <summary>Useful phrases</summary>
-              <div className="phrases__list">
+            </Group>
+            <Button
+              variant="subtle"
+              size="compact-sm"
+              mt={14}
+              px={4}
+              aria-expanded={showPhrases}
+              aria-controls="writing-phrases"
+              onClick={() => setShowPhrases((v) => !v)}
+              rightSection={<ChevronDown size={14} aria-hidden style={{ transform: showPhrases ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }} />}
+            >
+              Useful phrases
+            </Button>
+            <Collapse expanded={showPhrases}>
+              <Group gap={6} mt={10} id="writing-phrases">
                 {prompt!.phrases.map((ph) => (
-                  <button key={ph} type="button" className="chip chip--sm fr" lang="fr" onClick={() => insert(ph)} title="Insert">
+                  <Button
+                    key={ph}
+                    variant="default"
+                    size="compact-sm"
+                    radius="xl"
+                    fw={400}
+                    fz={14.5}
+                    className="fr"
+                    lang="fr"
+                    onClick={() => insert(ph)}
+                    title="Insert"
+                  >
                     {frTypo(ph)}
-                  </button>
+                  </Button>
                 ))}
-              </div>
-            </details>
+              </Group>
+            </Collapse>
           </>
         ) : (
           <>
-            <h1 id="task-title" className="writing-task__title fr" lang="fr">
+            <Title order={1} id="task-title" fz={28} fw={600} className="fr" lang="fr">
               {kind === 'custom' ? 'Ton propre sujet' : 'Écriture libre'}
-            </h1>
+            </Title>
             {kind === 'custom' ? (
-              <div className="field" style={{ marginTop: 10 }}>
-                <label className="label" htmlFor="custom-task">
-                  What will you write about?
-                </label>
-                <input
-                  id="custom-task"
-                  className="input"
-                  value={customTask}
-                  onChange={(e) => setCustomTask(e.target.value)}
-                  placeholder="e.g. Describe your favourite café in Vancouver"
-                />
-              </div>
+              <TextInput
+                id="custom-task"
+                mt={10}
+                label="What will you write about?"
+                value={customTask}
+                onChange={(e) => setCustomTask(e.currentTarget.value)}
+                placeholder="e.g. Describe your favourite café in Vancouver"
+              />
             ) : (
-              <p className="writing-task__text">Write about anything — your day, a plan, a message to a friend.</p>
+              <Text fz={16} c="dimmed" mt={6}>
+                Write about anything — your day, a plan, a message to a friend.
+              </Text>
             )}
-            <div className="row" style={{ marginTop: 12, gap: 10 }}>
-              <span className="label">Your level</span>
-              <div className="segmented" role="group" aria-label="Your level">
-                {LEVELS.map((l) => (
-                  <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)}>
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Group gap={10} mt={12}>
+              <Text span size="sm" fw={500}>
+                Your level
+              </Text>
+              <SegmentedControl size="sm" data={LEVELS} value={level} onChange={(v) => setLevel(v as Level)} aria-label="Your level" />
+            </Group>
           </>
         )}
-      </section>
+      </Card>
 
-      <div className="writing-editor">
+      {/* The writing surface is the core of the page: keeps its own frame (focus ring) and French typography. */}
+      <Box className="writing-editor">
         <label htmlFor="writing-text" className="sr-only">
           Your text in French
         </label>
-        <textarea
+        <Textarea
           id="writing-text"
           ref={area}
-          className="writing-area"
+          variant="unstyled"
+          autosize
+          minRows={8}
+          classNames={{ input: 'writing-area' }}
+          styles={{ input: { minHeight: 260, padding: '20px 22px 8px', fontSize: 19, lineHeight: 1.7 } }}
           lang="fr"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => setText(e.currentTarget.value)}
           placeholder="Écris ici…"
           spellCheck={false}
           autoCorrect="off"
@@ -245,49 +278,77 @@ export default function WritingEditor() {
             }
           }}
         />
-        <div className="writing-editor__bar">
+        <Group justify="space-between" align="flex-end" gap={12} px={14} pb={14}>
           <AccentBar inputRef={area} onInsert={setText} disabled={loading} />
-          <span className={`small tnum ${counterClass}`} aria-live="polite">
+          <Text span size="sm" className="tnum" c={counterColor} aria-live="polite">
             {words} word{words === 1 ? '' : 's'}
-            {kind === 'prompt' && <span className="subtle"> · aim for {min}–{max}</span>}
-          </span>
-        </div>
-      </div>
+            {kind === 'prompt' && (
+              <Text span c="dimmed" inherit>
+                {' '}
+                · aim for {min}–{max}
+              </Text>
+            )}
+          </Text>
+        </Group>
+      </Box>
 
-      {error && (
-        <div style={{ marginTop: 14 }}>
-          <Callout kind="warn">{error}</Callout>
-        </div>
-      )}
+      {error && <Callout kind="warn">{error}</Callout>}
 
       {!ai && (
-        <div style={{ marginTop: 16 }}>
+        <Box mt={16}>
           <ConnectAiCard title="Connect an AI to get feedback" />
-        </div>
+        </Box>
       )}
 
-      <div className="writing-submit">
-        {loading ? (
-          <>
-            <div className="writing-loading" role="status">
-              <LoaderCircle size={18} className="spin" aria-hidden />
-              {ai?.name ?? 'The AI'} is reading your text…
-            </div>
-            <button type="button" className="btn btn--ghost" onClick={() => abort.current?.abort()}>
-              Cancel
-            </button>
-          </>
-        ) : (
-          <>
-            <span className="subtle small">
-              <Sparkles size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> Corrections explain every change
-            </span>
-            <button type="button" className="btn btn--primary btn--lg" onClick={submit} disabled={!canSubmit}>
-              <Send size={17} aria-hidden /> Get feedback <Kbd>⌘↵</Kbd>
-            </button>
-          </>
-        )}
-      </div>
-    </div>
+      <Paper
+        pos="sticky"
+        bottom={withBottomNav ? 'calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px)' : 12}
+        mt={16}
+        py={10}
+        pr={10}
+        pl={16}
+        radius={16}
+        shadow="md"
+        style={{
+          zIndex: 5,
+          background: 'color-mix(in srgb, var(--mantine-color-body) 92%, transparent)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}
+      >
+        <Group justify="space-between" gap={12} wrap="nowrap">
+          {loading ? (
+            <>
+              <Group gap={10} role="status" fw={600} c="var(--mantine-primary-color-light-color)" wrap="nowrap">
+                <Loader size={18} aria-hidden />
+                {ai?.name ?? 'The AI'} is reading your text…
+              </Group>
+              <Button variant="subtle" color="gray" onClick={() => abort.current?.abort()}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              {!narrow && (
+                <Text span size="sm" c="dimmed">
+                  <Sparkles size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> Corrections explain every change
+                </Text>
+              )}
+              <Button
+                size="lg"
+                fullWidth={narrow}
+                ml="auto"
+                onClick={submit}
+                disabled={!canSubmit}
+                leftSection={<Send size={17} aria-hidden />}
+                rightSection={<Kbd>⌘↵</Kbd>}
+              >
+                Get feedback
+              </Button>
+            </>
+          )}
+        </Group>
+      </Paper>
+    </Container>
   )
 }

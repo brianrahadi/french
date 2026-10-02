@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Badge, Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core'
 import { RotateCcw, Trophy } from 'lucide-react'
 import { TENSE_BY_ID, type Tense } from '../../lib/conjugate'
 import { FocusShell } from '../../components/FocusShell'
@@ -54,13 +55,15 @@ function DrillSession() {
   if (!total) {
     return (
       <FocusShell progress={0} exitTo="/conjugation" label="Drill">
-        <div className="results">
-          <h1 className="results__title">Nothing to drill</h1>
-          <p className="muted">Pick at least one tense and a verb set.</p>
-          <Link to="/conjugation" className="btn btn--primary">
+        <Stack align="center" ta="center" gap="xs" pt="xl">
+          <Title order={1} className="fr" fz={28} fw={600}>
+            Nothing to drill
+          </Title>
+          <Text c="dimmed">Pick at least one tense and a verb set.</Text>
+          <Button component={Link} to="/conjugation" mt="sm">
             Set up a drill
-          </Link>
-        </div>
+          </Button>
+        </Stack>
       </FocusShell>
     )
   }
@@ -102,45 +105,55 @@ function DrillSession() {
     }
     return (
       <FocusShell progress={1} exitTo="/conjugation" label="Drill" count={`${total}/${total}`}>
-        <div className="results">
-          <Trophy size={40} color={pct >= 80 ? 'var(--success)' : 'var(--warning)'} aria-hidden />
-          <div className="results__score tnum">{pct}%</div>
-          <h1 className="results__title">{pct === 100 ? 'Sans faute !' : pct >= 80 ? 'Très bien !' : 'Continue comme ça !'}</h1>
-          <p className="muted">
+        <Stack align="center" ta="center" gap="xs" pt="xl">
+          <Trophy size={40} color={pct >= 80 ? 'var(--mantine-color-green-6)' : 'var(--mantine-color-orange-6)'} aria-hidden />
+          <Text className="fr tnum" fz={64} fw={600} lh={1} lts="-0.03em">
+            {pct}%
+          </Text>
+          <Title order={1} className="fr" fz={28} fw={600}>
+            {pct === 100 ? 'Sans faute !' : pct >= 80 ? 'Très bien !' : 'Continue comme ça !'}
+          </Title>
+          <Text c="dimmed">
             {correct} of {total} right on the first try.
-          </p>
-          <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 18 }}>
+          </Text>
+          <Group justify="center" gap="sm" mt="md">
             {mistakes.length > 0 && (
-              <button className="btn btn--primary btn--lg" onClick={() => navigate(retryUrl())} autoFocus>
-                <RotateCcw size={17} aria-hidden /> Drill my mistakes
-              </button>
+              <Button size="lg" onClick={() => navigate(retryUrl())} autoFocus leftSection={<RotateCcw size={17} aria-hidden />}>
+                Drill my mistakes
+              </Button>
             )}
-            <button className="btn btn--secondary btn--lg" onClick={() => navigate(`/conjugation/drill?seed=${Date.now()}`)}>
+            <Button size="lg" variant="default" onClick={() => navigate(`/conjugation/drill?seed=${Date.now()}`)}>
               New drill
-            </button>
-            <Link to="/conjugation" className={`btn btn--lg ${mistakes.length ? 'btn--ghost' : 'btn--primary'}`}>
+            </Button>
+            <Button component={Link} to="/conjugation" size="lg" variant={mistakes.length ? 'subtle' : 'filled'} color={mistakes.length ? 'gray' : undefined}>
               Done
-            </Link>
-          </div>
+            </Button>
+          </Group>
           {mistakes.length > 0 && (
-            <div className="card card--flush mistake-list">
-              <div className="section-title" style={{ padding: '14px 18px 0', margin: 0 }}>
+            <Card padding={0} w="100%" ta="left" mt="lg">
+              <Title order={2} size="h5" c="dimmed" tt="uppercase" px="md" pt="md" pb="xs">
                 To review
-              </div>
+              </Title>
               {mistakes.map((m, i) => (
-                <div key={i} className="mistake">
-                  <div className="mistake__q">
+                <Box key={i} px="md" py="sm" style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}>
+                  <Text size="sm" c="dimmed">
                     {m.item.inf} · {TENSE_BY_ID[m.item.tense].label}
-                  </div>
-                  <div className="mistake__a" lang="fr">
-                    {m.given && <span className="mistake__yours">{m.given}</span>}
-                    <strong>{frTypo(fullForm(m.item))}</strong>
-                  </div>
-                </div>
+                  </Text>
+                  <Group gap="sm" className="fr" lang="fr" fz={17}>
+                    {m.given && (
+                      <Text span c="red" td="line-through" fz="inherit">
+                        {m.given}
+                      </Text>
+                    )}
+                    <Text span fw={700} fz="inherit">
+                      {frTypo(fullForm(m.item))}
+                    </Text>
+                  </Group>
+                </Box>
               ))}
-            </div>
+            </Card>
           )}
-        </div>
+        </Stack>
       </FocusShell>
     )
   }
@@ -155,7 +168,7 @@ function DrillSession() {
       <DrillQuestion
         key={pos}
         item={item}
-        badge={pos >= total ? <span className="badge badge--warning">Retry</span> : undefined}
+        badge={pos >= total ? <Badge color="orange">Retry</Badge> : undefined}
         onAnswered={onAnswered}
         onContinue={next}
       />

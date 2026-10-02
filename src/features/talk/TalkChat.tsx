@@ -1,6 +1,27 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
+  ActionIcon,
+  Alert,
+  Anchor,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  List,
+  Loader,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+  Textarea,
+  Title,
+} from '@mantine/core'
+import {
   ArrowLeft,
   ArrowRight,
   Check,
@@ -9,7 +30,6 @@ import {
   Flag,
   Languages,
   Lightbulb,
-  LoaderCircle,
   Mic,
   Plus,
   RotateCcw,
@@ -23,7 +43,8 @@ import { LESSON_BY_ID } from '../../data/grammar'
 import { alreadyHave, findWord } from '../../data/vocab'
 import { AccentBar } from '../../components/AccentBar'
 import { ConnectAiCard } from '../../components/AiSetup'
-import { Empty, Ring } from '../../components/ui'
+import { Callout, Empty, Ring } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
 import { newId, useStore } from '../../lib/store'
@@ -60,14 +81,15 @@ export default function TalkChatRoute() {
   useDocumentTitle(c ? c.title : 'Conversation')
   if (!c)
     return (
-      <div className="page">
-        <Link to="/talk" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Talk
-        </Link>
+      <Container size={720} py="xl">
+        <PageHeader back={{ to: '/talk', label: 'Talk' }} title="Conversation" />
         <Empty icon={<Flag size={30} />} title="This conversation isn’t here any more">
-          It may have been deleted. <Link to="/talk">Start a new one</Link>
+          It may have been deleted.{' '}
+          <Anchor component={Link} to="/talk" inherit>
+            Start a new one
+          </Anchor>
         </Empty>
-      </div>
+      </Container>
     )
   return <TalkChat key={c.id} c={c} />
 }
@@ -131,14 +153,6 @@ function TalkChat({ c }: { c: Conversation }) {
       inputRef.current?.focus()
     }
   }, [mic.state, mic.result])
-
-  // Grow the textarea.
-  useEffect(() => {
-    const el = inputRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(160, el.scrollHeight + 2)}px`
-  }, [input])
 
   const run = async (conv: Conversation) => {
     abort.current?.abort()
@@ -233,66 +247,77 @@ function TalkChat({ c }: { c: Conversation }) {
     if (k === 'accents') setAccents(v)
   }
 
+  const pressed = (on: boolean) => (on ? { variant: 'light' as const } : { variant: 'subtle' as const, color: 'gray' })
+
   return (
     <div className="chat">
-      <header className="chat-top">
-        <button type="button" className="icon-btn" onClick={() => navigate('/talk')} aria-label="Back to conversations">
+      <Group component="header" gap={8} wrap="nowrap" px="md" py={10} bg="var(--surface)" style={{ borderBottom: '1px solid var(--border)' }}>
+        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/talk')} aria-label="Back to conversations">
           <ArrowLeft size={20} aria-hidden />
-        </button>
-        <div className="chat-top__title">
-          <span className="fr" lang="fr">
+        </ActionIcon>
+        <Stack gap={0} flex={1} miw={0} lh={1.25}>
+          <Text fz={18} fw={600} truncate className="fr" lang="fr">
             {frTypo(c.title)}
-          </span>
-          <span className="small subtle">
+          </Text>
+          <Text size="sm" c="dimmed">
             with {aiName} · {c.level}
-          </span>
-        </div>
+          </Text>
+        </Stack>
         {scenario && (
-          <span className={`badge ${allGoals ? 'badge--success' : ''} tnum hide-xs`} title="Goals reached">
-            <Flag size={12} aria-hidden /> {c.goalsMet.length}/{scenario.goals.length}
-          </span>
+          <Badge
+            color={allGoals ? 'green' : 'gray'}
+            leftSection={<Flag size={12} aria-hidden />}
+            className="tnum"
+            visibleFrom="xs"
+            title="Goals reached"
+          >
+            {c.goalsMet.length}/{scenario.goals.length}
+          </Badge>
         )}
-        <button
-          type="button"
-          className="icon-btn"
+        <ActionIcon
+          {...pressed(showEn)}
+          size="lg"
           aria-pressed={showEn}
           onClick={() => toggle('en', !showEn)}
           aria-label={showEn ? 'Hide translations' : 'Show translations'}
           title="Translations"
         >
           <Languages size={19} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className="icon-btn"
+        </ActionIcon>
+        <ActionIcon
+          {...pressed(voice)}
+          size="lg"
           aria-pressed={voice}
           onClick={() => toggle('voice', !voice)}
           aria-label={voice ? 'Stop reading replies aloud' : 'Read replies aloud'}
           title="Read replies aloud"
         >
           {voice ? <Volume2 size={19} aria-hidden /> : <VolumeX size={19} aria-hidden />}
-        </button>
+        </ActionIcon>
         {!finished && (
-          <button
-            type="button"
-            className={`btn btn--sm ${allGoals || c.ended ? 'btn--primary' : 'btn--secondary'}`}
+          <Button
+            size="xs"
+            variant={allGoals || c.ended ? 'filled' : 'default'}
             onClick={finish}
-            disabled={myTurns === 0 || fbLoading || !ai}
+            disabled={myTurns === 0 || !ai}
+            loading={fbLoading}
+            leftSection={<Check size={15} aria-hidden />}
           >
-            {fbLoading ? <LoaderCircle size={15} className="spin" aria-hidden /> : <Check size={15} aria-hidden />} Finish
-          </button>
+            Finish
+          </Button>
         )}
-      </header>
+      </Group>
 
-      <div
-        className="chat-scroll"
+      <Box
         ref={scroller}
+        flex={1}
+        style={{ overflowY: 'auto', overscrollBehavior: 'contain' }}
         onScroll={(e) => {
           const el = e.currentTarget
           stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
         }}
       >
-        <div className="chat-inner">
+        <Stack gap={14} maw={720} mx="auto" px="md" pt={20} pb={28}>
           {scenario ? (
             <ScenarioIntro
               scenario={scenario}
@@ -304,17 +329,15 @@ function TalkChat({ c }: { c: Conversation }) {
               disabled={finished}
             />
           ) : (
-            <div className="chat-intro card">
-              <p className="small muted" style={{ margin: 0 }}>
+            <Card padding="md">
+              <Text size="sm" c="dimmed">
                 Free conversation{c.topic ? ` about “${c.topic}”` : ''}. Write in French — mistakes are corrected under each message. Stuck?
                 Tap <Lightbulb size={13} aria-hidden style={{ verticalAlign: '-2px' }} /> for ideas, or write in English.
-              </p>
-            </div>
+              </Text>
+            </Card>
           )}
 
-          {!ai && !finished && (
-            <ConnectAiCard title="Connect an AI to continue this conversation" />
-          )}
+          {!ai && !finished && <ConnectAiCard title="Connect an AI to continue this conversation" />}
 
           {c.turns.map((t, i) =>
             t.role === 'ai' ? (
@@ -331,16 +354,7 @@ function TalkChat({ c }: { c: Conversation }) {
 
           {pending !== null && <AiBubble turn={{ id: 'pending', role: 'ai', text: pending, at: '' }} name={aiName} showEn={false} streaming />}
 
-          {error && (
-            <div className="chat-error" role="alert">
-              <span>{error}</span>
-              {awaitingReply && (
-                <button type="button" className="btn btn--secondary btn--sm" onClick={() => run(current())}>
-                  <RotateCcw size={14} aria-hidden /> Retry
-                </button>
-              )}
-            </div>
-          )}
+          {error && <ErrorBox message={error} onRetry={awaitingReply ? () => run(current()) : undefined} />}
 
           {(fbLoading || fbError || c.feedback) && (
             <FeedbackPanel
@@ -352,54 +366,76 @@ function TalkChat({ c }: { c: Conversation }) {
               onAgain={() => navigate(`/talk/${startConversation({ scenarioId: c.scenarioId, level: c.level, topic: c.topic })}`)}
             />
           )}
-        </div>
-      </div>
+        </Stack>
+      </Box>
 
       {!finished && (
-        <footer className="chat-composer">
-          {help && (
-            <div className="chat-suggest" aria-label="Ideas for what to say">
-              {suggestions.length ? (
-                suggestions.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    className="chip fr"
-                    lang="fr"
-                    onClick={() => {
-                      setInput(s)
-                      inputRef.current?.focus()
-                    }}
-                  >
-                    {frTypo(s)}
-                  </button>
-                ))
-              ) : (
-                <span className="small muted">
-                  {scenario ? 'Try one of the useful phrases above, or write in English and see how to say it.' : 'Say anything — or write in English and see how to say it in French.'}
-                </span>
-              )}
-            </div>
-          )}
-          <div className="chat-input-row">
-            <button
-              type="button"
-              className="icon-btn"
-              aria-pressed={help}
-              onClick={() => setHelp((v) => !v)}
-              aria-label="Ideas for what to say"
-              title="Ideas for what to say"
-            >
-              <Lightbulb size={19} aria-hidden />
-            </button>
-            <div className="chat-input">
-              <textarea
+        <Box
+          component="footer"
+          px="md"
+          pt={10}
+          pb="calc(10px + env(safe-area-inset-bottom))"
+          bg="var(--surface)"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <Box maw={720} mx="auto">
+            {help && (
+              <Group gap={6} pb={10} aria-label="Ideas for what to say">
+                {suggestions.length ? (
+                  suggestions.map((s) => (
+                    <Button
+                      key={s}
+                      variant="default"
+                      radius="xl"
+                      size="sm"
+                      h="auto"
+                      mih={34}
+                      py={5}
+                      fz={15}
+                      fw={400}
+                      className="fr"
+                      lang="fr"
+                      styles={{ label: { whiteSpace: 'normal', textAlign: 'left' } }}
+                      onClick={() => {
+                        setInput(s)
+                        inputRef.current?.focus()
+                      }}
+                    >
+                      {frTypo(s)}
+                    </Button>
+                  ))
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    {scenario ? 'Try one of the useful phrases above, or write in English and see how to say it.' : 'Say anything — or write in English and see how to say it in French.'}
+                  </Text>
+                )}
+              </Group>
+            )}
+            <Group gap={6} wrap="nowrap" align="flex-end">
+              <ActionIcon
+                {...(help ? { variant: 'light' as const, color: 'orange' } : { variant: 'subtle' as const, color: 'gray' })}
+                size={44}
+                radius="xl"
+                aria-pressed={help}
+                onClick={() => setHelp((v) => !v)}
+                aria-label="Ideas for what to say"
+                title="Ideas for what to say"
+              >
+                <Lightbulb size={19} aria-hidden />
+              </ActionIcon>
+              <Textarea
                 ref={inputRef}
-                rows={1}
-                className="fr"
+                flex={1}
+                miw={0}
+                autosize
+                minRows={1}
+                maxRows={5}
+                radius="xl"
+                size="md"
+                classNames={{ input: 'fr' }}
                 lang="fr"
                 value={mic.state === 'listening' && mic.interim ? `${input} ${mic.interim}`.trim() : input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => setInput(e.currentTarget.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                     e.preventDefault()
@@ -411,81 +447,139 @@ function TalkChat({ c }: { c: Conversation }) {
                 disabled={!ai}
                 autoComplete="off"
                 spellCheck={false}
+                rightSectionPointerEvents="all"
+                rightSection={
+                  <ActionIcon
+                    {...pressed(accents)}
+                    radius="xl"
+                    size="lg"
+                    className="fr"
+                    fz={18}
+                    aria-pressed={accents}
+                    onClick={() => toggle('accents', !accents)}
+                    aria-label="Accent keys"
+                    title="Accent keys"
+                  >
+                    é
+                  </ActionIcon>
+                }
               />
-              <button
-                type="button"
-                className="chat-input__acc"
-                aria-pressed={accents}
-                onClick={() => toggle('accents', !accents)}
-                aria-label="Accent keys"
-                title="Accent keys"
-              >
-                é
-              </button>
-            </div>
-            {mic.mode !== 'record' && (
-              <button
-                type="button"
-                className={`icon-btn${mic.state === 'listening' ? ' icon-btn--rec' : ''}`}
-                onClick={() => (mic.state === 'listening' ? mic.stop() : mic.start())}
-                disabled={!ai || mic.state === 'starting' || mic.state === 'processing'}
-                aria-label={mic.state === 'listening' ? 'Stop dictation' : 'Speak your reply'}
-                title="Speak your reply"
-              >
-                {mic.state === 'listening' ? <Square size={17} aria-hidden /> : mic.state === 'processing' ? <LoaderCircle size={18} className="spin" aria-hidden /> : <Mic size={19} aria-hidden />}
-              </button>
+              {mic.mode !== 'record' && (
+                <ActionIcon
+                  {...(mic.state === 'listening' ? { variant: 'filled' as const, color: 'red' } : { variant: 'subtle' as const, color: 'gray' })}
+                  size={44}
+                  radius="xl"
+                  onClick={() => (mic.state === 'listening' ? mic.stop() : mic.start())}
+                  disabled={!ai || mic.state === 'starting'}
+                  loading={mic.state === 'processing'}
+                  aria-label={mic.state === 'listening' ? 'Stop dictation' : 'Speak your reply'}
+                  title="Speak your reply"
+                >
+                  {mic.state === 'listening' ? <Square size={17} aria-hidden /> : <Mic size={19} aria-hidden />}
+                </ActionIcon>
+              )}
+              <ActionIcon size={44} radius="xl" variant="filled" onClick={() => send()} disabled={!input.trim() || pending !== null || !ai} aria-label="Send">
+                <Send size={17} aria-hidden />
+              </ActionIcon>
+            </Group>
+            {accents && <AccentBar inputRef={inputRef} onInsert={setInput} />}
+            {mic.state === 'error' && (
+              <Text size="sm" c="red" mt={6}>
+                {mic.error}
+              </Text>
             )}
-            <button
-              type="button"
-              className="btn btn--primary chat-send"
-              onClick={() => send()}
-              disabled={!input.trim() || pending !== null || !ai}
-              aria-label="Send"
-            >
-              <Send size={17} aria-hidden />
-            </button>
-          </div>
-          {accents && <AccentBar inputRef={inputRef} onInsert={setInput} />}
-          {mic.state === 'error' && <p className="small text-danger chat-mic-error">{mic.error}</p>}
-        </footer>
+          </Box>
+        </Box>
       )}
     </div>
+  )
+}
+
+/** A red box with an error message and an optional Retry button. */
+function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <Alert color="red" variant="light" radius="lg" role="alert" p="sm">
+      <Group justify="space-between" gap={10}>
+        <Text size="sm" c="red">
+          {message}
+        </Text>
+        {onRetry && (
+          <Button variant="default" size="xs" onClick={onRetry} leftSection={<RotateCcw size={14} aria-hidden />}>
+            Retry
+          </Button>
+        )}
+      </Group>
+    </Alert>
+  )
+}
+
+/** The scenario's goals, ticked off as they're reached. */
+function GoalList({ goals, met, label, srDone }: { goals: Scenario['goals']; met: string[]; label?: string; srDone?: boolean }) {
+  return (
+    <List spacing={6} listStyleType="none" aria-label={label} fz={14.5} styles={{ itemWrapper: { alignItems: 'flex-start' }, itemIcon: { marginTop: 2 } }}>
+      {goals.map((g) => {
+        const ok = met.includes(g.id)
+        return (
+          <List.Item
+            key={g.id}
+            icon={
+              ok ? (
+                <CheckCircle2 size={17} aria-hidden color="var(--mantine-color-green-filled)" />
+              ) : (
+                <Circle size={17} aria-hidden color="var(--mantine-color-dimmed)" />
+              )
+            }
+          >
+            <Text span inherit c={ok ? 'dimmed' : undefined} td={ok ? 'line-through' : undefined}>
+              {g.text}
+            </Text>
+            {srDone && <span className="sr-only">{ok ? ' (done)' : ''}</span>}
+          </List.Item>
+        )
+      })}
+    </List>
   )
 }
 
 function ScenarioIntro({ scenario, met, onPhrase, disabled }: { scenario: Scenario; met: string[]; onPhrase: (p: string) => void; disabled: boolean }) {
   const [open, setOpen] = useState(true)
   return (
-    <section className="chat-intro card">
-      <p className="chat-intro__setting">{scenario.setting}</p>
-      <ul className="goal-list" aria-label="Your goals">
-        {scenario.goals.map((g) => {
-          const ok = met.includes(g.id)
-          return (
-            <li key={g.id} className={ok ? 'is-done' : ''}>
-              {ok ? <CheckCircle2 size={17} aria-hidden /> : <Circle size={17} aria-hidden />}
-              <span>{g.text}</span>
-              <span className="sr-only">{ok ? ' (done)' : ''}</span>
-            </li>
-          )
-        })}
-      </ul>
-      <button type="button" className="link-btn small" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+    <Card component="section" padding="md">
+      <Text c="dimmed" mb={10}>
+        {scenario.setting}
+      </Text>
+      <GoalList goals={scenario.goals} met={met} label="Your goals" srDone />
+      <Anchor component="button" type="button" size="sm" fw={600} mt={10} onClick={() => setOpen((v) => !v)} aria-expanded={open} style={{ alignSelf: 'flex-start' }}>
         {open ? 'Hide useful phrases' : 'Useful phrases'}
-      </button>
+      </Anchor>
       {open && (
-        <div className="phrase-list">
+        <SimpleGrid cols={{ base: 1, xs: 2, sm: 3 }} spacing={6} mt={10}>
           {scenario.phrases.map((p) => (
-            <button key={p.fr} type="button" className="phrase" onClick={() => onPhrase(p.fr)} disabled={disabled} title="Insert into your message">
-              <span className="fr" lang="fr">
+            <Card
+              key={p.fr}
+              component="button"
+              type="button"
+              padding="xs"
+              radius="md"
+              bg="var(--surface-2)"
+              ta="left"
+              onClick={() => onPhrase(p.fr)}
+              disabled={disabled}
+              title="Insert into your message"
+              opacity={disabled ? 0.6 : undefined}
+              style={{ font: 'inherit', color: 'inherit', cursor: disabled ? 'default' : 'pointer' }}
+            >
+              <Text fz={15.5} className="fr" lang="fr">
                 {frTypo(p.fr)}
-              </span>
-              <span className="small subtle">{p.en}</span>
-            </button>
+              </Text>
+              <Text size="sm" c="dimmed">
+                {p.en}
+              </Text>
+            </Card>
           ))}
-        </div>
+        </SimpleGrid>
       )}
-    </section>
+    </Card>
   )
 }
 
@@ -494,9 +588,9 @@ function AiBubble({ turn, name, showEn, streaming, source }: { turn: ChatTurn; n
   const en = (showEn || reveal) && turn.translation
   return (
     <div className="msg msg--ai">
-      <span className="msg__avatar" aria-hidden>
+      <Avatar size={32} radius="xl" color="indigo" className="fr" aria-hidden>
         {name[0]}
-      </span>
+      </Avatar>
       <div className="bubble bubble--ai">
         <div className="fr bubble__text" lang="fr">
           {streaming ? (
@@ -518,14 +612,14 @@ function AiBubble({ turn, name, showEn, streaming, source }: { turn: ChatTurn; n
         </div>
         {en && <div className="bubble__en">{turn.translation}</div>}
         {!streaming && (
-          <div className="bubble__tools">
+          <Group gap={6} mt={4} mx={-6} mb={-4}>
             <SpeakButton text={turn.text} size="sm" label="Listen" />
             {turn.translation && !showEn && (
-              <button type="button" className="link-btn small" onClick={() => setReveal((v) => !v)}>
+              <Anchor component="button" type="button" size="sm" fw={600} onClick={() => setReveal((v) => !v)}>
                 {reveal ? 'Hide translation' : 'Translate'}
-              </button>
+              </Anchor>
             )}
-          </div>
+          </Group>
         )}
       </div>
     </div>
@@ -537,6 +631,17 @@ export function correctedText(text: string, corrections: WritingError[]): string
   return segments.map((s) => (s.error === undefined ? s.text : corrections[s.error].correction)).join('')
 }
 
+/** "wrong → right" in the diff colours. */
+function Change({ from, to, mt, fallback = '' }: { from?: string; to: string; mt?: number; fallback?: string }) {
+  return (
+    <div className="fix__change fr" lang="fr" style={{ fontSize: 16, marginTop: mt }}>
+      {from !== undefined && <del>{frTypo(from)}</del>}
+      {from !== undefined && <ArrowRight size={14} aria-hidden color="var(--mantine-color-dimmed)" />}
+      <ins>{frTypo(to) || fallback}</ins>
+    </div>
+  )
+}
+
 function MeBubble({ turn, checking, failed }: { turn: ChatTurn; checking: boolean; failed: boolean }) {
   const [open, setOpen] = useState(false)
   const corr = turn.corrections
@@ -546,56 +651,64 @@ function MeBubble({ turn, checking, failed }: { turn: ChatTurn; checking: boolea
       <div className="bubble bubble--me fr" lang="fr">
         {frTypo(turn.text)}
       </div>
-      <div className="msg__meta">
+      <Box fz={12.5} mih={18}>
         {corr === undefined ? (
           checking ? (
-            <span className="subtle">
-              <LoaderCircle size={12} className="spin" aria-hidden /> checking…
-            </span>
+            <Group gap={4} c="dimmed" fz="inherit">
+              <Loader size={10} color="gray" aria-hidden /> checking…
+            </Group>
           ) : failed ? (
-            <span className="subtle">not checked</span>
+            <Text span inherit c="dimmed">
+              not checked
+            </Text>
           ) : null
         ) : corr.length === 0 ? (
-          <span className="msg__ok">
-            <Check size={13} aria-hidden /> Correct
-          </span>
+          <Text span inherit c="green" fw={600}>
+            <Check size={13} aria-hidden style={{ verticalAlign: '-2px' }} /> Correct
+          </Text>
         ) : (
-          <button type="button" className="corr-chip" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          <Badge
+            component="button"
+            type="button"
+            color="orange"
+            variant="light"
+            size="md"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            style={{ cursor: 'pointer', textTransform: 'none' }}
+          >
             {corr.length} correction{corr.length > 1 ? 's' : ''}
-          </button>
+          </Badge>
         )}
-      </div>
+      </Box>
       {open && corr && corr.length > 0 && (
-        <div className="corr-panel">
-          <p className="corr-panel__fixed fr" lang="fr">
+        <Paper withBorder radius="lg" px={14} py={12} maw="min(560px, 92%)">
+          <Text fz={17} c="green" className="fr" lang="fr">
             {frTypo(fixed)}
-          </p>
-          <ul className="stack" style={{ gap: 10 }}>
+          </Text>
+          <Divider my={10} />
+          <Stack component="ul" gap={10} m={0} p={0} style={{ listStyle: 'none' }}>
             {corr.map((e, i) => {
               const lesson = e.lesson ? LESSON_BY_ID[e.lesson] : undefined
               return (
                 <li key={i}>
-                  <div className="fix__change fr" lang="fr">
-                    <del>{frTypo(e.original)}</del>
-                    <ArrowRight size={14} aria-hidden className="subtle" />
-                    <ins>{frTypo(e.correction) || '(remove)'}</ins>
-                  </div>
-                  <p className="small muted" style={{ margin: '2px 0 0' }}>
+                  <Change from={e.original} to={e.correction} fallback="(remove)" />
+                  <Text size="sm" c="dimmed" mt={2}>
                     {e.explanation}
                     {lesson && (
                       <>
                         {' '}
-                        <Link to={`/grammar/${lesson.id}`} target="_blank" rel="noreferrer">
+                        <Anchor component={Link} to={`/grammar/${lesson.id}`} target="_blank" rel="noreferrer" inherit>
                           {lesson.title}
-                        </Link>
+                        </Anchor>
                       </>
                     )}
-                  </p>
+                  </Text>
                 </li>
               )
             })}
-          </ul>
-        </div>
+          </Stack>
+        </Paper>
       )}
     </div>
   )
@@ -622,134 +735,119 @@ function FeedbackPanel({
   const fb = c.feedback
   if (loading)
     return (
-      <div className="card talk-feedback talk-feedback--loading" role="status">
-        <LoaderCircle size={18} className="spin" aria-hidden /> Reviewing your conversation…
-      </div>
+      <Card mt={6} role="status">
+        <Group gap={10} c="dimmed">
+          <Loader size="sm" aria-hidden /> Reviewing your conversation…
+        </Group>
+      </Card>
     )
-  if (!fb)
-    return (
-      <div className="chat-error" role="alert">
-        <span>{error}</span>
-        <button type="button" className="btn btn--secondary btn--sm" onClick={onRetry}>
-          <RotateCcw size={14} aria-hidden /> Retry
-        </button>
-      </div>
-    )
+  if (!fb) return <ErrorBox message={error} onRetry={onRetry} />
   const vocab = fb.vocabulary.map((v) => {
     const w = customWord(v.fr, v.en)
     return { ...v, word: w, added: !!findWord(w.id, customWords) || alreadyHave(w, customWords, introduced) }
   })
+  const heading = (text: string) => (
+    <Title order={3} fz={15} mt={16} mb={8}>
+      {text}
+    </Title>
+  )
   return (
-    <section className="card talk-feedback" aria-labelledby="talk-fb">
-      <header className="result-head" style={{ marginBottom: 12 }}>
+    <Card component="section" mt={6} aria-labelledby="talk-fb">
+      <Group gap="md" mb={12} wrap="nowrap">
         <Ring value={fb.score / 100} size={72} stroke={7} label={`Score ${fb.score} out of 100`}>
           <span className="tnum">{fb.score}</span>
         </Ring>
         <div>
-          <div className="page-eyebrow" style={{ margin: 0 }}>
+          <Text size="sm" fw={600} c="dimmed">
             Feedback{fb.level ? ` · sounds like ${fb.level}` : ''}
-          </div>
-          <h2 id="talk-fb" className="talk-feedback__title">
+          </Text>
+          <Title order={2} id="talk-fb" fz={24} className="fr">
             {fb.score >= 85 ? 'Excellent !' : fb.score >= 65 ? 'Bien joué !' : 'Bon effort !'}
-          </h2>
+          </Title>
         </div>
-      </header>
-      <p>{fb.summary}</p>
+      </Group>
+      <Text>{fb.summary}</Text>
 
       {scenario && (
-        <ul className="goal-list" style={{ margin: '12px 0' }}>
-          {scenario.goals.map((g) => {
-            const ok = c.goalsMet.includes(g.id)
-            return (
-              <li key={g.id} className={ok ? 'is-done' : ''}>
-                {ok ? <CheckCircle2 size={17} aria-hidden /> : <Circle size={17} aria-hidden />}
-                <span>{g.text}</span>
-              </li>
-            )
-          })}
-        </ul>
+        <Box my={12}>
+          <GoalList goals={scenario.goals} met={c.goalsMet} />
+        </Box>
       )}
 
       {fb.strengths.length > 0 && (
         <>
-          <h3 className="talk-feedback__h">What went well</h3>
-          <ul className="strengths">
+          {heading('What went well')}
+          <List spacing={6} listStyleType="none" icon={<Check size={16} aria-hidden color="var(--mantine-color-green-filled)" />}>
             {fb.strengths.map((s, i) => (
-              <li key={i}>
-                <Check size={16} aria-hidden />
-                <span>{s}</span>
-              </li>
+              <List.Item key={i}>{s}</List.Item>
             ))}
-          </ul>
+          </List>
         </>
       )}
 
       {fb.improvements.length > 0 && (
         <>
-          <h3 className="talk-feedback__h">To work on</h3>
-          <ul className="stack" style={{ gap: 12 }}>
+          {heading('To work on')}
+          <Stack component="ul" gap={12} m={0} p={0} style={{ listStyle: 'none' }}>
             {fb.improvements.map((im, i) => {
               const lesson = im.lesson ? LESSON_BY_ID[im.lesson] : undefined
               return (
-                <li key={i} className="improvement">
-                  <p style={{ margin: 0 }}>{im.point}</p>
-                  {(im.example || im.better) && (
-                    <div className="fix__change fr" lang="fr" style={{ marginTop: 4 }}>
-                      {im.example && <del>{frTypo(im.example)}</del>}
-                      {im.example && <ArrowRight size={14} aria-hidden className="subtle" />}
-                      <ins>{frTypo(im.better)}</ins>
-                    </div>
-                  )}
+                <li key={i}>
+                  <Text>{im.point}</Text>
+                  {(im.example || im.better) && <Change from={im.example || undefined} to={im.better} mt={4} />}
                   {lesson && (
-                    <Link to={`/grammar/${lesson.id}`} className="fix__lesson">
+                    <Anchor component={Link} to={`/grammar/${lesson.id}`} size="sm" fw={600} mt={6} display="inline-flex" style={{ alignItems: 'center', gap: 4 }}>
                       Review: {lesson.title} <ArrowRight size={14} aria-hidden />
-                    </Link>
+                    </Anchor>
                   )}
                 </li>
               )
             })}
-          </ul>
+          </Stack>
         </>
       )}
 
       {vocab.length > 0 && (
         <>
-          <div className="row" style={{ justifyContent: 'space-between', marginTop: 16 }}>
-            <h3 className="talk-feedback__h" style={{ margin: 0 }}>
+          <Group justify="space-between" mt={16} mb={8}>
+            <Title order={3} fz={15}>
               Words to keep
-            </h3>
+            </Title>
             {vocab.some((v) => !v.added) && (
-              <button
-                type="button"
-                className="btn btn--secondary btn--sm"
+              <Button
+                variant="default"
+                size="xs"
+                leftSection={<Plus size={15} aria-hidden />}
                 onClick={() => {
                   const fresh = vocab.filter((v) => !v.added).map((v) => ({ ...v.word, from: `talk:${c.id}` }))
                   addCustomWords(fresh)
                   toast(`Added ${fresh.length} word${fresh.length > 1 ? 's' : ''} to your flashcards`)
                 }}
               >
-                <Plus size={15} aria-hidden /> Add all
-              </button>
+                Add all
+              </Button>
             )}
-          </div>
-          <ul className="keep-list">
+          </Group>
+          <Stack component="ul" gap={8} m={0} p={0} style={{ listStyle: 'none' }}>
             {vocab.map((v) => (
-              <li key={v.word.id}>
+              <Group component="li" key={v.word.id} gap={10} wrap="nowrap">
                 <SpeakButton text={v.word.fr} size="sm" />
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="fr" lang="fr">
+                <Box miw={0} flex={1}>
+                  <Text fz={17} className="fr" lang="fr">
                     {frTypo(v.fr)}
-                  </div>
-                  <div className="muted small">{v.en}</div>
-                </div>
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {v.en}
+                  </Text>
+                </Box>
                 {v.added ? (
-                  <span className="badge badge--success">
-                    <Check size={12} aria-hidden /> added
-                  </span>
+                  <Badge color="green" leftSection={<Check size={12} aria-hidden />}>
+                    added
+                  </Badge>
                 ) : (
-                  <button
-                    type="button"
-                    className="icon-btn icon-btn--sm icon-btn--outline"
+                  <ActionIcon
+                    variant="default"
+                    size="md"
                     aria-label={`Add ${v.fr} to flashcards`}
                     onClick={() => {
                       addCustomWords([{ ...v.word, from: `talk:${c.id}` }])
@@ -757,29 +855,24 @@ function FeedbackPanel({
                     }}
                   >
                     <Plus size={15} aria-hidden />
-                  </button>
+                  </ActionIcon>
                 )}
-              </li>
+              </Group>
             ))}
-          </ul>
+          </Stack>
         </>
       )}
 
-      {fb.tip && (
-        <div className="callout callout--tip" style={{ marginTop: 16 }}>
-          <Lightbulb size={18} aria-hidden />
-          <div>{fb.tip}</div>
-        </div>
-      )}
+      {fb.tip && <Callout kind="tip">{fb.tip}</Callout>}
 
-      <div className="row-wrap" style={{ gap: 8, marginTop: 18 }}>
-        <button type="button" className="btn btn--primary" onClick={onAgain}>
-          <RotateCcw size={16} aria-hidden /> Practice again
-        </button>
-        <Link to="/talk" className="btn btn--secondary">
+      <Group gap={8} mt={18}>
+        <Button onClick={onAgain} leftSection={<RotateCcw size={16} aria-hidden />}>
+          Practice again
+        </Button>
+        <Button component={Link} to="/talk" variant="default">
           Other situations
-        </Link>
-      </div>
-    </section>
+        </Button>
+      </Group>
+    </Card>
   )
 }

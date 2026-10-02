@@ -1,10 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
+import { Anchor, Box, Button, Card, Chip, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { Link, useNavigate } from 'react-router'
 import { ArrowRight, Mic, Play } from 'lucide-react'
 import { LEVELS } from '../../data/types'
 import { SOUND_SETS } from '../../data/sounds'
 import { Callout, Kbd, Stat } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
+import { PageHeader } from '../../components/PageHeader'
+import { Shelf } from '../../components/Shelf'
+import { Tile } from '../../components/Tile'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { captureMode, micSupported } from '../../lib/recognition'
@@ -36,25 +40,23 @@ export default function SpeakingPage() {
   const hard = [...words.entries()].filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]).slice(0, 12)
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">Expression orale</div>
-          <h1 className="page-title">Speaking</h1>
-          <p className="page-subtitle">
-            Read sentences aloud or repeat after a native voice. Speech recognition shows which words came across clearly, and
-            you can play your recording next to the model.
-          </p>
-        </div>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Expression orale"
+        title="Speaking"
+        subtitle="Read sentences aloud or repeat after a native voice. Speech recognition shows which words came across clearly, and you can play your recording next to the model."
+      />
 
       {!micSupported ? (
         <Callout kind="warn">This page can’t use a microphone here. Open the app over https (or on localhost) in a recent browser.</Callout>
       ) : mode === 'record' ? (
         <Callout kind="warn">
           This browser can’t turn speech into text (Firefox and Brave don’t), so you’ll record yourself and compare by ear. For
-          automatic feedback, use Chrome, Edge or Safari — or connect <Link to="/settings#ai">OpenAI or Gemini</Link> to
-          transcribe your recordings.
+          automatic feedback, use Chrome, Edge or Safari — or connect{' '}
+          <Anchor component={Link} to="/settings#ai" inherit>
+            OpenAI or Gemini
+          </Anchor>{' '}
+          to transcribe your recordings.
         </Callout>
       ) : mode === 'ai' ? (
         <Callout kind="tip">
@@ -62,116 +64,136 @@ export default function SpeakingPage() {
         </Callout>
       ) : null}
 
-      <section className="card practice-setup" aria-labelledby="say-setup">
-        <h2 id="say-setup" className="card__title">
+      <Card component="section" aria-labelledby="say-setup">
+        <Title order={2} id="say-setup" fz="lg" fw={650} mb="md">
           Practice sentences
-        </h2>
-        <div className="practice-setup__row">
-          <span className="setup-label">Exercise</span>
-          <div className="segmented" role="group" aria-label="Exercise">
-            <button type="button" aria-pressed={how === 'read'} onClick={() => setHow('read')}>
-              Read aloud
-            </button>
-            <button type="button" aria-pressed={how === 'repeat'} onClick={() => setHow('repeat')}>
-              Listen &amp; repeat
-            </button>
-          </div>
-        </div>
-        <div className="practice-setup__row">
-          <span className="setup-label">Sentences from</span>
-          <div className="row-wrap" style={{ gap: 6 }} role="group" aria-label="Sentences from">
-            <button type="button" className="chip" aria-pressed={src === 'mine'} onClick={() => setSrc('mine')}>
-              My words
-            </button>
-            {LEVELS.map((l) => (
-              <button key={l} type="button" className="chip" aria-pressed={src === l} onClick={() => setSrc(l)}>
-                {l}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="practice-setup__row">
-          <span className="setup-label">Length</span>
-          <div className="segmented" role="group" aria-label="Number of sentences">
-            {[5, 8, 12].map((x) => (
-              <button key={x} type="button" aria-pressed={n === x} onClick={() => setN(x)}>
-                {x} sentences
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="practice-setup__foot">
-          <span className="small muted">
-            {how === 'read' ? 'You see the sentence, then say it.' : 'You hear it first; the text appears after you speak.'} ·{' '}
-            {pool.length} sentences
-          </span>
-          <button type="button" className="btn btn--primary btn--lg" onClick={() => start()} disabled={!micSupported || !pool.length}>
-            <Play size={18} aria-hidden /> Start <Kbd>↵</Kbd>
-          </button>
-        </div>
-      </section>
+        </Title>
+        <Stack gap="md">
+          <SetupRow label="Exercise">
+            <SegmentedControl
+              aria-label="Exercise"
+              value={how}
+              onChange={(v) => setHow(v as SpeakMode)}
+              data={[
+                { value: 'read', label: 'Read aloud' },
+                { value: 'repeat', label: 'Listen & repeat' },
+              ]}
+            />
+          </SetupRow>
+          <SetupRow label="Sentences from">
+            <Chip.Group value={src} onChange={(v) => setSrc(v as SentenceSource)}>
+              <Group gap={6} role="group" aria-label="Sentences from">
+                <Chip value="mine" size="sm">
+                  My words
+                </Chip>
+                {LEVELS.map((l) => (
+                  <Chip key={l} value={l} size="sm">
+                    {l}
+                  </Chip>
+                ))}
+              </Group>
+            </Chip.Group>
+          </SetupRow>
+          <SetupRow label="Length">
+            <SegmentedControl
+              aria-label="Number of sentences"
+              value={String(n)}
+              onChange={(v) => setN(Number(v))}
+              data={[5, 8, 12].map((x) => ({ value: String(x), label: `${x} sentences` }))}
+            />
+          </SetupRow>
+          <Group justify="space-between" gap="sm" mt="xs">
+            <Text size="sm" c="dimmed">
+              {how === 'read' ? 'You see the sentence, then say it.' : 'You hear it first; the text appears after you speak.'} ·{' '}
+              {pool.length} sentences
+            </Text>
+            <Button size="lg" onClick={() => start()} disabled={!micSupported || !pool.length} leftSection={<Play size={18} aria-hidden />} rightSection={<Kbd>↵</Kbd>}>
+              Start
+            </Button>
+          </Group>
+        </Stack>
+      </Card>
 
-      <section className="section">
-        <div className="section-title">
-          <span>Tricky sounds</span>
-        </div>
-        <div className="sound-grid">
-          {SOUND_SETS.map((set) => (
-            <button
-              key={set.id}
-              type="button"
-              className="card card--interactive sound-card"
-              onClick={() => start(`sound:${set.id}`, set.sentences.length)}
-              disabled={!micSupported}
-            >
-              <span className="sound-card__sound fr">{set.sound}</span>
-              <span className="card__title">{set.title}</span>
-              <span className="small muted sound-card__tip">{set.tip}</span>
-              <span className="sound-card__cta small">
+      <Shelf title="Tricky sounds" count={SOUND_SETS.length}>
+        {SOUND_SETS.map((set) => (
+          <Tile
+            key={set.id}
+            onClick={() => start(`sound:${set.id}`, set.sentences.length)}
+            disabled={!micSupported}
+            top={
+              <Text className="fr" fz={22} fw={600} c="indigo" lh={1}>
+                {set.sound}
+              </Text>
+            }
+            title={set.title}
+            sub={set.tip}
+            foot={
+              <>
                 {set.sentences.length} sentences <ArrowRight size={14} aria-hidden />
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
+              </>
+            }
+          />
+        ))}
+      </Shelf>
 
       {stats.length > 0 && (
-        <section className="section">
-          <div className="section-title">
-            <span>Your speaking</span>
-          </div>
-          <div className="stats">
+        <Box component="section" mt="xl">
+          <Title order={2} size="h4" mb="xs">
+            Your speaking
+          </Title>
+          <SimpleGrid cols={{ base: 2, sm: 4 }}>
             <Stat label="Sentences spoken" value={stats.length} />
             <Stat label="Average best" value={avg} unit="%" />
             <Stat label="Clear (90%+)" value={stats.filter((x) => x.best >= 90).length} />
             <Stat label="Attempts" value={stats.reduce((a, x) => a + x.n, 0)} />
-          </div>
-        </section>
+          </SimpleGrid>
+        </Box>
       )}
 
       {hard.length > 0 && (
-        <section className="section">
-          <div className="section-title">
-            <span>
-              <Mic size={16} aria-hidden style={{ verticalAlign: '-3px', marginRight: 6 }} />
+        <Box component="section" mt="xl">
+          <Title order={2} size="h4" mb="xs">
+            <Group component="span" gap={8} wrap="nowrap">
+              <Mic size={18} aria-hidden />
               Words that didn’t come across
-            </span>
-          </div>
-          <div className="card">
-            <div className="row-wrap" style={{ gap: 8 }}>
+            </Group>
+          </Title>
+          <Card>
+            <Group gap={8}>
               {hard.map(([w, c]) => (
-                <span key={w} className="word-chip">
+                <Group
+                  key={w}
+                  gap={6}
+                  wrap="nowrap"
+                  pl={4}
+                  pr={12}
+                  py={4}
+                  style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 999 }}
+                >
                   <SpeakButton text={w} size="sm" />
-                  <span className="fr" lang="fr">
+                  <Text span className="fr" lang="fr">
                     {frTypo(w)}
-                  </span>
-                  <span className="subtle small tnum">×{c}</span>
-                </span>
+                  </Text>
+                  <Text span size="sm" c="dimmed" className="tnum">
+                    ×{c}
+                  </Text>
+                </Group>
               ))}
-            </div>
-          </div>
-        </section>
+            </Group>
+          </Card>
+        </Box>
       )}
-    </div>
+    </Container>
+  )
+}
+
+function SetupRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Group gap="sm" align="center">
+      <Text size="sm" fw={600} c="dimmed" w={130}>
+        {label}
+      </Text>
+      {children}
+    </Group>
   )
 }

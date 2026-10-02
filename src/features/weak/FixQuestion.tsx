@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Anchor, Box, Button, Text } from '@mantine/core'
 import { ArrowRight, Lightbulb } from 'lucide-react'
 import { AccentBar } from '../../components/AccentBar'
 import { CheckBar } from '../../components/CheckBar'
@@ -59,10 +60,12 @@ export function FixQuestion({
   return (
     <>
       {context}
-      <div className="q-kicker">
+      <Text size="xs" fw={650} c="dimmed" tt="uppercase" lts="0.05em" mb="sm">
         Fix your own mistake · from your {m.source === 'talk' ? 'conversation' : 'writing'}
-      </div>
-      <p className="q-prompt">Rewrite the highlighted part correctly.</p>
+      </Text>
+      <Text fz={20} fw={620} lh={1.35}>
+        Rewrite the highlighted part correctly.
+      </Text>
       <div className="fix-q__sentence fr" lang="fr">
         {segments.map((s, i) =>
           s.error === undefined ? (
@@ -75,17 +78,17 @@ export function FixQuestion({
         )}
       </div>
       {!answer && (lesson || m.note) && (
-        <div style={{ marginBottom: 12 }}>
+        <Box mb="sm">
           {hint ? (
-            <p className="q-hint">
+            <Text size="sm" c="dimmed" fs="italic">
               <Lightbulb size={15} aria-hidden style={{ verticalAlign: '-2px' }} /> {lesson ? lesson.title : m.note?.split('.')[0]}
-            </p>
+            </Text>
           ) : (
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setHint(true)}>
-              <Lightbulb size={15} aria-hidden /> Hint
-            </button>
+            <Button variant="subtle" size="xs" leftSection={<Lightbulb size={15} aria-hidden />} onClick={() => setHint(true)}>
+              Hint
+            </Button>
           )}
-        </div>
+        </Box>
       )}
       {!answer ? (
         <>
@@ -119,18 +122,32 @@ export function FixQuestion({
           onContinue={onContinue}
         >
           {answer.verdict !== 'correct' && (
-            <div className="sheet__answer">
+            <Box mt={6} fz={18} className="fr">
               {answer.given.trim() ? <Diff given={answer.given} expected={m.expected} /> : <strong lang="fr">{frTypo(m.expected)}</strong>}
-            </div>
+            </Box>
           )}
-          {m.note && <p className="sheet__explain">{m.note}</p>}
-          <p className="small" lang="fr" style={{ margin: '4px 0 0' }}>
+          {m.note && (
+            <Text size="sm" c="dimmed" mt="xs" maw="62ch">
+              {m.note}
+            </Text>
+          )}
+          <Text size="sm" lang="fr" mt={4}>
             {frTypo(fixedSentence)}
-          </p>
+          </Text>
           {lesson && (
-            <Link to={`/grammar/${lesson.id}`} className="fix__lesson" target="_blank" rel="noreferrer">
+            <Anchor
+              component={Link}
+              to={`/grammar/${lesson.id}`}
+              target="_blank"
+              rel="noreferrer"
+              size="sm"
+              fw={600}
+              mt={6}
+              display="inline-flex"
+              style={{ alignItems: 'center', gap: 4 }}
+            >
               Review: {lesson.title} <ArrowRight size={14} aria-hidden />
-            </Link>
+            </Anchor>
           )}
         </FeedbackSheet>
       )}

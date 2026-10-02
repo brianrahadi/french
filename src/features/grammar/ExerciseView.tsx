@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Box, Text, TextInput } from '@mantine/core'
 import type { Exercise } from '../../data/types'
 import { AccentBar } from '../../components/AccentBar'
+import { Choices } from '../../components/Choices'
 import { Rich } from '../../components/ui'
 import { useHotkeys } from '../../lib/hooks'
 import type { Graded } from './grade'
@@ -25,15 +27,37 @@ interface Props {
 export function ExerciseView(props: Props) {
   const { ex } = props
   return (
-    <div className="exercise">
-      <div className="q-kicker">{KICKER[ex.type]}</div>
+    <Box>
+      <Text size="xs" c="dimmed" fw={650} tt="uppercase" lts="0.05em" mb={14}>
+        {KICKER[ex.type]}
+      </Text>
       {ex.type === 'cloze' && <Cloze {...props} ex={ex} />}
       {ex.type === 'mcq' && <Mcq {...props} ex={ex} />}
       {ex.type === 'order' && <Order {...props} ex={ex} />}
       {(ex.type === 'translate' || ex.type === 'transform') && <FreeText {...props} ex={ex} />}
-    </div>
+    </Box>
   )
 }
+
+/** The question line (English prompt or instruction). */
+function Prompt({ children, fz = 20 }: { children: ReactNode; fz?: number }) {
+  return (
+    <Text component="div" fz={fz} fw={620} lh={1.35} lts="-0.01em">
+      {children}
+    </Text>
+  )
+}
+
+/** The French sentence being worked on. */
+function Sentence({ children }: { children: ReactNode }) {
+  return (
+    <Text component="div" className="fr" lang="fr" mt={18} fz={{ base: 22, sm: 27 }} lh={1.55}>
+      {children}
+    </Text>
+  )
+}
+
+const VERDICT_COLOR = { correct: 'green', almost: 'orange', wrong: 'red' } as const
 
 function verdictClass(prefix: string, graded: Graded | null) {
   if (!graded) return ''
@@ -46,7 +70,7 @@ function Cloze({ ex, value, setValue, graded, onSubmit }: Props & { ex: Extract<
   const size = Math.max(6, value.length + 1)
   return (
     <>
-      <div className="q-sentence" lang="fr">
+      <Sentence>
         {frTypo(before)}
         <input
           ref={ref}
@@ -69,9 +93,18 @@ function Cloze({ ex, value, setValue, graded, onSubmit }: Props & { ex: Extract<
           }}
         />
         {frTypo(after)}
-        {ex.hint && <span className="q-hint"> ({ex.hint})</span>}
-      </div>
-      {ex.en && <p className="q-translation">{ex.en}</p>}
+        {ex.hint && (
+          <Text span ff="text" fz="0.7em" fs="italic" c="dimmed">
+            {' '}
+            ({ex.hint})
+          </Text>
+        )}
+      </Sentence>
+      {ex.en && (
+        <Text mt={10} fz={15} c="dimmed">
+          {ex.en}
+        </Text>
+      )}
       {!graded && <AccentBar inputRef={ref} onInsert={setValue} />}
     </>
   )
@@ -85,32 +118,27 @@ function Mcq({ ex, value, graded, onSubmit }: Props & { ex: Extract<Exercise, { 
   )
   return (
     <>
-      <div className="q-prompt">
+      <Prompt>
         <Rich text={ex.prompt} />
-      </div>
-      {ex.sentence && (
-        <div className="q-sentence" lang="fr">
-          {frTypo(ex.sentence)}
-        </div>
-      )}
-      <div className="options" role="group" aria-label="Answer options">
-        {ex.options.map((o, i) => {
-          let cls = 'option'
-          if (graded) {
-            if (i === ex.answer) cls += ' option--correct'
-            else if (i === chosen) cls += ' option--wrong'
-            else cls += ' option--dim'
-          }
-          return (
-            <button key={i} type="button" className={cls} disabled={!!graded} onClick={() => onSubmit(String(i))}>
-              <span className="option__key" aria-hidden>
-                {i + 1}
-              </span>
-              <span>{frTypo(o)}</span>
-            </button>
-          )
-        })}
-      </div>
+      </Prompt>
+      {ex.sentence && <Sentence>{frTypo(ex.sentence)}</Sentence>}
+      {/* Picking an option answers at once, so arrow keys must not move the radio selection. */}
+      <Box
+        mt={26}
+        onKeyDownCapture={(e) => {
+          if (e.key.startsWith('Arrow')) e.stopPropagation()
+        }}
+      >
+        <Choices
+          options={ex.options.map((o) => frTypo(o))}
+          value={chosen < 0 ? undefined : chosen}
+          onChange={(i) => !graded && onSubmit(String(i))}
+          label="Answer options"
+          columns={1}
+          status={graded ? (i) => (i === ex.answer ? 'right' : i === chosen ? 'wrong' : undefined) : undefined}
+          fr
+        />
+      </Box>
     </>
   )
 }
@@ -149,7 +177,7 @@ function Order({ ex, setValue, graded, onSubmit }: Props & { ex: Extract<Exercis
 
   return (
     <>
-      <div className="q-prompt">{ex.en}</div>
+      <Prompt>{ex.en}</Prompt>
       <div
         className={`tile-line${graded ? (graded.pass ? ' tile-line--correct' : ' tile-line--wrong') : ''}`}
         aria-label="Your sentence"
@@ -192,9 +220,9 @@ function Order({ ex, setValue, graded, onSubmit }: Props & { ex: Extract<Exercis
         })}
       </div>
       {!graded && (
-        <p className="hint" style={{ textAlign: 'center', marginTop: 16 }}>
+        <Text size="sm" c="dimmed" ta="center" mt={16}>
           Tap words in order. Tap a placed word to remove it<span className="kbd-hint"> · Backspace undoes</span>.
-        </p>
+        </Text>
       )}
     </>
   )
@@ -208,26 +236,30 @@ function FreeText({
   onSubmit,
 }: Props & { ex: Extract<Exercise, { type: 'translate' | 'transform' }> }) {
   const ref = useRef<HTMLInputElement>(null)
+  const color = graded ? VERDICT_COLOR[graded.verdict === 'correct' ? 'correct' : graded.verdict === 'almost' ? 'almost' : 'wrong'] : undefined
   return (
     <>
       {ex.type === 'translate' ? (
-        <div className="q-prompt" style={{ fontSize: 22 }}>
-          {ex.en}
-        </div>
+        <Prompt fz={22}>{ex.en}</Prompt>
       ) : (
         <>
-          <div className="q-prompt">
+          <Prompt>
             <Rich text={ex.instruction} />
-          </div>
-          <div className="q-sentence" lang="fr">
-            {frTypo(ex.source)}
-          </div>
+          </Prompt>
+          <Sentence>{frTypo(ex.source)}</Sentence>
         </>
       )}
-      <div style={{ marginTop: 24 }}>
-        <input
+      <Box mt={24}>
+        <TextInput
           ref={ref}
-          className={`answer-input${verdictClass('answer-input', graded)}`}
+          size="lg"
+          radius="md"
+          classNames={{ input: 'fr' }}
+          styles={
+            color
+              ? { input: { borderColor: `var(--mantine-color-${color}-filled)`, background: `var(--mantine-color-${color}-light)` } }
+              : undefined
+          }
           value={value}
           lang="fr"
           autoFocus
@@ -247,7 +279,7 @@ function FreeText({
           }}
         />
         {!graded && <AccentBar inputRef={ref} onInsert={setValue} />}
-      </div>
+      </Box>
     </>
   )
 }

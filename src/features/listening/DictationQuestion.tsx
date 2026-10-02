@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ActionIcon, Badge, Button, Card, Chip, Group, Stack, Text, Textarea } from '@mantine/core'
 import { Eye, Snail, Volume2 } from 'lucide-react'
 import { AccentBar } from '../../components/AccentBar'
 import { CheckBar } from '../../components/CheckBar'
@@ -61,14 +62,6 @@ export function DictationQuestion({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Grow with the text.
-  useEffect(() => {
-    const el = input.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight + 2}px`
-  }, [value])
-
   const check = (giveUp = false) => {
     if (answer) return
     const typed = giveUp ? '' : value
@@ -84,42 +77,42 @@ export function DictationQuestion({
   return (
     <>
       {context}
-      <div className="q-kicker">Listen and write what you hear</div>
-      <div className="listen-player">
-        <button
-          type="button"
-          className={`listen-play${playing === 'normal' ? ' is-playing' : ''}`}
-          onClick={() => play(false)}
-          aria-label="Play the sentence"
-        >
+      <Text size="xs" fw={650} c="dimmed" tt="uppercase" lts="0.05em" mb="sm">
+        Listen and write what you hear
+      </Text>
+      <Group gap="md" mt={6} mb="lg" wrap="nowrap">
+        <ActionIcon size={76} radius="xl" variant={playing === 'normal' ? 'light' : 'filled'} onClick={() => play(false)} aria-label="Play the sentence">
           <Volume2 size={30} aria-hidden />
-        </button>
-        <div className="stack" style={{ gap: 6, alignItems: 'flex-start' }}>
-          <button type="button" className={`btn btn--secondary btn--sm${playing === 'slow' ? ' is-playing' : ''}`} onClick={() => play(true)}>
-            <Snail size={16} aria-hidden /> Slower
-          </button>
-          <span className="subtle small">
+        </ActionIcon>
+        <Stack gap={6} align="flex-start">
+          <Button variant={playing === 'slow' ? 'light' : 'default'} size="xs" onClick={() => play(true)} leftSection={<Snail size={16} aria-hidden />}>
+            Slower
+          </Button>
+          <Text size="sm" c="dimmed">
             {plays > 1 ? `Played ${plays}×` : 'Replay as often as you like'}
-            <span className="hide-sm">
+            <Text span visibleFrom="sm" fz="inherit">
               {' '}
               · <Kbd>⇧↵</Kbd>
-            </span>
-          </span>
-        </div>
-        <button type="button" className="chip chip--sm listen-count" aria-pressed={showCount} onClick={() => setShowCount((v) => !v)}>
-          <Eye size={14} aria-hidden /> {showCount ? `${words} words` : 'Word count'}
-        </button>
-      </div>
+            </Text>
+          </Text>
+        </Stack>
+        <Chip ml="auto" size="xs" checked={showCount} onChange={() => setShowCount((v) => !v)} icon={<Eye size={14} aria-hidden />}>
+          {showCount ? `${words} words` : 'Word count'}
+        </Chip>
+      </Group>
 
       {!r ? (
         <>
-          <textarea
+          <Textarea
             ref={input}
-            className="answer-input dictation-input fr"
+            size="xl"
+            autosize
+            minRows={2}
+            classNames={{ input: 'fr' }}
+            styles={{ input: { fontSize: 21, lineHeight: 1.45, borderWidth: 2 } }}
             lang="fr"
-            rows={2}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => setValue(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.shiftKey) {
                 e.preventDefault()
@@ -148,9 +141,9 @@ export function DictationQuestion({
             title={r.perfect ? praise() : r.score >= 70 ? `Almost — ${r.score}%` : answer!.typed.trim() ? `${r.score}% — listen again` : 'Here it is'}
             onContinue={onContinue}
             secondary={
-              <button type="button" className="btn btn--ghost btn--sm" onClick={() => play(true)}>
-                <Snail size={15} aria-hidden /> Hear it slowly
-              </button>
+              <Button variant="subtle" color="gray" size="sm" onClick={() => play(true)} leftSection={<Snail size={15} aria-hidden />}>
+                Hear it slowly
+              </Button>
             }
           >
             <CategoryTips categories={r.categories} />
@@ -175,40 +168,45 @@ export function DictationFeedback({ answer }: { answer: DictationAnswer }) {
     if (m.g !== undefined) byG.set(m.g, m)
   }
   return (
-    <div className="dict-feedback">
-      <div className="dict-line fr" lang="fr">
-        <MarkedText
-          text={sentence.fr}
-          tokens={r.exp}
-          render={(i, c) => {
-            const m = byE.get(i)
-            if (!m || m.kind === 'ok') return <span className="dmark dmark--ok">{c}</span>
-            return (
-              <span className={markClass(m)} title={m.kind === 'miss' ? 'missed' : `you wrote “${m.given}”`}>
-                {c}
-              </span>
-            )
-          }}
-        />
-      </div>
-      {typed.trim() && !r.perfect && (
-        <div className="dict-given">
-          <span className="diff__label">You wrote</span>
-          <span className="fr" lang="fr">
-            <MarkedText
-              text={typed}
-              tokens={r.giv}
-              render={(i, c) => {
-                const m = byG.get(i)
-                if (!m || m.kind === 'ok') return null
-                return m.kind === 'extra' ? <del className="dmark dmark--extra">{c}</del> : <span className={markClass(m)}>{c}</span>
-              }}
-            />
-          </span>
-        </div>
-      )}
-      <p className="dict-en">{sentence.en}</p>
-    </div>
+    <Card>
+      <Stack gap={10}>
+        {/* Word-by-word diff marks keep their own classes (dmark--ok/wrong/accent/miss/extra). */}
+        <Text component="div" className="fr" lang="fr" fz={23} lh={1.6}>
+          <MarkedText
+            text={sentence.fr}
+            tokens={r.exp}
+            render={(i, c) => {
+              const m = byE.get(i)
+              if (!m || m.kind === 'ok') return <span className="dmark dmark--ok">{c}</span>
+              return (
+                <span className={markClass(m)} title={m.kind === 'miss' ? 'missed' : `you wrote “${m.given}”`}>
+                  {c}
+                </span>
+              )
+            }}
+          />
+        </Text>
+        {typed.trim() && !r.perfect && (
+          <div className="dict-given">
+            <span className="diff__label">You wrote</span>
+            <span className="fr" lang="fr">
+              <MarkedText
+                text={typed}
+                tokens={r.giv}
+                render={(i, c) => {
+                  const m = byG.get(i)
+                  if (!m || m.kind === 'ok') return null
+                  return m.kind === 'extra' ? <del className="dmark dmark--extra">{c}</del> : <span className={markClass(m)}>{c}</span>
+                }}
+              />
+            </span>
+          </div>
+        )}
+        <Text size="sm" c="dimmed">
+          {sentence.en}
+        </Text>
+      </Stack>
+    </Card>
   )
 }
 
@@ -216,17 +214,17 @@ export function CategoryTips({ categories }: { categories: Partial<Record<Listen
   const cats = (Object.keys(categories) as ListenCategory[]).sort((a, b) => (categories[b] ?? 0) - (categories[a] ?? 0))
   if (!cats.length) return null
   return (
-    <div className="stack" style={{ gap: 6 }}>
-      <div className="row-wrap" style={{ gap: 6 }}>
+    <Stack gap={6}>
+      <Group gap={6}>
         {cats.map((c) => (
-          <span key={c} className="badge badge--warning">
+          <Badge key={c} color="orange">
             {LISTEN_CATEGORIES[c].label} × {categories[c]}
-          </span>
+          </Badge>
         ))}
-      </div>
-      <p className="sheet__explain" style={{ margin: 0 }}>
+      </Group>
+      <Text size="sm" c="dimmed" maw="62ch">
         {LISTEN_CATEGORIES[cats[0]].tip}
-      </p>
-    </div>
+      </Text>
+    </Stack>
   )
 }

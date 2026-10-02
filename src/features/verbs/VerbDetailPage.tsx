@@ -1,8 +1,10 @@
-import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Play } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router'
+import { Badge, Button, Card, Container, Group, SimpleGrid, Table, Text, Title, UnstyledButton } from '@mantine/core'
+import { Play } from 'lucide-react'
 import { VERB_BY_INF, hasTense } from '../../data/verbs'
 import { TENSES, conjugate, pastParticiple, presentParticiple, tablePronoun } from '../../lib/conjugate'
 import { LevelBadge } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { SpeakButton, useSpeak } from '../../components/SpeakButton'
 import { useDocumentTitle } from '../../lib/hooks'
 import { frTypo } from '../../lib/words'
@@ -16,81 +18,81 @@ export default function VerbDetailPage() {
 
   if (!v) {
     return (
-      <div className="page">
-        <Link to="/verbs" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Verb tables
-        </Link>
-        <h1 className="page-title">Verb not found</h1>
-      </div>
+      <Container size={960} py="xl">
+        <PageHeader back={{ to: '/verbs', label: 'Verb tables' }} title="Verb not found" />
+      </Container>
     )
   }
 
   const tenses = TENSES.filter((t) => hasTense(v, t.id))
 
   return (
-    <div className="page">
-      <Link to="/verbs" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Verb tables
-      </Link>
-      <header className="page-header">
-        <div>
-          <div className="row" style={{ gap: 6 }}>
-            <h1 className="page-title" lang="fr">
-              {v.inf}
-            </h1>
-            <SpeakButton text={v.inf} />
-          </div>
-          <p className="page-subtitle">{v.en}</p>
-          <div className="row-wrap" style={{ marginTop: 12 }}>
-            {v.group === 'irr' ? <span className="badge badge--warning">irregular</span> : <span className="badge">regular -{v.group}</span>}
-            <span className={`badge ${v.aux === 'etre' ? 'badge--primary' : ''}`}>auxiliary: {v.aux === 'etre' ? 'être' : 'avoir'}</span>
-            <span className="badge">
-              past participle: <span lang="fr" style={{ marginLeft: 4 }}>{pastParticiple(v)}</span>
-            </span>
-            <span className="badge">
-              present participle: <span lang="fr" style={{ marginLeft: 4 }}>{presentParticiple(v)}</span>
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="btn btn--primary"
-          onClick={() => navigate(`/conjugation/drill?verbs=${encodeURIComponent(v.inf)}&tenses=${tenses.filter((t) => t.level !== 'B2').map((t) => t.id).join(',')}&n=15`)}
-        >
-          <Play size={17} aria-hidden /> Drill this verb
-        </button>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        back={{ to: '/verbs', label: 'Verb tables' }}
+        title={v.inf}
+        fr
+        subtitle={v.en}
+        actions={
+          <Button
+            leftSection={<Play size={17} aria-hidden />}
+            onClick={() => navigate(`/conjugation/drill?verbs=${encodeURIComponent(v.inf)}&tenses=${tenses.filter((t) => t.level !== 'B2').map((t) => t.id).join(',')}&n=15`)}
+          >
+            Drill this verb
+          </Button>
+        }
+      >
+        <Group gap="xs" mt="sm">
+          <SpeakButton text={v.inf} />
+          {v.group === 'irr' ? <Badge color="orange">irregular</Badge> : <Badge color="gray">regular -{v.group}</Badge>}
+          <Badge color={v.aux === 'etre' ? 'indigo' : 'gray'}>auxiliary: {v.aux === 'etre' ? 'être' : 'avoir'}</Badge>
+          <Badge color="gray" tt="none">
+            past participle:{' '}
+            <span lang="fr">{pastParticiple(v)}</span>
+          </Badge>
+          <Badge color="gray" tt="none">
+            present participle:{' '}
+            <span lang="fr">{presentParticiple(v)}</span>
+          </Badge>
+        </Group>
+      </PageHeader>
 
-      <div className="tense-grid">
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
         {tenses.map((t) => {
           const cells = conjugate(v, t.id)
           return (
-            <section key={t.id} className="tense-card" aria-labelledby={`t-${t.id}`}>
-              <div className="tense-card__head">
-                <h2 id={`t-${t.id}`} className="tense-card__title">
+            <Card key={t.id} component="section" padding="md" aria-labelledby={`t-${t.id}`}>
+              <Group justify="space-between" gap={8} mb="xs">
+                <Title order={2} id={`t-${t.id}`} fz={15} fw={680}>
                   {t.label}
-                </h2>
+                </Title>
                 <LevelBadge level={t.level} />
-              </div>
-              <ul className="tense-card__rows">
-                {cells.map((c) => {
-                  const pr = tablePronoun(t.id, c.person, c.display, v.inf)
-                  const spoken = t.id === 'imperatif' ? c.display : `${pr.split('/')[0].replace(/^\(|\)$/g, '')}${pr.endsWith("'") ? '' : ' '}${c.display.replace(/\(.*?\)/g, '')}`
-                  return (
-                    <li key={c.person}>
-                      <button type="button" className="conj-row" onClick={() => say(spoken)} lang="fr" title="Listen">
-                        <span className="conj-row__pr">{frTypo(pr)}</span>
-                        {pr && !pr.endsWith("'") ? ' ' : ''}
-                        <span className="conj-row__form">{c.display}</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
+              </Group>
+              <Table highlightOnHover withRowBorders={false} horizontalSpacing={0} verticalSpacing={0}>
+                <Table.Tbody>
+                  {cells.map((c) => {
+                    const pr = tablePronoun(t.id, c.person, c.display, v.inf)
+                    const spoken = t.id === 'imperatif' ? c.display : `${pr.split('/')[0].replace(/^\(|\)$/g, '')}${pr.endsWith("'") ? '' : ' '}${c.display.replace(/\(.*?\)/g, '')}`
+                    return (
+                      <Table.Tr key={c.person}>
+                        <Table.Td>
+                          <UnstyledButton w="100%" px={8} py={4} className="fr" fz={17} lang="fr" title="Listen" onClick={() => say(spoken)}>
+                            <Text span c="dimmed" fz="inherit">
+                              {frTypo(pr)}
+                            </Text>
+                            {pr && !pr.endsWith("'") ? ' ' : ''}
+                            {c.display}
+                          </UnstyledButton>
+                        </Table.Td>
+                      </Table.Tr>
+                    )
+                  })}
+                </Table.Tbody>
+              </Table>
+            </Card>
           )
         })}
-      </div>
-    </div>
+      </SimpleGrid>
+    </Container>
   )
 }

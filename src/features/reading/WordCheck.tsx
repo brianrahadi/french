@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Check, EyeOff, Languages, LoaderCircle, X } from 'lucide-react'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Checkbox, Group, Loader, Text } from '@mantine/core'
+import { Check, EyeOff, Languages, X } from 'lucide-react'
 import { GenderTag, ProgressBar } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
@@ -26,7 +27,9 @@ function Context({ t }: { t: TextWord }) {
   return (
     <>
       {frTypo(cut(before, false))}
-      <strong>{frTypo(t.form)}</strong>
+      <Text component="strong" span inherit fw={700} c="bright">
+        {frTypo(t.form)}
+      </Text>
       {frTypo(cut(after, true))}
     </>
   )
@@ -96,120 +99,151 @@ export function WordCheck({ words, onDone }: { words: TextWord[]; onDone: () => 
   }
 
   return (
-    <section className="reader-foot reader-check card" aria-labelledby="check-title">
-      <div className="reader-check__head">
-        <div style={{ minWidth: 0 }}>
-          <div className="card__title" id="check-title">
+    <Card component="section" mt={28} aria-labelledby="check-title">
+      <Group justify="space-between" align="flex-end" gap={12} mb={12}>
+        <Box miw={0} flex="1 1 320px">
+          <Text fw={650} mb={2} id="check-title">
             {items.length} word{items.length === 1 ? '' : 's'} from your vocabulary
-          </div>
-          <p className="small muted" style={{ margin: 0 }}>
+          </Text>
+          <Text size="sm" c="dimmed">
             Did you recognise them? Words you know are scheduled for later; the others start learning today. The meaning
             shows once you answer, or tap <Languages size={13} aria-label="translate" style={{ verticalAlign: '-2px' }} /> to
             translate a word and its sentence.
-          </p>
-          <label className="row small" style={{ gap: 6, marginTop: 6, cursor: 'pointer' }}>
-            <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> Show all meanings
-          </label>
-        </div>
-        <div className="reader-check__progress">
-          <ProgressBar value={items.length ? answered / items.length : 0} label={`${answered} of ${items.length} checked`} thin />
-          <span className="subtle small tnum">
+          </Text>
+          <Checkbox size="xs" mt={8} label="Show all meanings" checked={showAll} onChange={(e) => setShowAll(e.currentTarget.checked)} />
+        </Box>
+        <Group gap={8} miw={160} wrap="nowrap">
+          <Box flex={1}>
+            <ProgressBar value={items.length ? answered / items.length : 0} label={`${answered} of ${items.length} checked`} thin />
+          </Box>
+          <Text span size="sm" c="dimmed" className="tnum">
             {answered}/{items.length}
-          </span>
-        </div>
-      </div>
+          </Text>
+        </Group>
+      </Group>
 
-      <ul className="list word-list reader-check__list">
+      <Card.Section component="ul" my={0} p={0} style={{ listStyle: 'none' }}>
         {items.slice(0, shown).map((t) => {
           const w = t.word
           const a = answers[w.id]
           const done = a !== undefined
           const inReviews = wordStatus(w.id, cards) !== 'new'
           return (
-            <li key={w.id} className={`reader-check__row${done ? (a ? ' is-known' : ' is-unknown') : ''}`}>
+            <Group
+              key={w.id}
+              component="li"
+              gap={12}
+              px="lg"
+              py={10}
+              style={{
+                borderTop: '1px solid var(--mantine-color-default-border)',
+                borderLeft: `3px solid ${done ? (a ? 'var(--mantine-color-green-6)' : 'var(--mantine-color-orange-6)') : 'transparent'}`,
+              }}
+            >
               <SpeakButton text={speakText(w)} size="sm" />
-              <div className="reader-check__word">
+              <Box miw={0} flex="1 1 200px">
                 <div className="fr" lang="fr">
-                  <span className="reader-check__fr">{frTypo(displayFr(w))}</span>{' '}
+                  <Text span fz={17}>
+                    {frTypo(displayFr(w))}
+                  </Text>{' '}
                   {w.pos === 'n' && w.g && !w.both && <GenderTag g={w.g} />}
-                  {inReviews && <span className="badge" style={{ marginLeft: 6 }}>in reviews</span>}
+                  {inReviews && (
+                    <Badge size="sm" color="gray" ml={6}>
+                      in reviews
+                    </Badge>
+                  )}
                 </div>
-                <div className="reader-check__context fr small subtle" lang="fr">
+                <Text size="sm" c="dimmed" truncate="end" className="fr" lang="fr">
                   <Context t={t} />
-                </div>
-                <div className="reader-check__en small">{done || showAll || revealed[w.id] ? w.en : ' '}</div>
+                </Text>
+                <Text size="sm" c="dimmed" mih="1.4em">
+                  {done || showAll || revealed[w.id] ? w.en : ' '}
+                </Text>
                 {revealed[w.id] && sentenceEn[w.id] && (
-                  <div className="reader-check__sentence-en small subtle">
+                  <Text size="sm" c="dimmed" fs="italic">
                     {sentenceEn[w.id] === 'loading' ? (
                       <>
-                        <LoaderCircle size={12} className="spin" aria-hidden /> Translating…
+                        <Loader size={12} aria-hidden /> Translating…
                       </>
                     ) : sentenceEn[w.id] === 'error' ? (
                       <>
                         Couldn’t translate the sentence.{' '}
-                        <button type="button" className="link-btn" onClick={() => translate(t)}>
+                        <Anchor component="button" type="button" inherit onClick={() => translate(t)}>
                           Retry
-                        </button>
+                        </Anchor>
                       </>
                     ) : (
                       <>“{sentenceEn[w.id]}”</>
                     )}
-                  </div>
+                  </Text>
                 )}
-              </div>
-              <div className="reader-check__actions">
-                <button
-                  type="button"
-                  className="icon-btn icon-btn--sm"
+              </Box>
+              <Group gap={4} ml="auto" wrap="nowrap">
+                <ActionIcon
+                  variant={revealed[w.id] ? 'light' : 'subtle'}
+                  color={revealed[w.id] ? undefined : 'gray'}
                   onClick={() => translate(t)}
                   aria-pressed={!!revealed[w.id]}
                   aria-label={`Translate ${w.fr} and its sentence`}
                   title="Translate the word and its sentence"
                 >
                   <Languages size={15} aria-hidden />
-                </button>
-                <div className="segmented" role="group" aria-label={`Did you recognise ${w.fr}?`}>
-                  <button type="button" aria-pressed={a === true} onClick={() => answer(w.id, true)}>
-                    <Check size={14} aria-hidden /> Know
-                  </button>
-                  <button type="button" aria-pressed={a === false} onClick={() => answer(w.id, false)}>
-                    <X size={14} aria-hidden /> Don’t know
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="icon-btn icon-btn--sm"
+                </ActionIcon>
+                <Button.Group aria-label={`Did you recognise ${w.fr}?`}>
+                  <Button
+                    size="xs"
+                    variant={a === true ? 'filled' : 'default'}
+                    color={a === true ? 'green' : undefined}
+                    aria-pressed={a === true}
+                    leftSection={<Check size={14} aria-hidden />}
+                    onClick={() => answer(w.id, true)}
+                  >
+                    Know
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant={a === false ? 'filled' : 'default'}
+                    color={a === false ? 'orange' : undefined}
+                    aria-pressed={a === false}
+                    leftSection={<X size={14} aria-hidden />}
+                    onClick={() => answer(w.id, false)}
+                  >
+                    Don’t know
+                  </Button>
+                </Button.Group>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
                   onClick={() => hide(w.id)}
                   aria-label={`Never ask about ${w.fr}`}
                   title="Never ask about this word"
                 >
                   <EyeOff size={15} aria-hidden />
-                </button>
-              </div>
-            </li>
+                </ActionIcon>
+              </Group>
+            </Group>
           )
         })}
-      </ul>
+      </Card.Section>
       {shown < items.length && (
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => setShown((n) => n + PAGE)}>
+        <Button variant="subtle" size="xs" mt="xs" onClick={() => setShown((n) => n + PAGE)}>
           Show {Math.min(PAGE, items.length - shown)} more
-        </button>
+        </Button>
       )}
 
-      <div className="reader-check__foot">
-        <button type="button" className="btn btn--ghost" onClick={onDone}>
+      <Group gap={8} mt={14}>
+        <Button variant="subtle" color="gray" onClick={onDone}>
           Not now
-        </button>
-        <div className="spacer" />
+        </Button>
         {unanswered > 0 && (
-          <button type="button" className="btn btn--secondary" onClick={knowTheRest}>
+          <Button variant="default" ml="auto" onClick={knowTheRest}>
             I know the other {unanswered}
-          </button>
+          </Button>
         )}
-        <button type="button" className="btn btn--primary" onClick={save} disabled={!answered}>
-          <Check size={16} aria-hidden /> Save {answered || ''} to my reviews
-        </button>
-      </div>
-    </section>
+        <Button ml={unanswered > 0 ? undefined : 'auto'} leftSection={<Check size={16} aria-hidden />} onClick={save} disabled={!answered}>
+          Save {answered || ''} to my reviews
+        </Button>
+      </Group>
+    </Card>
   )
 }

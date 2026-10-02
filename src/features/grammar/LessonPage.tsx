@@ -1,8 +1,10 @@
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, ArrowRight, Clock, Dumbbell } from 'lucide-react'
+import { Blockquote, Box, Button, Card, Container, Group, List, Paper, Stack, Table, Text, Title } from '@mantine/core'
+import { ArrowRight, Clock, Dumbbell } from 'lucide-react'
 import { LESSON_BY_ID, LESSONS, nextLesson } from '../../data/grammar'
 import type { Block } from '../../data/types'
 import { Callout, Kbd, LevelBadge, Rich } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
@@ -14,61 +16,71 @@ function BlockView({ block }: { block: Block }) {
   switch (block.type) {
     case 'p':
       return (
-        <p className="prose-p">
+        <Text fz={16} lh={1.65} maw="68ch">
           <Rich text={block.text} />
-        </p>
+        </Text>
       )
     case 'list':
       return (
-        <ul className="prose-list">
+        <List spacing={8} fz={16} lh={1.6} pl={4}>
           {block.items.map((it, i) => (
-            <li key={i}>
+            <List.Item key={i}>
               <Rich text={it} />
-            </li>
+            </List.Item>
           ))}
-        </ul>
+        </List>
       )
     case 'table':
       return (
-        <div className="table-wrap">
-          <table className="gtable">
-            {block.caption && <caption>{block.caption}</caption>}
-            <thead>
-              <tr>
+        <Table.ScrollContainer minWidth={300} type="native">
+          <Table withTableBorder captionSide="bottom" fz={15} verticalSpacing={10} horizontalSpacing={14} w="auto" miw={300}>
+            {block.caption && (
+              <Table.Caption ta="left" fz={13}>
+                {block.caption}
+              </Table.Caption>
+            )}
+            <Table.Thead bg="var(--mantine-color-default-hover)">
+              <Table.Tr>
                 {block.head.map((h, i) => (
-                  <th key={i} scope="col">
+                  <Table.Th key={i} scope="col" fz={12.5} c="dimmed">
                     {h}
-                  </th>
+                  </Table.Th>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
               {block.rows.map((r, i) => (
-                <tr key={i}>
+                <Table.Tr key={i}>
                   {r.map((c, j) => (
-                    <td key={j}>{c}</td>
+                    <Table.Td key={j} c={j === 0 ? 'dimmed' : undefined} style={{ verticalAlign: 'top' }}>
+                      {c}
+                    </Table.Td>
                   ))}
-                </tr>
+                </Table.Tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       )
     case 'examples':
       return (
-        <ul className="examples">
-          {block.items.map((e, i) => (
-            <li key={i} className="example">
-              <SpeakButton text={e.fr.replace(/\s*[/→]\s*/g, '. ')} size="sm" label={`Listen: ${e.fr}`} />
-              <div>
-                <div className="example__fr fr" lang="fr">
-                  {frTypo(e.fr)}
+        <Blockquote color="indigo" p="xs" pl="sm" radius="md">
+          <Stack component="ul" gap={10} m={0} p={0} style={{ listStyle: 'none' }}>
+            {block.items.map((e, i) => (
+              <Group component="li" key={i} gap={6} align="flex-start" wrap="nowrap">
+                <SpeakButton text={e.fr.replace(/\s*[/→]\s*/g, '. ')} size="sm" label={`Listen: ${e.fr}`} />
+                <div>
+                  <Text className="fr" lang="fr" fz={18} lh={1.45}>
+                    {frTypo(e.fr)}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {e.en}
+                  </Text>
                 </div>
-                <div className="example__en">{e.en}</div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </Group>
+            ))}
+          </Stack>
+        </Blockquote>
       )
     case 'tip':
       return (
@@ -95,12 +107,9 @@ export default function LessonPage() {
 
   if (!lesson) {
     return (
-      <div className="page">
-        <Link to="/grammar" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Grammar
-        </Link>
-        <h1 className="page-title">Lesson not found</h1>
-      </div>
+      <Container size={960} py="xl">
+        <PageHeader back={{ to: '/grammar', label: 'Grammar' }} title="Lesson not found" />
+      </Container>
     )
   }
 
@@ -109,79 +118,91 @@ export default function LessonPage() {
   const index = LESSONS.findIndex((l) => l.id === lesson.id)
 
   return (
-    <div className="page page--lesson">
-      <Link to="/grammar" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Grammar
-      </Link>
-      <header className="lesson-header">
-        <div className="row-wrap" style={{ marginBottom: 10 }}>
+    <Container size={780} py="xl">
+      <PageHeader back={{ to: '/grammar', label: 'Grammar' }} title={lesson.titleFr} fr subtitle={lesson.title}>
+        <Text mt={8} maw={640}>
+          {lesson.summary}
+        </Text>
+        <Group gap={10} mt="sm">
           <LevelBadge level={lesson.level} />
-          <span className="subtle small">
+          <Text size="sm" c="dimmed">
             Lesson {index + 1} of {LESSONS.length}
-          </span>
-          <span className="subtle small row" style={{ gap: 4 }}>
+          </Text>
+          <Group gap={4} c="dimmed" fz="sm">
             <Clock size={14} aria-hidden /> {lesson.minutes} min
-          </span>
-        </div>
-        <h1 className="page-title" lang="fr">
-          {lesson.titleFr}
-        </h1>
-        <p className="lesson-header__en">{lesson.title}</p>
-        <p className="page-subtitle">{lesson.summary}</p>
-        {p && (
-          <p className="small muted" style={{ marginTop: 10 }}>
-            Best score <strong className="tnum">{Math.round(p.best * 100)}%</strong>
-            {p.nextReview && status !== 'started' && (
-              <> · next review {relativeDay(parseDayKey(p.nextReview))}</>
-            )}
-          </p>
-        )}
-      </header>
+          </Group>
+          {p && (
+            <Text size="sm" c="dimmed">
+              Best score <strong className="tnum">{Math.round(p.best * 100)}%</strong>
+              {p.nextReview && status !== 'started' && <> · next review {relativeDay(parseDayKey(p.nextReview))}</>}
+            </Text>
+          )}
+        </Group>
+      </PageHeader>
 
       {lesson.sections.length > 2 && (
-        <nav className="toc" aria-label="On this page">
+        <Group component="nav" aria-label="On this page" gap={8} mb={26} visibleFrom="xs">
           {lesson.sections.map((s, i) => (
-            <a key={i} href={`#s${i}`} className="chip">
+            <Button key={i} component="a" href={`#s${i}`} variant="default" radius="xl" size="compact-sm" fw={500}>
               {s.heading}
-            </a>
+            </Button>
           ))}
-        </nav>
+        </Group>
       )}
 
-      <article className="lesson-body">
+      <Stack component="article" gap={34}>
         {lesson.sections.map((s, i) => (
-          <section key={i} id={`s${i}`} className="lesson-section">
-            <h2 className="lesson-section__title">{s.heading}</h2>
-            <div className="stack" style={{ gap: 14 }}>
+          <Box component="section" key={i} id={`s${i}`} style={{ scrollMarginTop: 20 }}>
+            <Title order={2} fz={19} fw={680} mb={14}>
+              {s.heading}
+            </Title>
+            <Stack gap={14} align="flex-start">
               {s.blocks.map((b, j) => (
-                <BlockView key={j} block={b} />
+                <Box key={j} maw="100%" w={b.type === 'table' ? undefined : '100%'}>
+                  <BlockView block={b} />
+                </Box>
               ))}
-            </div>
-          </section>
+            </Stack>
+          </Box>
         ))}
-      </article>
+      </Stack>
 
       {nl && (
-        <Link to={`/grammar/${nl.id}`} className="card card--interactive next-lesson">
-          <div>
-            <div className="subtle small">Next lesson</div>
-            <div className="card__title">{nl.title}</div>
-          </div>
-          <ArrowRight size={18} aria-hidden />
-        </Link>
+        <Card component={Link} to={`/grammar/${nl.id}`} mt="xl">
+          <Group justify="space-between" wrap="nowrap" gap="sm">
+            <div>
+              <Text size="sm" c="dimmed">
+                Next lesson
+              </Text>
+              <Text fw={650}>{nl.title}</Text>
+            </div>
+            <ArrowRight size={18} aria-hidden />
+          </Group>
+        </Card>
       )}
 
-      <div className="practice-cta">
-        <div className="practice-cta__inner">
-          <div className="practice-cta__text">
-            <strong>{status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}</strong>
-            <span className="muted small">{lesson.exercises.length} exercises · instant feedback</span>
-          </div>
-          <Link to={`/grammar/${lesson.id}/practice`} className="btn btn--primary btn--lg">
-            <Dumbbell size={18} aria-hidden /> Practice <Kbd>P</Kbd>
-          </Link>
-        </div>
-      </div>
-    </div>
+      <Box pos="sticky" bottom={{ base: 'calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px)', sm: 16 }} mt={32} style={{ zIndex: 5 }}>
+        <Paper
+          withBorder
+          shadow="lg"
+          radius="lg"
+          p="sm"
+          pl="lg"
+          style={{ background: 'color-mix(in srgb, var(--mantine-color-body) 92%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+        >
+          <Group justify="space-between" wrap="nowrap" gap="md">
+            <div>
+              <Text fw={700}>{status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}</Text>
+              <Text size="sm" c="dimmed" visibleFrom="xs">
+                {lesson.exercises.length} exercises · instant feedback
+              </Text>
+            </div>
+            <Button component={Link} to={`/grammar/${lesson.id}/practice`} size="lg" leftSection={<Dumbbell size={18} aria-hidden />} rightSection={<Kbd>P</Kbd>}>
+              Practice
+            </Button>
+          </Group>
+        </Paper>
+      </Box>
+    </Container>
   )
 }

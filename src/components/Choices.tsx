@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Group, Radio, SimpleGrid, Text, ThemeIcon } from '@mantine/core'
 
-/** Multiple-choice answers as big tappable cards with A/B/C keys. */
+/** Multiple-choice answers as big tappable cards, numbered 1, 2, 3… (the keyboard shortcuts where a page has them). */
 export function Choices({
   options,
   value,
@@ -38,7 +38,7 @@ export function Choices({
             >
               <Group gap="sm" wrap="nowrap">
                 <ThemeIcon variant={value === i ? 'filled' : 'default'} color={color} size={26} radius="sm" fz="xs" fw={700} aria-hidden>
-                  {String.fromCharCode(65 + i)}
+                  {i + 1}
                 </ThemeIcon>
                 <Text className={fr ? 'fr' : undefined} lang={fr ? 'fr' : undefined} fz={fr ? 17 : 15}>
                   {o}

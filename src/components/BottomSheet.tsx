@@ -25,9 +25,13 @@ export function BottomSheet({ verdict, actions, children, animate, label }: { ve
     >
       <Box bg={verdict === 'neutral' ? undefined : 'var(--mantine-color-body)'} pos="absolute" inset={0} style={{ zIndex: -1 }} />
       <Container size={760}>
-        <Group justify="space-between" align="center" gap="md" wrap="wrap">
-          <Box style={{ flex: '1 1 260px', minWidth: 0 }}>{children}</Box>
-          {actions && <Group gap="sm">{actions}</Group>}
+        <Group justify="space-between" align="center" gap="md" wrap="nowrap">
+          <Box style={{ flex: 1, minWidth: 0 }}>{children}</Box>
+          {actions && (
+            <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+              {actions}
+            </Group>
+          )}
         </Group>
       </Container>
     </Box>

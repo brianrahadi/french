@@ -1,6 +1,27 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import {
+  ActionIcon,
+  Anchor,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Chip,
+  Container,
+  Divider,
+  Group,
+  NativeSelect,
+  SegmentedControl,
+  SimpleGrid,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Title,
+  type MantineColor,
+} from '@mantine/core'
+import {
   Briefcase,
   Check,
   Coffee,
@@ -27,11 +48,11 @@ import { SCENARIOS, SCENARIO_BY_ID, type ScenarioIcon } from '../../data/scenari
 import { LEVELS, type Level } from '../../data/types'
 import { ConnectAiCard } from '../../components/AiSetup'
 import { Dialog } from '../../components/Dialog'
+import { PageHeader } from '../../components/PageHeader'
 import { LevelBadge } from '../../components/ui'
 import { newId, useStore } from '../../lib/store'
 import { describeConfig, useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
-import { scoreClass } from '../writing/WritingHome'
 import { ago } from '../../lib/date'
 import { frTypo } from '../../lib/words'
 import type { Conversation } from './types'
@@ -55,6 +76,11 @@ export const SCENARIO_ICONS: Record<ScenarioIcon, React.ComponentType<{ size?: n
   plane: Plane,
   user: User,
   ticket: Ticket,
+}
+
+/** Badge colour for a 0–100 feedback score. */
+function scoreColor(score: number): MantineColor {
+  return score >= 85 ? 'green' : score >= 60 ? 'orange' : 'red'
 }
 
 const FREE_TOPICS = ['ton week-end', 'les films et les séries', 'la cuisine', 'ton travail ou tes études', 'les voyages', 'ta ville']
@@ -120,149 +146,164 @@ export default function TalkHome() {
   const go = (scenarioId: string, lvl: Level, t?: string) => navigate(`/talk/${start({ scenarioId, level: lvl, topic: t })}`)
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">Conversation</div>
-          <h1 className="page-title">Talk</h1>
-          <p className="page-subtitle">
-            Role-play real situations with an AI partner who stays in character. Each message you send gets quietly corrected,
-            you can ask for help or hear every reply, and at the end you get feedback on the whole conversation.
-          </p>
-        </div>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Conversation"
+        title="Talk"
+        subtitle="Role-play real situations with an AI partner who stays in character. Each message you send gets quietly corrected, you can ask for help or hear every reply, and at the end you get feedback on the whole conversation."
+      />
 
       {!ai && (
-        <div style={{ marginBottom: 24 }}>
+        <Box mb="lg">
           <ConnectAiCard title="Connect an AI to start talking" />
-        </div>
+        </Box>
       )}
 
-      <section className="card free-talk" aria-labelledby="free-title">
-        <div className="hero-card__icon">
-          <MessagesSquare size={22} aria-hidden />
-        </div>
-        <div className="free-talk__body">
-          <h2 id="free-title" className="card__title">
-            Free conversation
-          </h2>
-          <p className="small muted">Chat about anything with Camille, a friendly French speaker.</p>
-          <form
-            className="free-talk__form"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (ai) go('free', freeLevel, topic)
-            }}
-          >
-            <input
-              className="input"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Topic (optional) — e.g. les vacances"
-              aria-label="Topic"
-            />
-            <select className="select" value={freeLevel} onChange={(e) => setFreeLevel(e.target.value as Level)} aria-label="Your level">
-              {LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
+      <Card component="section" aria-labelledby="free-title">
+        <Group align="flex-start" gap={18} wrap="nowrap">
+          <ThemeIcon size={44} radius="md" variant="light" visibleFrom="xs">
+            <MessagesSquare size={22} aria-hidden />
+          </ThemeIcon>
+          <Box flex={1} miw={0}>
+            <Title order={2} id="free-title" fz={17} fw={650}>
+              Free conversation
+            </Title>
+            <Text size="sm" c="dimmed">
+              Chat about anything with Camille, a friendly French speaker.
+            </Text>
+            <Group
+              component="form"
+              gap={8}
+              mt={12}
+              wrap="wrap"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (ai) go('free', freeLevel, topic)
+              }}
+            >
+              <TextInput
+                flex="1 1 200px"
+                miw={0}
+                value={topic}
+                onChange={(e) => setTopic(e.currentTarget.value)}
+                placeholder="Topic (optional) — e.g. les vacances"
+                aria-label="Topic"
+              />
+              <NativeSelect w={84} value={freeLevel} onChange={(e) => setFreeLevel(e.currentTarget.value as Level)} aria-label="Your level" data={[...LEVELS]} />
+              <Button type="submit" disabled={!ai}>
+                Start
+              </Button>
+            </Group>
+            <Group gap={6} mt={8}>
+              {FREE_TOPICS.map((t) => (
+                <Chip key={t} size="xs" checked={topic === t} onChange={() => setTopic(t)}>
+                  {t}
+                </Chip>
               ))}
-            </select>
-            <button type="submit" className="btn btn--primary" disabled={!ai}>
-              Start
-            </button>
-          </form>
-          <div className="row-wrap" style={{ gap: 6, marginTop: 8 }}>
-            {FREE_TOPICS.map((t) => (
-              <button key={t} type="button" className="chip chip--sm" onClick={() => setTopic(t)} aria-pressed={topic === t}>
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+            </Group>
+          </Box>
+        </Group>
+      </Card>
 
-      <section className="section" aria-labelledby="scenarios-title">
-        <div className="section-title">
-          <h2 id="scenarios-title" style={{ font: 'inherit', margin: 0 }}>
+      <Box component="section" mt="xl" aria-labelledby="scenarios-title">
+        <Group justify="space-between" gap="sm" mb="xs">
+          <Title order={2} size="h4" id="scenarios-title">
             Situations
-          </h2>
-          <div className="segmented" role="group" aria-label="Level">
-            {(['all', ...LEVELS] as const).map((l) => (
-              <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)}>
-                {l === 'all' ? 'All' : l}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="scenario-grid">
+          </Title>
+          <SegmentedControl
+            size="xs"
+            value={level}
+            onChange={(v) => setLevel(v as Level | 'all')}
+            data={(['all', ...LEVELS] as const).map((l) => ({ value: l, label: l === 'all' ? 'All' : l }))}
+            aria-label="Level"
+          />
+        </Group>
+        <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing={12}>
           {shown.map((s) => {
             const Icon = SCENARIO_ICONS[s.icon] ?? MessagesSquare
             return (
-              <button
+              <Card
                 key={s.id}
+                component="button"
                 type="button"
-                className="card card--interactive scenario-card"
+                padding="md"
+                ta="left"
                 onClick={() => go(s.id, s.level)}
                 disabled={!ai}
                 title={ai ? undefined : 'Connect an AI first'}
+                opacity={ai ? undefined : 0.55}
+                style={{ font: 'inherit', color: 'inherit', cursor: ai ? 'pointer' : 'not-allowed' }}
               >
-                <div className="row" style={{ gap: 10, width: '100%' }}>
-                  <span className="scenario-card__icon">
-                    <Icon size={20} />
-                  </span>
-                  <LevelBadge level={s.level} />
-                  <div className="spacer" />
-                  {done.has(s.id) && (
-                    <span className="badge badge--success">
-                      <Check size={12} aria-hidden /> done
-                    </span>
-                  )}
-                </div>
-                <span className="scenario-card__title fr" lang="fr">
-                  {frTypo(s.titleFr)}
-                </span>
-                <span className="small muted">{s.title}</span>
-                <span className="small subtle scenario-card__goals">
-                  {s.goals.length} goals · with {s.aiName}
-                </span>
-              </button>
+                <Stack gap={3} align="flex-start">
+                  <Group gap={10} w="100%" mb={4}>
+                    <ThemeIcon size={38} radius="md" variant="light">
+                      <Icon size={20} />
+                    </ThemeIcon>
+                    <LevelBadge level={s.level} />
+                    {done.has(s.id) && (
+                      <Badge color="green" size="sm" ml="auto" leftSection={<Check size={12} aria-hidden />}>
+                        done
+                      </Badge>
+                    )}
+                  </Group>
+                  <Text fz={17} fw={600} lh={1.25} className="fr" lang="fr">
+                    {frTypo(s.titleFr)}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {s.title}
+                  </Text>
+                  <Text size="sm" c="dimmed" mt={6}>
+                    {s.goals.length} goals · with {s.aiName}
+                  </Text>
+                </Stack>
+              </Card>
             )
           })}
-        </div>
-      </section>
+        </SimpleGrid>
+      </Box>
 
       {conversations.length > 0 && (
-        <section className="section" aria-labelledby="history-title">
-          <h2 id="history-title" className="section-title">
-            <span>Your conversations</span>
-            <span className="tnum">{conversations.length}</span>
-          </h2>
-          <div className="card card--flush">
-            {conversations.map((c) => {
+        <Box component="section" mt="xl" aria-labelledby="history-title">
+          <Title order={2} size="h4" id="history-title" mb="xs">
+            <Group component="span" gap={8} wrap="nowrap">
+              <span>Your conversations</span>
+              <Text span c="dimmed" size="sm" fw={500} className="tnum">
+                {conversations.length}
+              </Text>
+            </Group>
+          </Title>
+          <Card padding={0}>
+            {conversations.map((c, i) => {
               const mine = c.turns.filter((t) => t.role === 'me').length
               return (
-                <div key={c.id} className="list-row text-row">
-                  <Link to={`/talk/${c.id}`} className="text-row__main">
-                    <span className="text-row__title fr" lang="fr">
-                      {frTypo(c.title)}
-                    </span>
-                    <span className="small subtle">
-                      {ago(c.updatedAt)} · {mine} message{mine === 1 ? '' : 's'}
-                      {SCENARIO_BY_ID[c.scenarioId] ? ` · ${c.goalsMet.length}/${SCENARIO_BY_ID[c.scenarioId].goals.length} goals` : ''}
-                      {!c.feedback && mine > 0 ? ' · in progress' : ''}
-                    </span>
-                  </Link>
-                  <LevelBadge level={c.level} />
-                  {c.feedback && <span className={`badge ${scoreClass(c.feedback.score)} tnum`}>{c.feedback.score}</span>}
-                  <button type="button" className="icon-btn icon-btn--sm" onClick={() => setConfirm(c.id)} aria-label={`Delete ${c.title}`}>
-                    <Trash2 size={15} aria-hidden />
-                  </button>
-                </div>
+                <Box key={c.id}>
+                  {i > 0 && <Divider />}
+                  <Group gap={10} wrap="nowrap" px="md" py="sm">
+                    <Anchor component={Link} to={`/talk/${c.id}`} c="inherit" underline="never" flex={1} miw={0}>
+                      <Text fz={17} fw={600} truncate className="fr" lang="fr">
+                        {frTypo(c.title)}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {ago(c.updatedAt)} · {mine} message{mine === 1 ? '' : 's'}
+                        {SCENARIO_BY_ID[c.scenarioId] ? ` · ${c.goalsMet.length}/${SCENARIO_BY_ID[c.scenarioId].goals.length} goals` : ''}
+                        {!c.feedback && mine > 0 ? ' · in progress' : ''}
+                      </Text>
+                    </Anchor>
+                    <LevelBadge level={c.level} />
+                    {c.feedback && (
+                      <Badge color={scoreColor(c.feedback.score)} className="tnum">
+                        {c.feedback.score}
+                      </Badge>
+                    )}
+                    <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => setConfirm(c.id)} aria-label={`Delete ${c.title}`}>
+                      <Trash2 size={15} aria-hidden />
+                    </ActionIcon>
+                  </Group>
+                </Box>
               )
             })}
-          </div>
-        </section>
+          </Card>
+        </Box>
       )}
 
       <Dialog
@@ -271,23 +312,23 @@ export default function TalkHome() {
         title="Delete this conversation?"
         actions={
           <>
-            <button className="btn btn--ghost" onClick={() => setConfirm(null)} autoFocus>
+            <Button variant="subtle" color="gray" onClick={() => setConfirm(null)} data-autofocus>
               Cancel
-            </button>
-            <button
-              className="btn btn--danger"
+            </Button>
+            <Button
+              color="red"
               onClick={() => {
                 if (confirm) deleteConversation(confirm)
                 setConfirm(null)
               }}
             >
               Delete
-            </button>
+            </Button>
           </>
         }
       >
-        <p className="muted">The transcript and feedback will be removed from this browser.</p>
+        <Text c="dimmed">The transcript and feedback will be removed from this browser.</Text>
       </Dialog>
-    </div>
+    </Container>
   )
 }

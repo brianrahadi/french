@@ -1,4 +1,5 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Card, Group, Table, Text, TextInput } from '@mantine/core'
 import { VERB_BY_INF } from '../../data/verbs'
 import { TENSE_BY_ID, conjugate, tablePronoun, type Tense } from '../../lib/conjugate'
 import { FeedbackSheet } from '../../components/FeedbackSheet'
@@ -12,6 +13,12 @@ import { frTypo } from '../../lib/words'
 import type { Verdict } from '../../lib/answer'
 import { praise } from '../grammar/grade'
 import { fullForm, gradeDrill, promptPronoun, type DrillItem } from './drill'
+
+const VERDICT_INPUT: Record<Verdict, CSSProperties> = {
+  correct: { borderColor: 'var(--mantine-color-green-6)', backgroundColor: 'var(--mantine-color-green-light)' },
+  almost: { borderColor: 'var(--mantine-color-orange-6)', backgroundColor: 'var(--mantine-color-orange-light)' },
+  wrong: { borderColor: 'var(--mantine-color-red-6)', backgroundColor: 'var(--mantine-color-red-light)' },
+}
 
 export interface DrillAnswer {
   item: DrillItem
@@ -57,25 +64,38 @@ export function DrillQuestion({
 
   return (
     <>
-      <div className="q-kicker">
-        <LevelBadge level={tense.level} /> {tense.label}
-        <span className="subtle" style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
+      <Group gap={8} mb="sm">
+        <LevelBadge level={tense.level} />
+        <Text size="xs" fw={650} c="dimmed" tt="uppercase" lts="0.05em">
+          {tense.label}
+        </Text>
+        <Text size="sm" c="dimmed">
           · {tense.en}
-        </span>
+        </Text>
         {badge}
-      </div>
-      <div className="drill-verb">
-        <span className="fr" lang="fr">
+      </Group>
+      <Group gap="4px 14px" align="baseline">
+        <Text component="span" className="fr" lang="fr" fz={{ base: 32, sm: 42 }} fw={560} lh={1.2}>
           {v.inf}
-        </span>
-        <span className="muted">{v.en}</span>
-      </div>
+        </Text>
+        <Text component="span" c="dimmed">
+          {v.en}
+        </Text>
+      </Group>
 
-      <div className="drill-line" lang="fr">
-        {pronoun && <span className="drill-pronoun">{frTypo(pronoun)}</span>}
-        <input
+      <Group gap="sm" mt="xl" wrap="nowrap" lang="fr">
+        {pronoun && (
+          <Text component="span" className="fr" fz={21} c="dimmed" flex="none" style={{ whiteSpace: 'nowrap' }}>
+            {frTypo(pronoun)}
+          </Text>
+        )}
+        <TextInput
           ref={ref}
-          className={`answer-input${result ? (result.verdict === 'correct' ? ' answer-input--correct' : result.verdict === 'almost' ? ' answer-input--almost' : ' answer-input--wrong') : ''}${result && !result.pass ? ' shake' : ''}`}
+          flex={1}
+          size="xl"
+          className={result && !result.pass ? 'shake' : undefined}
+          classNames={{ input: 'fr' }}
+          styles={{ input: { fontSize: 21, borderWidth: 2, ...(result ? VERDICT_INPUT[result.verdict] : null) } }}
           value={value}
           autoFocus
           readOnly={answered}
@@ -85,7 +105,7 @@ export function DrillQuestion({
           autoCorrect="off"
           autoComplete="off"
           spellCheck={false}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => setValue(e.currentTarget.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !answered) {
               e.preventDefault()
@@ -93,7 +113,7 @@ export function DrillQuestion({
             }
           }}
         />
-      </div>
+      </Group>
       {!answered && <AccentBar inputRef={ref} onInsert={setValue} />}
 
       {answered && <MiniTable inf={item.inf} tense={item.tense} person={item.person} />}
@@ -106,21 +126,23 @@ export function DrillQuestion({
           title={result.verdict === 'correct' ? praise() : result.verdict === 'almost' ? 'Almost — check the accents' : result.given ? 'Not quite' : 'Here’s the answer'}
           onContinue={onContinue}
         >
-          <div className="sheet__answer row" style={{ gap: 6 }}>
+          <Group gap={6} mt={6} wrap="nowrap" className="fr" fz={18}>
             <SpeakButton text={fullForm(item)} size="sm" autoPlay={autoplay} label="Listen" />
             {result.verdict !== 'correct' && result.given ? (
               <Diff given={result.given} expected={result.expected} />
             ) : (
-              <strong lang="fr">{frTypo(fullForm(item))}</strong>
+              <Text component="strong" fw={700} fz="inherit" lang="fr">
+                {frTypo(fullForm(item))}
+              </Text>
             )}
-          </div>
+          </Group>
           {(item.person === 2 || item.person === 5) &&
             v.aux === 'etre' &&
             ['passeCompose', 'plusQueParfait', 'conditionnelPasse'].includes(item.tense) && (
-              <p className="sheet__explain">
+              <Text size="sm" c="dimmed" mt="xs" maw="62ch">
                 With être, the past participle agrees with the subject ({item.gender === 'f' ? 'feminine' : 'masculine'}
                 {item.person === 5 ? ' plural' : ''}).
-              </p>
+              </Text>
             )}
         </FeedbackSheet>
       )}
@@ -128,21 +150,39 @@ export function DrillQuestion({
   )
 }
 
+/** The whole tense, the asked-for person highlighted: je/tu/il in the left column, nous/vous/ils in the right. */
 function MiniTable({ inf, tense, person }: { inf: string; tense: Tense; person: number }) {
   const v = VERB_BY_INF[inf]
   const cells = conjugate(v, tense)
+  const rows = [0, 1, 2].filter((i) => cells[i])
+  const cell = (c: (typeof cells)[number] | undefined) => {
+    if (!c) return <Table.Td />
+    const pr = tablePronoun(tense, c.person, c.display, v.inf)
+    const target = c.person === person
+    return (
+      <Table.Td key={c.person} lang="fr" bg={target ? 'var(--mantine-primary-color-light)' : undefined}>
+        <Text span c="dimmed" fz="inherit">
+          {frTypo(pr)}
+        </Text>
+        {pr && !pr.endsWith("'") ? ' ' : ''}
+        <Text span fw={target ? 650 : undefined} fz="inherit">
+          {c.display}
+        </Text>
+      </Table.Td>
+    )
+  }
   return (
-    <div className="mini-table" aria-label={`${inf} in the ${TENSE_BY_ID[tense].label}`}>
-      {cells.map((c) => {
-        const pr = tablePronoun(tense, c.person, c.display, v.inf)
-        return (
-          <div key={c.person} className={`mini-table__row${c.person === person ? ' is-target' : ''}`} lang="fr">
-            <span className="mini-table__pr">{frTypo(pr)}</span>
-            {pr && !pr.endsWith("'") ? ' ' : ''}
-            <span className="mini-table__form">{c.display}</span>
-          </div>
-        )
-      })}
-    </div>
+    <Card mt="xl" padding="sm">
+      <Table className="fr" fz={16.5} withRowBorders={false} verticalSpacing={4} aria-label={`${inf} in the ${TENSE_BY_ID[tense].label}`}>
+        <Table.Tbody>
+          {rows.map((i) => (
+            <Table.Tr key={i}>
+              {cell(cells[i])}
+              {cells.length > 3 && cell(cells[i + 3])}
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Card>
   )
 }

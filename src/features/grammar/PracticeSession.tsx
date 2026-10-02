@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import { Anchor, Badge, Button, Container, Group, Stack, Text, Title } from '@mantine/core'
 import { RotateCcw, Trophy } from 'lucide-react'
 import { LESSON_BY_ID, nextLesson } from '../../data/grammar'
 import type { Exercise } from '../../data/types'
@@ -7,9 +8,9 @@ import { FocusShell } from '../../components/FocusShell'
 import { PASS_MARK, useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import type { Graded } from './grade'
-import { frTypo } from '../../lib/words'
 import { GrammarQuestion, promptText } from './GrammarQuestion'
 import { noteGrammar } from '../../lib/mistakes'
+import { MistakeList } from './MistakeList'
 
 interface Mistake {
   ex: Exercise
@@ -51,9 +52,14 @@ export default function PracticeSession() {
 
   if (!lesson) {
     return (
-      <div className="page">
-        <p>Lesson not found. <Link to="/grammar">Back to grammar</Link></p>
-      </div>
+      <Container size={960} py="xl">
+        <Text>
+          Lesson not found.{' '}
+          <Anchor component={Link} to="/grammar">
+            Back to grammar
+          </Anchor>
+        </Text>
+      </Container>
     )
   }
 
@@ -113,54 +119,41 @@ export default function PracticeSession() {
     const nl = nextLesson(lesson.id)
     return (
       <FocusShell progress={1} exitTo={`/grammar/${lesson.id}`} label="Practice" count={`${total}/${total}`}>
-        <div className="results">
-          <Trophy size={40} color={passed ? 'var(--success)' : 'var(--warning)'} aria-hidden />
-          <div className="results__score tnum">{Math.round(score * 100)}%</div>
-          <h1 className="results__title">
+        <Stack align="center" ta="center" gap={8} pt={32}>
+          <Trophy size={40} color={passed ? 'var(--mantine-color-green-filled)' : 'var(--mantine-color-orange-filled)'} aria-hidden />
+          <Text className="fr tnum" fz={64} fw={600} lh={1} lts="-0.03em">
+            {Math.round(score * 100)}%
+          </Text>
+          <Title order={1} className="fr" fz={28} fw={600}>
             {passed ? (score === 1 ? 'Parfait\u00a0!' : 'Bien joué\u00a0!') : score >= 0.5 ? 'Presque\u00a0!' : 'On continue\u00a0!'}
-          </h1>
-          <p className="muted" style={{ maxWidth: 440 }}>
+          </Title>
+          <Text c="dimmed" maw={440}>
             {passed
               ? `You’ve mastered “${lesson.title}”. We’ll bring it back for a quick review so it sticks.`
               : `You need ${Math.round(PASS_MARK * 100)}% to master this lesson. Re-read the tricky parts and try again — mistakes are how it sticks.`}
-          </p>
-          <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 18 }}>
+          </Text>
+          <Group justify="center" mt={18}>
             {!passed && (
-              <button className="btn btn--primary btn--lg" onClick={() => navigate(`/grammar/${lesson.id}`)} autoFocus>
+              <Button size="lg" onClick={() => navigate(`/grammar/${lesson.id}`)} autoFocus>
                 Review the lesson
-              </button>
+              </Button>
             )}
-            <button className="btn btn--lg btn--secondary" onClick={restart}>
-              <RotateCcw size={17} aria-hidden /> Practice again
-            </button>
+            <Button size="lg" variant="default" onClick={restart} leftSection={<RotateCcw size={17} aria-hidden />}>
+              Practice again
+            </Button>
             {passed && nl && (
-              <button className="btn btn--primary btn--lg" onClick={() => navigate(`/grammar/${nl.id}`)} autoFocus>
+              <Button size="lg" onClick={() => navigate(`/grammar/${nl.id}`)} autoFocus>
                 Next: {nl.title}
-              </button>
+              </Button>
             )}
             {passed && !nl && (
-              <button className="btn btn--primary btn--lg" onClick={() => navigate('/grammar')} autoFocus>
+              <Button size="lg" onClick={() => navigate('/grammar')} autoFocus>
                 Back to grammar
-              </button>
+              </Button>
             )}
-          </div>
-          {mistakes.length > 0 && (
-            <div className="card card--flush mistake-list">
-              <div className="section-title" style={{ padding: '14px 18px 0', margin: 0 }}>
-                To review
-              </div>
-              {mistakes.map((m, i) => (
-                <div key={i} className="mistake">
-                  <div className="mistake__q">{promptText(m.ex)}</div>
-                  <div className="mistake__a" lang="fr">
-                    {m.given && <span className="mistake__yours">{m.given}</span>}
-                    <strong>{frTypo(m.expected)}</strong>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          </Group>
+          {mistakes.length > 0 && <MistakeList items={mistakes.map((m) => ({ what: promptText(m.ex), given: m.given, expected: m.expected }))} />}
+        </Stack>
       </FocusShell>
     )
   }
@@ -175,7 +168,13 @@ export default function PracticeSession() {
       <GrammarQuestion
         key={pos}
         ex={ex}
-        context={pos >= total ? <span className="badge badge--warning" style={{ marginBottom: 10 }}>Retry</span> : undefined}
+        context={
+          pos >= total ? (
+            <Badge color="orange" mb={10}>
+              Retry
+            </Badge>
+          ) : undefined
+        }
         onAnswered={onAnswered}
         onContinue={() => next()}
         onOverride={overrideCorrect}

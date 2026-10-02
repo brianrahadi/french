@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { Badge, Card, Container, Group, SegmentedControl, SimpleGrid, Text, TextInput } from '@mantine/core'
 import { Search } from 'lucide-react'
 import { VERBS } from '../../data/verbs'
 import { Empty } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 
@@ -46,56 +48,55 @@ export default function VerbsPage() {
   }).sort((a, b) => a.inf.localeCompare(b.inf, 'fr'))
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">Tableaux de conjugaison</div>
-          <h1 className="page-title">Verb tables</h1>
-          <p className="page-subtitle">Every verb in every tense, with audio. Tap a verb to see its full conjugation.</p>
-        </div>
-      </header>
-      <div className="row-wrap" style={{ marginBottom: 16 }}>
-        <div className="search" style={{ flex: '1 1 260px' }}>
-          <Search size={17} aria-hidden />
-          <input className="input" type="search" placeholder="Search a verb (French or English)…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search verbs" />
-        </div>
-        <div className="segmented" role="group" aria-label="Filter verbs">
-          {FILTERS.map((f) => (
-            <button key={f.id} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Tableaux de conjugaison"
+        title="Verb tables"
+        subtitle="Every verb in every tense, with audio. Tap a verb to see its full conjugation."
+      />
+      <Group gap="sm" mb="md">
+        <TextInput
+          flex="1 1 260px"
+          type="search"
+          leftSection={<Search size={17} aria-hidden />}
+          placeholder="Search a verb (French or English)…"
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+          aria-label="Search verbs"
+        />
+        <SegmentedControl aria-label="Filter verbs" value={filter} onChange={(v) => setFilter(v as Filter)} data={FILTERS.map((f) => ({ value: f.id, label: f.label }))} />
+      </Group>
       {list.length === 0 ? (
         <Empty icon={<Search size={30} />} title="No verbs found">
           Only the {VERBS.length} most useful verbs are included so far.
         </Empty>
       ) : (
-        <div className="verb-grid">
+        <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing={10}>
           {list.map((v) => {
             const a = acc.get(v.inf)
             const pct = a && a.seen ? a.correct / a.seen : null
             return (
-              <Link key={v.inf} to={`/verbs/${encodeURIComponent(v.inf)}`} className="verb-card card--interactive">
-                <div className="verb-card__inf fr" lang="fr">
+              <Card key={v.inf} component={Link} to={`/verbs/${encodeURIComponent(v.inf)}`} padding="md" style={{ color: 'inherit', textDecoration: 'none' }}>
+                <Text className="fr" lang="fr" fz={20} fw={600} lh={1.3}>
                   {v.inf}
-                </div>
-                <div className="verb-card__en muted">{v.en}</div>
-                <div className="row" style={{ gap: 6, marginTop: 8 }}>
-                  {v.group === 'irr' ? <span className="badge badge--warning">irregular</span> : <span className="badge">-{v.group}</span>}
-                  {v.aux === 'etre' && <span className="badge badge--primary">être</span>}
+                </Text>
+                <Text size="sm" c="dimmed" truncate>
+                  {v.en}
+                </Text>
+                <Group gap={6} mt="xs">
+                  {v.group === 'irr' ? <Badge color="orange">irregular</Badge> : <Badge color="gray">-{v.group}</Badge>}
+                  {v.aux === 'etre' && <Badge color="indigo">être</Badge>}
                   {pct !== null && (
-                    <span className={`badge tnum ${pct >= 0.8 ? 'badge--success' : ''}`} style={{ marginLeft: 'auto' }} title="Drill accuracy">
+                    <Badge color={pct >= 0.8 ? 'green' : 'gray'} className="tnum" ml="auto" title="Drill accuracy">
                       {Math.round(pct * 100)}%
-                    </span>
+                    </Badge>
                   )}
-                </div>
-              </Link>
+                </Group>
+              </Card>
             )
           })}
-        </div>
+        </SimpleGrid>
       )}
-    </div>
+    </Container>
   )
 }

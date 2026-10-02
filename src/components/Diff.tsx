@@ -1,3 +1,4 @@
+import { Box, Stack } from '@mantine/core'
 import { diffStrings } from '../lib/answer'
 import { frTypo } from '../lib/words'
 
@@ -5,17 +6,17 @@ import { frTypo } from '../lib/words'
 export function Diff({ given, expected }: { given: string; expected: string }) {
   const d = diffStrings(frTypo(given.trim()), frTypo(expected))
   return (
-    <div className="diff stack" style={{ gap: 4 }}>
-      <div style={{ fontWeight: 600 }}>
+    <Stack className="diff" gap={4}>
+      <Box fw={600}>
         <span className="diff__label">Answer</span>
         <span lang="fr">{d.expected.map((p, i) => (p.kind === 'same' ? <span key={i}>{p.text}</span> : <ins key={i}>{p.text}</ins>))}</span>
-      </div>
+      </Box>
       {given.trim() && (
         <div className="diff__given">
           <span className="diff__label">You wrote</span>
           <span lang="fr">{d.given.map((p, i) => (p.kind === 'same' ? <span key={i}>{p.text}</span> : <del key={i}>{p.text}</del>))}</span>
         </div>
       )}
-    </div>
+    </Stack>
   )
 }

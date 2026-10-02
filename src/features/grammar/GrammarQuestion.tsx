@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Box, Button, Group, Text } from '@mantine/core'
 import type { Exercise } from '../../data/types'
 import { FeedbackSheet } from '../../components/FeedbackSheet'
 import { CheckBar } from '../../components/CheckBar'
@@ -64,35 +65,33 @@ export function GrammarQuestion({
           onContinue={onContinue}
           secondary={
             canOverride ? (
-              <button type="button" className="btn btn--ghost btn--sm" onClick={onOverride}>
+              <Button variant="subtle" color="gray" size="sm" onClick={onOverride}>
                 I was right — count it
-              </button>
+              </Button>
             ) : undefined
           }
         >
           {graded.verdict !== 'correct' && (
-            <div className="sheet__answer row" style={{ alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                {typed && graded.given.trim() ? (
-                  <Diff given={graded.given} expected={graded.expected} />
-                ) : (
-                  <strong lang="fr">{frTypo(graded.expected)}</strong>
-                )}
-              </div>
-            </div>
+            <Box className="fr" fz={18} mt={6}>
+              {typed && graded.given.trim() ? (
+                <Diff given={graded.given} expected={graded.expected} />
+              ) : (
+                <strong lang="fr">{frTypo(graded.expected)}</strong>
+              )}
+            </Box>
           )}
           {'explain' in ex && ex.explain && (
-            <p className="sheet__explain">
+            <Text mt={8} fz={14.5} c="dimmed" maw="62ch">
               <Rich text={ex.explain} />
-            </p>
+            </Text>
           )}
           {speakText && (
-            <div className="row" style={{ marginTop: 6, gap: 4 }}>
+            <Group gap={4} mt={6} wrap="nowrap">
               <SpeakButton text={speakText} size="sm" autoPlay={autoplay} label="Listen to the answer" />
-              <span className="small muted" lang="fr">
+              <Text size="sm" c="dimmed" lang="fr">
                 {frTypo(speakText)}
-              </span>
-            </div>
+              </Text>
+            </Group>
           )}
         </FeedbackSheet>
       )}

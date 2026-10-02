@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
 import {
   ArrowRight,
   BookOpen,
@@ -22,7 +23,8 @@ import { LESSONS, lessonsByLevel } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS, type Level } from '../../data/types'
 import { TENSE_BY_ID } from '../../lib/conjugate'
 import { Heatmap } from '../../components/Heatmap'
-import { Kbd, Ring, Stat } from '../../components/ui'
+import { Kbd, LevelBadge, Ring, Stat } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { computeStreak, useStore } from '../../lib/store'
 import { dayKey, frenchDate } from '../../lib/date'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
@@ -63,28 +65,35 @@ export default function TodayPage() {
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">{capitalize(frenchDate())}</div>
-          <h1 className="page-title">{greeting}&nbsp;!</h1>
-        </div>
-        <div className="row" style={{ gap: 8 }}>
-          {streak > 0 && (
-            <div className="streak" title={`${streak}-day streak`}>
-              <Flame size={18} aria-hidden /> <span className="tnum">{streak}</span> day{streak > 1 ? 's' : ''}
-            </div>
-          )}
-          {syncConfigured && (
-            <Link to="/settings#account" className="icon-btn icon-btn--outline mobile-only" aria-label={`Sync: ${syncLabel}`} title={syncLabel}>
-              <SyncGlyph state={syncState} size={18} />
-            </Link>
-          )}
-          <Link to="/settings" className="icon-btn icon-btn--outline mobile-only" aria-label="Settings">
-            <Settings size={19} aria-hidden />
-          </Link>
-        </div>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow={capitalize(frenchDate())}
+        title={<>{greeting}&nbsp;!</>}
+        actions={
+          <>
+            {streak > 0 && (
+              <Badge
+                size="lg"
+                color="orange"
+                radius="xl"
+                tt="none"
+                leftSection={<Flame size={16} aria-hidden />}
+                title={`${streak}-day streak`}
+              >
+                <span className="tnum">{streak}</span> day{streak > 1 ? 's' : ''}
+              </Badge>
+            )}
+            {syncConfigured && (
+              <ActionIcon component={Link} to="/settings#account" variant="default" size="lg" hiddenFrom="sm" aria-label={`Sync: ${syncLabel}`} title={syncLabel}>
+                <SyncGlyph state={syncState} size={18} />
+              </ActionIcon>
+            )}
+            <ActionIcon component={Link} to="/settings" variant="default" size="lg" hiddenFrom="sm" aria-label="Settings">
+              <Settings size={19} aria-hidden />
+            </ActionIcon>
+          </>
+        }
+      />
 
       <SyncPrompt />
 
@@ -94,91 +103,87 @@ export default function TodayPage() {
         navigate(`/grammar/${lessonsByLevel(lvl)[0].id}`)
       }} />}
 
-      <section className="card session-hero" aria-labelledby="session-title">
-        <div className="session-hero__goal">
-          <Ring value={today.items / goal} size={88} stroke={9} label={`${today.items} of ${goal} answers today`}>
-            <span className="tnum">{Math.min(100, Math.round((today.items / goal) * 100))}%</span>
-          </Ring>
-          <span className="subtle small tnum">
-            {today.items}/{goal} today
-          </span>
-        </div>
-        <div className="session-hero__text">
-          <div className="page-eyebrow" style={{ margin: 0 }}>
-            Séance du jour
-          </div>
-          <h2 id="session-title" className="session-hero__title">
-            {hasSession ? 'Today’s session' : today.items >= goal ? 'Objectif atteint\u00a0!' : 'All caught up'}
-          </h2>
+      <Card component="section" aria-labelledby="session-title" padding="xl">
+        <Group gap="xl" align="center" wrap="wrap">
+          <Stack gap={4} align="center">
+            <Ring value={today.items / goal} size={88} stroke={9} label={`${today.items} of ${goal} answers today`}>
+              <span className="tnum">{Math.min(100, Math.round((today.items / goal) * 100))}%</span>
+            </Ring>
+            <Text size="sm" c="dimmed" className="tnum">
+              {today.items}/{goal} today
+            </Text>
+          </Stack>
+          <Stack gap={6} miw={0} style={{ flex: '1 1 300px' }}>
+            <Text size="sm" fw={600} c="dimmed">
+              Séance du jour
+            </Text>
+            <Title order={2} size="h3" id="session-title">
+              {hasSession ? 'Today’s session' : today.items >= goal ? 'Objectif atteint !' : 'All caught up'}
+            </Title>
+            {hasSession ? (
+              <>
+                <Text c="dimmed">About {plan.minutes} min — everything that’s due, mixed together so it sticks.</Text>
+                <Group gap={6} mt={4}>
+                  {plan.counts.reviews > 0 && (
+                    <PlanBadge icon={<Layers size={14} aria-hidden />}>
+                      {plan.counts.reviews} review{plan.counts.reviews > 1 ? 's' : ''}
+                    </PlanBadge>
+                  )}
+                  {plan.counts.newWords > 0 && (
+                    <PlanBadge icon={<Sparkles size={14} aria-hidden />}>
+                      {plan.counts.newWords} new word{plan.counts.newWords > 1 ? 's' : ''}
+                    </PlanBadge>
+                  )}
+                  {plan.counts.grammar > 0 && (
+                    <PlanBadge color="green" icon={<BookOpen size={14} aria-hidden />}>
+                      {plan.counts.grammar} grammar
+                    </PlanBadge>
+                  )}
+                  {plan.counts.conj > 0 && (
+                    <PlanBadge color="pink" icon={<PenLine size={14} aria-hidden />}>
+                      {plan.counts.conj} verbs
+                    </PlanBadge>
+                  )}
+                  {plan.counts.listen > 0 && (
+                    <PlanBadge icon={<Headphones size={14} aria-hidden />}>{plan.counts.listen} dictation</PlanBadge>
+                  )}
+                  {plan.counts.say > 0 && (
+                    <PlanBadge color="green" icon={<Mic size={14} aria-hidden />}>
+                      {plan.counts.say} to say
+                    </PlanBadge>
+                  )}
+                  {plan.counts.fix > 0 && (
+                    <PlanBadge color="pink" icon={<Wrench size={14} aria-hidden />}>
+                      {plan.counts.fix} to fix
+                    </PlanBadge>
+                  )}
+                </Group>
+              </>
+            ) : (
+              <Text c="dimmed">Nothing is due. A good moment to learn a new grammar point or write a few sentences.</Text>
+            )}
+          </Stack>
           {hasSession ? (
-            <>
-              <p className="muted">
-                About {plan.minutes} min — everything that’s due, mixed together so it sticks.
-              </p>
-              <div className="session-hero__chips">
-                {plan.counts.reviews > 0 && (
-                  <span className="pill">
-                    <Layers size={14} aria-hidden /> {plan.counts.reviews} review{plan.counts.reviews > 1 ? 's' : ''}
-                  </span>
-                )}
-                {plan.counts.newWords > 0 && (
-                  <span className="pill">
-                    <Sparkles size={14} aria-hidden /> {plan.counts.newWords} new word{plan.counts.newWords > 1 ? 's' : ''}
-                  </span>
-                )}
-                {plan.counts.grammar > 0 && (
-                  <span className="pill pill--green">
-                    <BookOpen size={14} aria-hidden /> {plan.counts.grammar} grammar
-                  </span>
-                )}
-                {plan.counts.conj > 0 && (
-                  <span className="pill pill--pink">
-                    <PenLine size={14} aria-hidden /> {plan.counts.conj} verbs
-                  </span>
-                )}
-                {plan.counts.listen > 0 && (
-                  <span className="pill">
-                    <Headphones size={14} aria-hidden /> {plan.counts.listen} dictation
-                  </span>
-                )}
-                {plan.counts.say > 0 && (
-                  <span className="pill pill--green">
-                    <Mic size={14} aria-hidden /> {plan.counts.say} to say
-                  </span>
-                )}
-                {plan.counts.fix > 0 && (
-                  <span className="pill pill--pink">
-                    <Wrench size={14} aria-hidden /> {plan.counts.fix} to fix
-                  </span>
-                )}
-              </div>
-            </>
-          ) : (
-            <p className="muted">Nothing is due. A good moment to learn a new grammar point or write a few sentences.</p>
-          )}
-        </div>
-        <div className="session-hero__cta">
-          {hasSession ? (
-            <Link to="/session" className="btn btn--primary btn--lg">
-              <Play size={18} aria-hidden /> Start <Kbd>↵</Kbd>
-            </Link>
+            <Button component={Link} to="/session" size="lg" leftSection={<Play size={18} aria-hidden />} rightSection={<Kbd>↵</Kbd>}>
+              Start
+            </Button>
           ) : up ? (
-            <Link to={`/grammar/${up.id}`} className="btn btn--primary btn--lg">
-              Next lesson <ArrowRight size={17} aria-hidden />
-            </Link>
+            <Button component={Link} to={`/grammar/${up.id}`} size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
+              Next lesson
+            </Button>
           ) : (
-            <Link to="/writing" className="btn btn--primary btn--lg">
-              Write <ArrowRight size={17} aria-hidden />
-            </Link>
+            <Button component={Link} to="/writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
+              Write
+            </Button>
           )}
-        </div>
-      </section>
+        </Group>
+      </Card>
 
-      <section className="section" style={{ marginTop: 28 }}>
-        <div className="section-title">
-          <span>Or focus on one thing</span>
-        </div>
-        <div className="action-grid">
+      <Box component="section" mt={28}>
+        <Title order={2} size="h4" mb="sm">
+          Or focus on one thing
+        </Title>
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
           <ActionCard
             to={due + fresh > 0 ? '/vocab/study' : '/vocab'}
             icon={<Layers size={22} aria-hidden />}
@@ -221,17 +226,19 @@ export default function TodayPage() {
               cta="Talk"
             />
           )}
-        </div>
-      </section>
+        </SimpleGrid>
+      </Box>
 
-      <section className="section" aria-labelledby="skills-title">
-        <div className="section-title">
-          <span id="skills-title">Practice a skill</span>
-          <Link to="/practice" className="small">
-            All practice <ArrowRight size={14} aria-hidden style={{ verticalAlign: '-2px' }} />
-          </Link>
-        </div>
-        <div className="skill-strip">
+      <Box component="section" aria-labelledby="skills-title" mt="xl">
+        <Group justify="space-between" gap="sm" mb="sm">
+          <Title order={2} size="h4" id="skills-title">
+            Practice a skill
+          </Title>
+          <Anchor component={Link} to="/practice" size="sm" fw={600} display="inline-flex" style={{ alignItems: 'center', gap: 4 }}>
+            All practice <ArrowRight size={14} aria-hidden />
+          </Anchor>
+        </Group>
+        <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="sm">
           <SkillTile to="/listening" icon={<Headphones size={20} aria-hidden />} label="Listen" meta="Dictation" />
           <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
           <SkillTile to="/reading" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
@@ -242,26 +249,38 @@ export default function TodayPage() {
             meta={state.writings.length ? `${state.writings.length} corrected` : 'With corrections'}
           />
           <SkillTile to="/talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
-        </div>
-      </section>
+        </SimpleGrid>
+      </Box>
 
-      <section className="section">
-        <div className="section-title">
-          <span>Your progress</span>
-        </div>
-        <div className="stats">
+      <Box component="section" aria-labelledby="progress-title" mt="xl">
+        <Title order={2} size="h4" id="progress-title" mb="sm">
+          Your progress
+        </Title>
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
           <Stat label="Day streak" value={streak} />
           <Stat label="Words started" value={learned} />
           <Stat label="Lessons mastered" value={mastered} unit={`/ ${LESSONS.length}`} />
           <Stat label="Total answers" value={totalItems.toLocaleString()} />
-        </div>
-        <div className="card" style={{ marginTop: 12 }}>
+        </SimpleGrid>
+        <Card mt="sm">
           <Heatmap activity={state.activity} goal={goal} />
-        </div>
-      </section>
-    </div>
+        </Card>
+      </Box>
+    </Container>
   )
 }
+
+const linkCard = { color: 'inherit', textDecoration: 'none' } as const
+
+function PlanBadge({ icon, color, children }: { icon: React.ReactNode; color?: MantineColor; children: React.ReactNode }) {
+  return (
+    <Badge size="lg" color={color ?? 'indigo'} radius="xl" tt="none" fw={600} leftSection={icon}>
+      {children}
+    </Badge>
+  )
+}
+
+const TONE: Record<'green' | 'pink' | 'amber', MantineColor> = { green: 'green', pink: 'pink', amber: 'yellow' }
 
 function ActionCard({
   to,
@@ -281,56 +300,76 @@ function ActionCard({
   primary?: boolean
 }) {
   return (
-    <Link to={to} className="card card--interactive hero-card action-card">
-      <div className={`hero-card__icon${tone ? ` hero-card__icon--${tone}` : ''}`}>{icon}</div>
-      <div style={{ minWidth: 0 }}>
-        <div className="card__title">{title}</div>
-        <div className="card__meta action-card__meta">{meta}</div>
-      </div>
-      <span className={`btn ${primary ? 'btn--primary' : 'btn--secondary'} btn--sm`} aria-hidden>
-        {cta} <ArrowRight size={15} />
-      </span>
-    </Link>
+    <Card component={Link} to={to} padding="md" style={linkCard}>
+      <Group gap="md" wrap="nowrap" h="100%">
+        <ThemeIcon variant="light" color={tone ? TONE[tone] : 'indigo'} size={44} radius="md">
+          {icon}
+        </ThemeIcon>
+        <Box miw={0} style={{ flex: 1 }}>
+          <Text fw={650}>{title}</Text>
+          <Text size="sm" c="dimmed" lineClamp={2}>
+            {meta}
+          </Text>
+        </Box>
+        <Button component="span" variant={primary ? 'filled' : 'default'} size="xs" rightSection={<ArrowRight size={15} />} aria-hidden>
+          {cta}
+        </Button>
+      </Group>
+    </Card>
   )
 }
 
 function SkillTile({ to, icon, label, meta }: { to: string; icon: React.ReactNode; label: string; meta: string }) {
   return (
-    <Link to={to} className="skill-tile">
-      <span className="skill-tile__icon">{icon}</span>
-      <span className="skill-tile__label">{label}</span>
-      <span className="skill-tile__meta">{meta}</span>
-    </Link>
+    <Card component={Link} to={to} padding="sm" style={linkCard}>
+      <Stack gap={2} align="center" ta="center">
+        <ThemeIcon variant="light" size="lg" radius="md" mb={4}>
+          {icon}
+        </ThemeIcon>
+        <Text fw={650} size="sm">
+          {label}
+        </Text>
+        <Text size="xs" c="dimmed" lineClamp={1}>
+          {meta}
+        </Text>
+      </Stack>
+    </Card>
   )
 }
 
 function Welcome({ onPick }: { onPick: (l: Level) => void }) {
   return (
-    <section className="card welcome" aria-labelledby="welcome-title">
-      <div className="row" style={{ gap: 10, marginBottom: 6 }}>
-        <Sparkles size={20} color="var(--primary-text)" aria-hidden />
-        <h2 id="welcome-title" className="welcome__title">
+    <Card component="section" aria-labelledby="welcome-title" mb="lg" padding="xl">
+      <Group gap={10} mb={6} wrap="nowrap">
+        <ThemeIcon variant="transparent" size="md">
+          <Sparkles size={20} aria-hidden />
+        </ThemeIcon>
+        <Title order={2} size="h3" id="welcome-title">
           Bienvenue&nbsp;! Where would you like to start?
-        </h2>
-      </div>
-      <p className="muted" style={{ maxWidth: '62ch' }}>
+        </Title>
+      </Group>
+      <Text c="dimmed" maw="62ch">
         Three short daily habits: review vocabulary with spaced repetition, learn one grammar point at a time, and drill
         verb forms until they’re automatic. It pairs well with input from LingQ and listening with Alexa — and you can
         import your Anki or LingQ words under Vocabulary → Add & import.
-      </p>
-      <div className="level-pick">
+      </Text>
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="sm" mt="md">
         {LEVELS.map((l) => (
-          <button key={l} type="button" className="level-pick__btn" onClick={() => onPick(l)}>
-            <span className={`badge badge--${l}`}>{l}</span>
-            <strong>{LEVEL_INFO[l].name}</strong>
-            <span className="muted small">{LEVEL_INFO[l].description}</span>
-          </button>
+          <Card key={l} component="button" type="button" padding="md" ta="left" onClick={() => onPick(l)} style={{ font: 'inherit', color: 'inherit', cursor: 'pointer' }}>
+            <Stack gap={4} align="flex-start">
+              <LevelBadge level={l} />
+              <Text fw={700}>{LEVEL_INFO[l].name}</Text>
+              <Text size="sm" c="dimmed">
+                {LEVEL_INFO[l].description}
+              </Text>
+            </Stack>
+          </Card>
         ))}
-      </div>
-      <p className="subtle small" style={{ marginTop: 12 }}>
+      </SimpleGrid>
+      <Text size="sm" c="dimmed" mt="sm">
         You can change decks any time, and mark words you already know with one key.
-      </p>
-    </section>
+      </Text>
+    </Card>
   )
 }
 

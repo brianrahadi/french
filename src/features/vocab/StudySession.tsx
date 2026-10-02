@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { CheckCircle2 } from 'lucide-react'
 import { findWord } from '../../data/vocab'
 import { FocusShell } from '../../components/FocusShell'
-import { Kbd } from '../../components/ui'
+import { Kbd, Stat } from '../../components/ui'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
@@ -171,50 +172,34 @@ function SessionSummary({ session, startedAt, onMore }: { session: Session; star
   const nothing = session.done === 0
   useHotkeys({ Enter: () => document.getElementById('summary-primary')?.click() })
   return (
-    <div className="results">
-      <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-      <h1 className="results__title">{nothing ? 'Tout est à jour !' : 'Session terminée !'}</h1>
-      <p className="muted" style={{ maxWidth: 420 }}>
+    <Stack align="center" ta="center" gap={8} pt={32}>
+      <CheckCircle2 size={44} color="var(--mantine-color-green-6)" aria-hidden />
+      <Title order={1} fz={28} fw={600} className="fr" lang="fr">
+        {nothing ? 'Tout est à jour !' : 'Session terminée !'}
+      </Title>
+      <Text c="dimmed" maw={420}>
         {nothing
           ? 'Nothing is due right now. Come back later — or learn a few extra words.'
           : 'Great work. Reviewing at the right moment is what moves words into long-term memory.'}
-      </p>
+      </Text>
       {!nothing && (
-        <div className="stats" style={{ width: '100%', marginTop: 18 }}>
-          <div className="stat">
-            <div className="stat__label">Reviews</div>
-            <div className="stat__value">{session.reviews}</div>
-          </div>
-          <div className="stat">
-            <div className="stat__label">Recalled</div>
-            <div className="stat__value">
-              {session.reviews ? Math.round((session.correct / session.reviews) * 100) : 0}
-              <small>%</small>
-            </div>
-          </div>
-          <div className="stat">
-            <div className="stat__label">New words</div>
-            <div className="stat__value">{session.learned}</div>
-          </div>
-          <div className="stat">
-            <div className="stat__label">Time</div>
-            <div className="stat__value">
-              {minutes}
-              <small>min</small>
-            </div>
-          </div>
-        </div>
+        <SimpleGrid cols={{ base: 2, sm: 4 }} w="100%" mt={18} ta="left">
+          <Stat label="Reviews" value={session.reviews} />
+          <Stat label="Recalled" value={session.reviews ? Math.round((session.correct / session.reviews) * 100) : 0} unit="%" />
+          <Stat label="New words" value={session.learned} />
+          <Stat label="Time" value={minutes} unit="min" />
+        </SimpleGrid>
       )}
-      <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 22 }}>
+      <Group justify="center" mt={22}>
         {moreAvailable > 0 && (
-          <button className="btn btn--secondary btn--lg" onClick={onMore}>
+          <Button variant="default" size="lg" onClick={onMore}>
             Learn 5 more words
-          </button>
+          </Button>
         )}
-        <Link id="summary-primary" to="/vocab" className="btn btn--primary btn--lg">
-          Done <Kbd>↵</Kbd>
-        </Link>
-      </div>
-    </div>
+        <Button component={Link} id="summary-primary" to="/vocab" size="lg" rightSection={<Kbd>↵</Kbd>}>
+          Done
+        </Button>
+      </Group>
+    </Stack>
   )
 }

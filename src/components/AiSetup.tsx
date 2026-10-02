@@ -1,5 +1,21 @@
 import { useMemo, useState } from 'react'
-import { CheckCircle2, Eye, EyeOff, KeyRound, LoaderCircle, RefreshCw, Server } from 'lucide-react'
+import {
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Chip,
+  Group,
+  NativeSelect,
+  PasswordInput,
+  Radio,
+  SimpleGrid,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { CheckCircle2, KeyRound, RefreshCw, Server } from 'lucide-react'
 import {
   CUSTOM_PRESETS,
   PROVIDER_BY_ID,
@@ -22,46 +38,50 @@ export function AiSetup({ compact = false, onReady }: { compact?: boolean; onRea
   const ai = useAi()
   const provider = PROVIDER_BY_ID[ai.provider]
   return (
-    <div className="ai-setup stack" style={{ gap: 14 }}>
+    <Stack gap={14}>
       {compact ? (
-        <div className="field" style={{ margin: 0 }}>
-          <label className="label" htmlFor="ai-provider">
-            Provider
-          </label>
-          <select id="ai-provider" className="select" value={provider.id} onChange={(e) => ai.setProvider(e.target.value as ProviderId)}>
-            {PROVIDERS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <NativeSelect
+          id="ai-provider"
+          label="Provider"
+          value={provider.id}
+          onChange={(e) => ai.setProvider(e.currentTarget.value as ProviderId)}
+          data={PROVIDERS.map((p) => ({ value: p.id, label: p.name }))}
+        />
       ) : (
-        <div className="provider-grid" role="radiogroup" aria-label="AI provider">
+        <SimpleGrid cols={{ base: 1, xs: 2, sm: 3 }} spacing={8} role="radiogroup" aria-label="AI provider">
           {PROVIDERS.map((p) => {
             const on = p.id === provider.id
             const ok = !!resolveConfig(ai, p.id)
             return (
-              <button
+              <Radio.Card
                 key={p.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                className={`provider-card${on ? ' provider-card--on' : ''}`}
+                checked={on}
                 onClick={() => ai.setProvider(p.id)}
+                radius="md"
+                px={14}
+                py={12}
+                bg={on ? 'var(--mantine-primary-color-light)' : undefined}
               >
-                <span className="provider-card__head">
-                  <span className="provider-card__name">{p.name}</span>
-                  {ok && <span className={`badge ${on ? 'badge--success' : ''}`}>{on ? 'In use' : 'Key saved'}</span>}
-                </span>
-                <span className="provider-card__blurb">{p.blurb}</span>
-              </button>
+                <Group justify="space-between" gap={8} wrap="nowrap">
+                  <Text fw={650} fz={14.5}>
+                    {p.name}
+                  </Text>
+                  {ok && (
+                    <Badge size="sm" color={on ? 'green' : 'gray'}>
+                      {on ? 'In use' : 'Key saved'}
+                    </Badge>
+                  )}
+                </Group>
+                <Text fz={12.5} c="dimmed" lh={1.4} mt={4}>
+                  {p.blurb}
+                </Text>
+              </Radio.Card>
             )
           })}
-        </div>
+        </SimpleGrid>
       )}
       <ProviderPanel key={provider.id} providerId={provider.id} compact={compact} onReady={onReady} />
-    </div>
+    </Stack>
   )
 }
 
@@ -132,18 +152,17 @@ function ProviderPanel({ providerId, compact, onReady }: { providerId: ProviderI
   return (
     <>
       {isCustom && (
-        <div className="stack" style={{ gap: 10 }}>
-          <div className="row-wrap" style={{ gap: 6 }}>
-            <span className="small muted" style={{ marginRight: 2 }}>
+        <Stack gap={10}>
+          <Group gap={6}>
+            <Text size="sm" c="dimmed" mr={2}>
               Presets:
-            </span>
+            </Text>
             {CUSTOM_PRESETS.map((p) => (
-              <button
+              <Chip
                 key={p.name}
-                type="button"
-                className="chip chip--sm"
-                aria-pressed={baseUrl === p.baseUrl}
-                onClick={() => {
+                size="xs"
+                checked={baseUrl === p.baseUrl}
+                onChange={() => {
                   setBaseUrl(p.baseUrl)
                   ai.setCustom({ baseUrl: p.baseUrl, name: p.name })
                   if (p.model) ai.setModel('custom', p.model)
@@ -152,110 +171,96 @@ function ProviderPanel({ providerId, compact, onReady }: { providerId: ProviderI
                 }}
               >
                 {p.name}
-              </button>
+              </Chip>
             ))}
-          </div>
-          <div className="grid-2" style={{ gap: 10 }}>
-            <div className="field" style={{ margin: 0 }}>
-              <label className="label" htmlFor="ai-base">
-                Server address
-              </label>
-              <div className="search">
-                <Server size={17} aria-hidden />
-                <input
-                  id="ai-base"
-                  className="input"
-                  value={baseUrl}
-                  onChange={(e) => {
-                    setBaseUrl(e.target.value)
-                    setStatus('idle')
-                  }}
-                  onBlur={() => ai.setCustom({ baseUrl })}
-                  placeholder="https://…/v1"
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-              </div>
-            </div>
-            <div className="field" style={{ margin: 0 }}>
-              <label className="label" htmlFor="ai-name">
-                Name <span className="subtle">(optional)</span>
-              </label>
-              <input
-                id="ai-name"
-                className="input"
-                value={ai.customName}
-                onChange={(e) => ai.setCustom({ name: e.target.value })}
-                placeholder="e.g. Mistral"
-              />
-            </div>
-          </div>
-        </div>
+          </Group>
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={10}>
+            <TextInput
+              id="ai-base"
+              label="Server address"
+              leftSection={<Server size={17} aria-hidden />}
+              value={baseUrl}
+              onChange={(e) => {
+                setBaseUrl(e.currentTarget.value)
+                setStatus('idle')
+              }}
+              onBlur={() => ai.setCustom({ baseUrl })}
+              placeholder="https://…/v1"
+              spellCheck={false}
+              autoComplete="off"
+            />
+            <TextInput
+              id="ai-name"
+              label={
+                <>
+                  Name{' '}
+                  <Text span c="dimmed" inherit>
+                    (optional)
+                  </Text>
+                </>
+              }
+              value={ai.customName}
+              onChange={(e) => ai.setCustom({ name: e.currentTarget.value })}
+              placeholder="e.g. Mistral"
+            />
+          </SimpleGrid>
+        </Stack>
       )}
 
-      <form
-        className="api-key-row"
+      <Group
+        component="form"
+        gap={8}
+        align="center"
         onSubmit={(e) => {
           e.preventDefault()
           saveAndTest()
         }}
       >
-        <div className="search" style={{ flex: 1, minWidth: 0 }}>
-          <KeyRound size={17} aria-hidden />
-          <input
-            className="input"
-            type={show ? 'text' : 'password'}
-            value={draft}
-            onChange={(e) => {
-              setDraft(e.target.value)
-              setStatus('idle')
-              setMessage('')
-            }}
-            placeholder={provider.keyPlaceholder}
-            aria-label={provider.keyLabel}
-            autoComplete="off"
-            spellCheck={false}
-            style={{ paddingRight: 44, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 14 }}
-          />
-          <button
-            type="button"
-            className="icon-btn icon-btn--sm api-key-row__eye"
-            onClick={() => setShow((v) => !v)}
-            aria-label={show ? 'Hide key' : 'Show key'}
-          >
-            {show ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
-          </button>
-        </div>
-        <button
-          type="submit"
-          className="btn btn--primary"
-          disabled={(provider.needsKey && !draft.trim()) || status === 'testing'}
-        >
-          {status === 'testing' && <LoaderCircle size={16} className="spin" aria-hidden />}
+        <PasswordInput
+          flex="1 1 260px"
+          miw={0}
+          leftSection={<KeyRound size={17} aria-hidden />}
+          visible={show}
+          onVisibilityChange={setShow}
+          visibilityToggleButtonProps={{ 'aria-label': show ? 'Hide key' : 'Show key' }}
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.currentTarget.value)
+            setStatus('idle')
+            setMessage('')
+          }}
+          placeholder={provider.keyPlaceholder}
+          aria-label={provider.keyLabel}
+          autoComplete="off"
+          spellCheck={false}
+          styles={{ innerInput: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 14 } }}
+        />
+        <Button type="submit" disabled={provider.needsKey && !draft.trim()} loading={status === 'testing'}>
           {!dirty && (savedKey || isCustom) ? 'Test' : 'Save & test'}
-        </button>
+        </Button>
         {savedKey && (
-          <button type="button" className="btn btn--ghost" onClick={remove}>
+          <Button variant="subtle" color="gray" onClick={remove}>
             Remove
-          </button>
+          </Button>
         )}
-      </form>
+      </Group>
 
       {looksWrong && status === 'idle' && (
-        <p className="hint">
+        <Text size="xs" c="dimmed">
           {provider.short} keys usually start with “{provider.keyPrefix}”.
-        </p>
+        </Text>
       )}
       {message && (
-        <div className="row-wrap" style={{ gap: 8 }}>
-          <p className={`small ${status === 'ok' ? 'text-success' : status === 'error' ? 'text-danger' : 'muted'}`} role="status">
+        <Group gap={8}>
+          <Text size="sm" c={status === 'ok' ? 'green' : status === 'error' ? 'red' : 'dimmed'} role="status">
             {status === 'ok' && <CheckCircle2 size={15} aria-hidden style={{ verticalAlign: '-3px', marginRight: 4 }} />}
             {message}
-          </p>
+          </Text>
           {canForce && status === 'error' && (
-            <button
-              type="button"
-              className="btn btn--ghost btn--sm"
+            <Button
+              variant="subtle"
+              color="gray"
+              size="xs"
               onClick={() => {
                 save()
                 setStatus('idle')
@@ -264,33 +269,33 @@ function ProviderPanel({ providerId, compact, onReady }: { providerId: ProviderI
               }}
             >
               Save anyway
-            </button>
+            </Button>
           )}
-        </div>
+        </Group>
       )}
       {connected && status === 'idle' && !dirty && !compact && (
-        <p className="small text-success">
+        <Text size="sm" c="green">
           <CheckCircle2 size={15} aria-hidden style={{ verticalAlign: '-3px', marginRight: 4 }} />
           Connected.
-        </p>
+        </Text>
       )}
 
       {(!compact || isCustom) && <ModelPicker providerId={provider.id} draftKey={draft} baseUrl={baseUrl} />}
 
-      <p className="hint">
+      <Text size="xs" c="dimmed">
         {provider.keyUrl ? (
           <>
             Get a key at{' '}
-            <a href={provider.keyUrl} target="_blank" rel="noreferrer">
+            <Anchor href={provider.keyUrl} target="_blank" rel="noreferrer" inherit>
               {new URL(provider.keyUrl).hostname}
-            </a>
+            </Anchor>
             .{' '}
           </>
         ) : null}
         Your key is stored only in this browser (never in backups) and sent only to{' '}
         {isCustom ? 'the server above' : provider.short}.{' '}
         {compact || isCustom ? '' : 'Typical cost: about a cent per correction or conversation.'}
-      </p>
+      </Text>
     </>
   )
 }
@@ -339,49 +344,63 @@ function ModelPicker({ providerId, draftKey, baseUrl }: { providerId: ProviderId
   const showInput = typing || (providerId === 'custom' && !options.length)
 
   return (
-    <div className="field" style={{ margin: 0 }}>
-      <label className="label" htmlFor="ai-model">
-        Model
-      </label>
-      <div className="row" style={{ gap: 8, alignItems: 'stretch' }}>
+    <div>
+      <Group gap={8} align="flex-end" wrap="nowrap">
         {showInput ? (
-          <input
+          <TextInput
             id="ai-model"
-            className="input"
-            style={{ flex: 1, minWidth: 0 }}
+            label="Model"
+            flex={1}
+            miw={0}
             value={ai.models[providerId] ?? ''}
             placeholder={provider.defaultModel || 'model name, e.g. llama3.3'}
-            onChange={(e) => ai.setModel(providerId, e.target.value)}
+            onChange={(e) => ai.setModel(providerId, e.currentTarget.value)}
             spellCheck={false}
             autoComplete="off"
           />
         ) : (
-          <select
+          <NativeSelect
             id="ai-model"
-            className="select"
-            style={{ flex: 1, minWidth: 0 }}
+            label="Model"
+            flex={1}
+            miw={0}
             value={current}
             onChange={(e) => {
-              if (e.target.value === '__other') setTyping(true)
-              else ai.setModel(providerId, e.target.value)
+              if (e.currentTarget.value === '__other') setTyping(true)
+              else ai.setModel(providerId, e.currentTarget.value)
             }}
-          >
-            {options.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-                {m.note ? ` · ${m.note}` : m.label !== m.id ? ` (${m.id})` : ''}
-              </option>
-            ))}
-            <option value="__other">Other model…</option>
-          </select>
+            data={[
+              ...options.map((m) => ({
+                value: m.id,
+                label: `${m.label}${m.note ? ` · ${m.note}` : m.label !== m.id ? ` (${m.id})` : ''}`,
+              })),
+              { value: '__other', label: 'Other model…' },
+            ]}
+          />
         )}
-        <button type="button" className="btn btn--secondary" onClick={load} disabled={loading} title="Load the models your key can use">
-          {loading ? <LoaderCircle size={16} className="spin" aria-hidden /> : <RefreshCw size={16} aria-hidden />}
-          <span className="hide-sm">Load models</span>
-        </button>
-      </div>
-      {error && <p className="small text-danger" style={{ marginTop: 6 }}>{error}</p>}
-      {fetched && !error && <p className="hint">{fetched.length} models available.</p>}
+        <Button
+          variant="default"
+          onClick={load}
+          loading={loading}
+          title="Load the models your key can use"
+          aria-label="Load models"
+          leftSection={<RefreshCw size={16} aria-hidden />}
+        >
+          <Text span inherit visibleFrom="sm">
+            Load models
+          </Text>
+        </Button>
+      </Group>
+      {error && (
+        <Text size="sm" c="red" mt={6}>
+          {error}
+        </Text>
+      )}
+      {fetched && !error && (
+        <Text size="xs" c="dimmed" mt={4}>
+          {fetched.length} models available.
+        </Text>
+      )}
     </div>
   )
 }
@@ -389,13 +408,17 @@ function ModelPicker({ providerId, draftKey, baseUrl }: { providerId: ProviderId
 /** Card shown inside a feature when no AI provider is connected yet. */
 export function ConnectAiCard({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <section className="card stack connect-ai" aria-label={title}>
-      <h2 className="card__title">{title}</h2>
-      <p className="muted small">
-        {children ??
-          'Use your own key from Claude, OpenAI, Gemini, OpenRouter — or a local model with Ollama. It’s stored only in this browser.'}
-      </p>
-      <AiSetup compact />
-    </section>
+    <Card component="section" aria-label={title}>
+      <Stack gap="sm">
+        <Title order={2} fz={17} fw={650}>
+          {title}
+        </Title>
+        <Text size="sm" c="dimmed">
+          {children ??
+            'Use your own key from Claude, OpenAI, Gemini, OpenRouter — or a local model with Ollama. It’s stored only in this browser.'}
+        </Text>
+        <AiSetup compact />
+      </Stack>
+    </Card>
   )
 }

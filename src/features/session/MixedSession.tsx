@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Badge, Box, Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { ArrowRight, BookOpen, CheckCircle2, Headphones, Layers, Mic, NotebookPen, PenLine, Target, Wrench } from 'lucide-react'
 import { findWord } from '../../data/vocab'
 import { LESSON_BY_ID } from '../../data/grammar'
 import { FocusShell } from '../../components/FocusShell'
-import { Kbd } from '../../components/ui'
+import { Kbd, Stat } from '../../components/ui'
 import { PASS_MARK, useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
-import { displayFr, frTypo } from '../../lib/words'
+import { displayFr } from '../../lib/words'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { noteConj, noteDictation, noteGrammar, noteLapse, noteSpeaking } from '../../lib/mistakes'
@@ -21,6 +22,7 @@ import { dirsFor } from '../vocab/selectors'
 import { GrammarQuestion, promptText } from '../grammar/GrammarQuestion'
 import type { Graded } from '../grammar/grade'
 import { nextUp } from '../grammar/status'
+import { MistakeList, ResultList, ResultRow } from '../grammar/MistakeList'
 import { DrillQuestion, type DrillAnswer } from '../conjugation/DrillQuestion'
 import { fullForm } from '../conjugation/drill'
 import { TENSE_BY_ID } from '../../lib/conjugate'
@@ -96,10 +98,21 @@ function start(plan: MixedPlan): Run {
 
 function Kind({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="mix-kind" aria-label={`Section: ${label}`}>
-      {icon}
-      {label}
-    </div>
+    <Box mb={14}>
+      <Badge
+        variant="light"
+        color="gray"
+        size="lg"
+        radius="xl"
+        tt="none"
+        fw={600}
+        leftSection={icon}
+        maw="100%"
+        aria-label={`Section: ${label}`}
+      >
+        {label}
+      </Badge>
+    </Box>
   )
 }
 
@@ -363,37 +376,33 @@ function NothingToDo({ mode }: { mode: 'daily' | 'weak' }) {
   if (mode === 'weak')
     return (
       <FocusShell progress={1} exitTo="/weak" label="Session">
-        <div className="results">
-          <Target size={44} color="var(--success)" aria-hidden />
-          <h1 className="results__title">No weak spots right now</h1>
-          <p className="muted" style={{ maxWidth: 440 }}>
+        <Results icon={<Target size={44} color="var(--mantine-color-green-filled)" aria-hidden />} title="No weak spots right now">
+          <Text c="dimmed" maw={440}>
             Mistakes from drills, writing, conversations and dictation show up here. Keep practising and come back later.
-          </p>
-          <Link to="/" className="btn btn--primary btn--lg" style={{ marginTop: 18 }}>
+          </Text>
+          <Button component={Link} to="/" size="lg" mt={18}>
             Back to Today
-          </Link>
-        </div>
+          </Button>
+        </Results>
       </FocusShell>
     )
   return (
     <FocusShell progress={1} exitTo="/" label="Session">
-      <div className="results">
-        <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-        <h1 className="results__title">Tout est à jour&nbsp;!</h1>
-        <p className="muted" style={{ maxWidth: 440 }}>
+      <Results icon={<CheckCircle2 size={44} color="var(--mantine-color-green-filled)" aria-hidden />} title={<>Tout est à jour&nbsp;!</>}>
+        <Text c="dimmed" maw={440}>
           No reviews are due and you’ve hit today’s new-word limit. Learn a new grammar point or write a few sentences.
-        </p>
-        <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 18 }}>
+        </Text>
+        <Group justify="center" mt={18}>
           {up && (
-            <Link to={`/grammar/${up.id}`} className="btn btn--primary btn--lg">
+            <Button component={Link} to={`/grammar/${up.id}`} size="lg">
               Learn: {up.title}
-            </Link>
+            </Button>
           )}
-          <Link to="/writing" className="btn btn--secondary btn--lg">
-            <NotebookPen size={17} aria-hidden /> Write
-          </Link>
-        </div>
-      </div>
+          <Button component={Link} to="/writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
+            Write
+          </Button>
+        </Group>
+      </Results>
     </FocusShell>
   )
 }
@@ -410,128 +419,77 @@ function Summary({ run, plan, startedAt }: { run: Run; plan: MixedPlan; startedA
 
   const pct = (t: Tally) => (t.n ? `${Math.round((t.ok / t.n) * 100)}%` : '—')
 
-  return (
-    <div className="results">
-      <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-      <h1 className="results__title">{plan.mode === 'weak' ? 'Points faibles travaillés\u00a0!' : 'Séance terminée\u00a0!'}</h1>
-      <p className="muted">
-        {total ? `${ok} of ${total} right on the first try` : 'Nice work'} · {minutes} min
-      </p>
+  const extra = [run.fix.n, run.listen.n, run.say.n].filter(Boolean).length > 0
 
-      <div className={`stats${[run.fix.n, run.listen.n, run.say.n].filter(Boolean).length ? ' stats--3' : ''}`} style={{ width: '100%', marginTop: 18 }}>
-        <div className="stat">
-          <div className="stat__label">Words reviewed</div>
-          <div className="stat__value">
-            {run.vocab.n}
-            <small>{pct(run.vocab)}</small>
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">New words</div>
-          <div className="stat__value">{run.newWords}</div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Grammar</div>
-          <div className="stat__value">
-            {run.grammar.ok}
-            <small>/ {run.grammar.n}</small>
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat__label">Verbs</div>
-          <div className="stat__value">
-            {run.conj.ok}
-            <small>/ {run.conj.n}</small>
-          </div>
-        </div>
-        {run.fix.n > 0 && (
-          <div className="stat">
-            <div className="stat__label">Fixed</div>
-            <div className="stat__value">
-              {run.fix.ok}
-              <small>/ {run.fix.n}</small>
-            </div>
-          </div>
-        )}
-        {run.listen.n > 0 && (
-          <div className="stat">
-            <div className="stat__label">Listening</div>
-            <div className="stat__value">
-              {run.listen.ok}
-              <small>/ {run.listen.n}</small>
-            </div>
-          </div>
-        )}
-        {run.say.n > 0 && (
-          <div className="stat">
-            <div className="stat__label">Speaking</div>
-            <div className="stat__value">
-              {run.say.ok}
-              <small>/ {run.say.n}</small>
-            </div>
-          </div>
-        )}
-      </div>
+  return (
+    <Results
+      icon={<CheckCircle2 size={44} color="var(--mantine-color-green-filled)" aria-hidden />}
+      title={plan.mode === 'weak' ? 'Points faibles travaillés\u00a0!' : 'Séance terminée\u00a0!'}
+    >
+      <Text c="dimmed">
+        {total ? `${ok} of ${total} right on the first try` : 'Nice work'} · {minutes} min
+      </Text>
+
+      <SimpleGrid cols={{ base: 2, sm: extra ? 3 : 4 }} spacing="sm" w="100%" mt={18} ta="left">
+        <Stat label="Words reviewed" value={run.vocab.n} unit={` ${pct(run.vocab)}`} />
+        <Stat label="New words" value={run.newWords} />
+        <Stat label="Grammar" value={run.grammar.ok} unit={` / ${run.grammar.n}`} />
+        <Stat label="Verbs" value={run.conj.ok} unit={` / ${run.conj.n}`} />
+        {run.fix.n > 0 && <Stat label="Fixed" value={run.fix.ok} unit={` / ${run.fix.n}`} />}
+        {run.listen.n > 0 && <Stat label="Listening" value={run.listen.ok} unit={` / ${run.listen.n}`} />}
+        {run.say.n > 0 && <Stat label="Speaking" value={run.say.ok} unit={` / ${run.say.n}`} />}
+      </SimpleGrid>
 
       {plan.reviewLessons.length > 0 && (
-        <div className="card card--flush mistake-list" style={{ marginTop: 16 }}>
-          <div className="section-title" style={{ padding: '14px 18px 0', margin: 0 }}>
-            Lesson reviews
-          </div>
-          {plan.reviewLessons.map((id) => {
+        <ResultList title="Lesson reviews" mt={16}>
+          {plan.reviewLessons.map((id, i) => {
             const t = run.lessons[id]
             const passed = t && t.n > 0 && t.ok / t.n >= PASS_MARK
             return (
-              <div key={id} className="mistake row" style={{ justifyContent: 'space-between' }}>
-                <span>{lessonTitle(id)}</span>
-                {t ? (
-                  <span className={`badge ${passed ? 'badge--success' : 'badge--warning'}`}>
-                    {passed ? 'Still solid' : 'Needs another look'}
-                  </span>
-                ) : (
-                  <span className="badge">Not reached</span>
-                )}
-              </div>
+              <ResultRow key={id} first={i === 0}>
+                <Group justify="space-between" wrap="nowrap">
+                  <span>{lessonTitle(id)}</span>
+                  {t ? <Badge color={passed ? 'green' : 'orange'}>{passed ? 'Still solid' : 'Needs another look'}</Badge> : <Badge color="gray">Not reached</Badge>}
+                </Group>
+              </ResultRow>
             )
           })}
-        </div>
+        </ResultList>
       )}
 
-      <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 22 }}>
+      <Group justify="center" mt={22}>
         {plan.counts.moreReviews > 0 && (
-          <Link to="/vocab/study" className="btn btn--secondary btn--lg">
+          <Button component={Link} to="/vocab/study" size="lg" variant="default">
             {plan.counts.moreReviews} more reviews
-          </Link>
+          </Button>
         )}
         {up && (
-          <Link to={`/grammar/${up.id}`} className="btn btn--secondary btn--lg">
-            Next lesson <ArrowRight size={16} aria-hidden />
-          </Link>
+          <Button component={Link} to={`/grammar/${up.id}`} size="lg" variant="default" rightSection={<ArrowRight size={16} aria-hidden />}>
+            Next lesson
+          </Button>
         )}
-        <Link to="/writing" className="btn btn--secondary btn--lg">
-          <NotebookPen size={17} aria-hidden /> Write
-        </Link>
-        <Link to={home} className="btn btn--primary btn--lg">
-          Done <Kbd>↵</Kbd>
-        </Link>
-      </div>
+        <Button component={Link} to="/writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
+          Write
+        </Button>
+        <Button component={Link} to={home} size="lg" rightSection={<Kbd>↵</Kbd>}>
+          Done
+        </Button>
+      </Group>
 
-      {run.mistakes.length > 0 && (
-        <div className="card card--flush mistake-list">
-          <div className="section-title" style={{ padding: '14px 18px 0', margin: 0 }}>
-            To review
-          </div>
-          {run.mistakes.map((m, i) => (
-            <div key={i} className="mistake">
-              <div className="mistake__q">{m.what}</div>
-              <div className="mistake__a" lang="fr">
-                {m.given && <span className="mistake__yours">{m.given}</span>}
-                <strong>{frTypo(m.expected)}</strong>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      {run.mistakes.length > 0 && <MistakeList items={run.mistakes} />}
+    </Results>
+  )
+}
+
+/** Centered end-of-session layout: icon, French headline, then whatever follows. */
+function Results({ icon, title, children }: { icon: React.ReactNode; title: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <Stack align="center" ta="center" gap={8} pt={32}>
+      {icon}
+      <Title order={1} className="fr" fz={28} fw={600}>
+        {title}
+      </Title>
+      {children}
+    </Stack>
   )
 }

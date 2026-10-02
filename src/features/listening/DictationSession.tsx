@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Badge, Box, Button, Card, Group, Stack, Text, Title } from '@mantine/core'
 import { CheckCircle2, Headphones, RotateCcw } from 'lucide-react'
 import { FocusShell } from '../../components/FocusShell'
 import { SpeakButton } from '../../components/SpeakButton'
@@ -53,12 +54,14 @@ function DictationSession() {
   if (!items.length) {
     return (
       <FocusShell progress={0} exitTo="/listening" label="Dictation">
-        <div className="results">
-          <h1 className="results__title">No sentences here yet</h1>
-          <Link to="/listening" className="btn btn--primary">
+        <Stack align="center" ta="center" gap="xs" pt="xl">
+          <Title order={1} className="fr" fz={28} fw={600}>
+            No sentences here yet
+          </Title>
+          <Button component={Link} to="/listening" mt="sm">
             Choose other sentences
-          </Link>
-        </div>
+          </Button>
+        </Stack>
       </FocusShell>
     )
   }
@@ -90,66 +93,87 @@ function DictationSummary({ log }: { log: DictationAnswer[] }) {
   const sorted = (Object.keys(cats) as ListenCategory[]).sort((a, b) => (cats[b] ?? 0) - (cats[a] ?? 0))
 
   return (
-    <div className="results">
-      <CheckCircle2 size={44} color="var(--success)" aria-hidden />
-      <h1 className="results__title">Dictée terminée&nbsp;!</h1>
-      <p className="muted">
+    <Stack align="center" ta="center" gap="xs" pt="xl">
+      <CheckCircle2 size={44} color="var(--mantine-color-green-6)" aria-hidden />
+      <Title order={1} className="fr" fz={28} fw={600}>
+        Dictée terminée&nbsp;!
+      </Title>
+      <Text c="dimmed">
         {perfect} of {log.length} perfect · average {avg}%
-      </p>
+      </Text>
 
       {sorted.length > 0 && (
-        <div className="card listen-cats" style={{ width: '100%', marginTop: 18, textAlign: 'left' }}>
-          <div className="section-title" style={{ margin: '0 0 10px' }}>
+        <Card w="100%" ta="left" mt="md">
+          <Title order={2} size="h5" c="dimmed" tt="uppercase" mb="sm">
             What to listen for
-          </div>
-          <ul className="stack" style={{ gap: 12 }}>
+          </Title>
+          <Stack component="ul" gap="sm" m={0} p={0} style={{ listStyle: 'none' }}>
             {sorted.map((c) => (
               <li key={c}>
-                <div className="row" style={{ gap: 8, marginBottom: 2 }}>
-                  <strong>{LISTEN_CATEGORIES[c].label}</strong>
-                  <span className="badge">× {cats[c]}</span>
-                </div>
-                <p className="small muted">{LISTEN_CATEGORIES[c].tip}</p>
+                <Group gap={8} mb={2}>
+                  <Text fw={700}>{LISTEN_CATEGORIES[c].label}</Text>
+                  <Badge color="gray">× {cats[c]}</Badge>
+                </Group>
+                <Text size="sm" c="dimmed">
+                  {LISTEN_CATEGORIES[c].tip}
+                </Text>
               </li>
             ))}
-          </ul>
-        </div>
+          </Stack>
+        </Card>
       )}
 
-      <div className="row-wrap" style={{ justifyContent: 'center', marginTop: 22 }}>
-        <button type="button" className="btn btn--secondary btn--lg" onClick={() => navigate(`/listening/session?${params.toString()}&r=${Date.now()}`)}>
-          <RotateCcw size={17} aria-hidden /> New sentences
-        </button>
-        <Link to="/listening" className="btn btn--primary btn--lg">
-          Done <Kbd>↵</Kbd>
-        </Link>
-      </div>
+      <Group justify="center" gap="sm" mt="lg">
+        <Button
+          size="lg"
+          variant="default"
+          onClick={() => navigate(`/listening/session?${params.toString()}&r=${Date.now()}`)}
+          leftSection={<RotateCcw size={17} aria-hidden />}
+        >
+          New sentences
+        </Button>
+        <Button component={Link} to="/listening" size="lg" rightSection={<Kbd>↵</Kbd>}>
+          Done
+        </Button>
+      </Group>
 
-      <div className="card card--flush mistake-list">
-        <div className="section-title" style={{ padding: '14px 18px 0', margin: 0 }}>
-          <Headphones size={16} aria-hidden style={{ verticalAlign: '-3px', marginRight: 6 }} />
-          Sentences
-        </div>
+      <Card padding={0} w="100%" ta="left" mt="lg">
+        <Title order={2} size="h5" c="dimmed" tt="uppercase" px="md" pt="md" pb="xs">
+          <Group component="span" gap={6} wrap="nowrap">
+            <Headphones size={16} aria-hidden />
+            Sentences
+          </Group>
+        </Title>
         {log.map((x, i) => (
-          <div key={i} className="mistake row" style={{ alignItems: 'flex-start', gap: 10 }}>
+          <Group
+            key={i}
+            align="flex-start"
+            wrap="nowrap"
+            gap={10}
+            px="md"
+            py="sm"
+            style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
+          >
             <SpeakButton text={x.sentence.fr} size="sm" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="mistake__a" lang="fr">
-                <strong>{frTypo(x.sentence.fr)}</strong>
-              </div>
+            <Box flex={1} miw={0}>
+              <Text className="fr" lang="fr" fw={700} fz={17}>
+                {frTypo(x.sentence.fr)}
+              </Text>
               {!x.result.perfect && x.typed.trim() && (
-                <div className="small muted" lang="fr">
-                  <span className="mistake__yours">{frTypo(x.typed)}</span>
-                </div>
+                <Text size="sm" c="red" td="line-through" className="fr" lang="fr">
+                  {frTypo(x.typed)}
+                </Text>
               )}
-              <div className="small subtle">{x.sentence.en}</div>
-            </div>
-            <span className={`badge ${x.result.perfect ? 'badge--success' : x.result.score >= 70 ? 'badge--warning' : 'badge--danger'} tnum`}>
+              <Text size="sm" c="dimmed">
+                {x.sentence.en}
+              </Text>
+            </Box>
+            <Badge className="tnum" color={x.result.perfect ? 'green' : x.result.score >= 70 ? 'orange' : 'red'}>
               {x.result.score}%
-            </span>
-          </div>
+            </Badge>
+          </Group>
         ))}
-      </div>
-    </div>
+      </Card>
+    </Stack>
   )
 }

@@ -129,38 +129,6 @@
 .option:disabled {
   cursor: default;
 }
-.option__key {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--border-strong);
-  border-radius: 7px;
-  color: var(--text-3);
-  font-family: var(--font-ui);
-  font-size: 12.5px;
-  font-weight: 650;
-}
-.option--correct {
-  border-color: var(--success) !important;
-  background: var(--success-soft) !important;
-}
-.option--correct .option__key {
-  border-color: var(--success);
-  color: var(--success);
-}
-.option--wrong {
-  border-color: var(--danger) !important;
-  background: var(--danger-soft) !important;
-}
-.option--wrong .option__key {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-.option--dim {
-  opacity: 0.55;
-}
 
 /* Sentence builder tiles */
 .tile-line {
@@ -215,84 +183,6 @@
   border-top: 1px solid var(--border);
   background: var(--surface);
   padding-bottom: env(safe-area-inset-bottom);
-}
-.sheet--animate {
-  animation: slide-up 0.22s var(--ease);
-}
-.sheet__inner {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 18px 20px 20px;
-}
-.sheet__body {
-  flex: 1;
-  min-width: 0;
-}
-.sheet__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 700;
-}
-.sheet__answer {
-  margin-top: 6px;
-  font-family: var(--font-fr);
-  font-size: 18px;
-}
-.sheet__explain {
-  margin-top: 8px;
-  color: var(--text-2);
-  font-size: 14.5px;
-  max-width: 62ch;
-}
-.sheet__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  flex: none;
-  min-width: 170px;
-  padding-top: 2px;
-}
-.sheet--correct {
-  background: var(--success-soft);
-  border-top-color: color-mix(in srgb, var(--success) 30%, transparent);
-}
-.sheet--correct .sheet__title {
-  color: var(--success);
-}
-.sheet--almost {
-  background: var(--warning-soft);
-  border-top-color: color-mix(in srgb, var(--warning) 30%, transparent);
-}
-.sheet--almost .sheet__title {
-  color: var(--warning);
-}
-.sheet--wrong {
-  background: var(--danger-soft);
-  border-top-color: color-mix(in srgb, var(--danger) 30%, transparent);
-}
-.sheet--wrong .sheet__title {
-  color: var(--danger);
-}
-.sheet--neutral {
-  background: var(--surface);
-  box-shadow: 0 -6px 24px rgb(0 0 0 / 0.04);
-}
-@media (max-width: 560px) {
-  .sheet__inner {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-  }
-  .sheet__actions {
-    width: 100%;
-  }
 }
 
 .diff {
@@ -374,51 +264,6 @@
   font-size: 13.5px;
 }
 
-.rating-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  width: 100%;
-}
-.rate-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-height: 58px;
-  padding: 8px 6px;
-  border: 1px solid var(--border-strong);
-  border-bottom-width: 3px;
-  border-radius: 12px;
-  background: var(--surface);
-  font-weight: 650;
-  transition: background 0.12s, transform 0.08s;
-}
-.rate-btn:hover {
-  background: var(--surface-2);
-}
-.rate-btn:active {
-  transform: translateY(1px);
-}
-.rate-btn small {
-  color: var(--text-3);
-  font-size: 12px;
-  font-weight: 560;
-  font-variant-numeric: tabular-nums;
-}
-.rate-btn--again {
-  color: var(--danger);
-}
-.rate-btn--hard {
-  color: var(--warning);
-}
-.rate-btn--good {
-  color: var(--success);
-}
-.rate-btn--easy {
-  color: var(--primary-text);
-}
-
 /* Results */
 .results {
   display: flex;
@@ -428,40 +273,9 @@
   gap: 8px;
   padding-top: 32px;
 }
-.results__score {
-  font-family: var(--font-fr);
-  font-size: 64px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-.results__title {
-  font-family: var(--font-fr);
-  font-size: 28px;
-  font-weight: 600;
-}
-.mistake-list {
-  width: 100%;
-  margin-top: 26px;
-  text-align: left;
-}
 .mistake {
   padding: 14px 18px;
 }
 .mistake + .mistake {
   border-top: 1px solid var(--border);
-}
-.mistake__q {
-  color: var(--text-2);
-  font-size: 13.5px;
-}
-.mistake__a {
-  margin-top: 3px;
-  font-family: var(--font-fr);
-  font-size: 17px;
-}
-.mistake__yours {
-  color: var(--danger);
-  text-decoration: line-through;
-  margin-right: 8px;
 }

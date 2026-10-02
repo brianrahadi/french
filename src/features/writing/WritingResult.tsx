@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Divider, Group, List, SegmentedControl, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core'
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Copy, PencilLine, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { LESSON_BY_ID } from '../../data/grammar'
 import { findWord } from '../../data/vocab'
@@ -11,7 +12,7 @@ import { useStore, type WritingEntry } from '../../lib/store'
 import { segmentText } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { customWord, frTypo } from '../../lib/words'
-import { scoreClass } from './WritingHome'
+import { ScoreBadge } from './WritingHome'
 
 type View = 'marked' | 'corrected' | 'improved'
 
@@ -23,14 +24,15 @@ export default function WritingResult() {
 
   if (!entry) {
     return (
-      <div className="page">
-        <Link to="/writing" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Writing
-        </Link>
+      <Container size={960} py="xl">
+        <BackLink />
         <Empty icon={<PencilLine size={30} />} title="This text isn’t here any more">
-          It may have been deleted. <Link to="/writing">Write something new</Link>
+          It may have been deleted.{' '}
+          <Anchor component={Link} to="/writing">
+            Write something new
+          </Anchor>
         </Empty>
-      </div>
+      </Container>
     )
   }
   const before = entry.revisionOf ? writings.find((w) => w.id === entry.revisionOf) : undefined
@@ -70,59 +72,61 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
   const shownText = view === 'corrected' ? fb.corrected : view === 'improved' ? fb.improved : entry.text
 
   return (
-    <div className="page page--narrow">
-      <Link to="/writing" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Writing
-      </Link>
+    <Container size={760} py="xl">
+      <BackLink />
 
-      <header className="result-head">
+      <Group component="header" gap={20} wrap="nowrap" mb="md">
         <Ring value={fb.score / 100} size={84} stroke={8} label={`Score ${fb.score} out of 100`}>
           <span className="tnum">{fb.score}</span>
         </Ring>
-        <div style={{ minWidth: 0 }}>
-          <div className="page-eyebrow" style={{ marginBottom: 2 }}>
+        <Box style={{ minWidth: 0 }}>
+          <Text size="sm" fw={600} c="dimmed" mb={2}>
             {new Date(entry.createdAt).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })} ·{' '}
             {entry.words} words
             {fb.level && <> · reads like {fb.level}</>}
-          </div>
-          <h1 className="page-title" style={{ fontSize: 'clamp(24px, 3.4vw, 30px)' }} lang="fr">
+          </Text>
+          <Title order={1} fz={{ base: 24, sm: 30 }} lang="fr">
             {entry.title}
-          </h1>
+          </Title>
           {before && (
-            <p className="small muted" style={{ marginTop: 4 }}>
-              Rewrite · score{' '}
-              <span className={`badge ${scoreClass(before.feedback.score)} tnum`}>{before.feedback.score}</span> →{' '}
-              <span className={`badge ${scoreClass(fb.score)} tnum`}>{fb.score}</span>{' '}
-              <Link to={`/writing/${before.id}`}>see first version</Link>
-            </p>
+            <Text size="sm" c="dimmed" mt={4}>
+              Rewrite · score <ScoreBadge score={before.feedback.score} /> → <ScoreBadge score={fb.score} />{' '}
+              <Anchor component={Link} to={`/writing/${before.id}`} inherit>
+                see first version
+              </Anchor>
+            </Text>
           )}
-        </div>
-      </header>
+        </Box>
+      </Group>
 
-      {fb.summary && <p className="result-summary">{fb.summary}</p>}
+      {fb.summary && (
+        <Text fz={16} lh={1.6} maw="68ch" mb={20}>
+          {fb.summary}
+        </Text>
+      )}
 
-      <section className="card result-text" aria-label="Your text">
-        <div className="result-text__bar">
-          <div className="segmented" role="tablist" aria-label="Version">
-            {(
-              [
-                ['marked', `Corrections${fb.errors.length ? ` (${fb.errors.length})` : ''}`],
-                ['corrected', 'Corrected'],
-                ['improved', 'More natural'],
-              ] as [View, string][]
-            ).map(([v, label]) => (
-              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="row" style={{ gap: 2 }}>
+      <Card component="section" padding={0} aria-label="Your text">
+        <Group justify="space-between" gap={10} px={14} py={12} bg="var(--mantine-color-default-hover)">
+          <SegmentedControl
+            size="sm"
+            aria-label="Version"
+            value={view}
+            onChange={(v) => setView(v as View)}
+            data={[
+              { value: 'marked', label: `Corrections${fb.errors.length ? ` (${fb.errors.length})` : ''}` },
+              { value: 'corrected', label: 'Corrected' },
+              { value: 'improved', label: 'More natural' },
+            ]}
+          />
+          <Group gap={2}>
             <SpeakButton text={view === 'marked' ? fb.corrected : shownText} size="sm" label="Listen to the corrected text" />
-            <button type="button" className="icon-btn icon-btn--sm" onClick={() => copy(view === 'marked' ? fb.corrected : shownText)} aria-label="Copy text" title="Copy">
+            <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => copy(view === 'marked' ? fb.corrected : shownText)} aria-label="Copy text" title="Copy">
               <Copy size={15} aria-hidden />
-            </button>
-          </div>
-        </div>
+            </ActionIcon>
+          </Group>
+        </Group>
+        <Divider />
+        {/* Core learning UI: the text with tappable correction marks keeps its own typography and mark styles. */}
         <div className="result-text__body fr" lang="fr">
           {view === 'marked'
             ? segments.map((s, i) =>
@@ -144,109 +148,148 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
               )
             : frTypo(shownText)}
         </div>
-      </section>
+      </Card>
 
-      <section className="section" aria-labelledby="fixes-title">
-        <h2 id="fixes-title" className="section-title">
-          <span>What to fix</span>
-          <span className="tnum">{fb.errors.length}</span>
-        </h2>
+      <Box component="section" mt="xl" aria-labelledby="fixes-title">
+        <Title order={2} size="h4" mb="xs" id="fixes-title">
+          <Group component="span" gap={8} wrap="nowrap">
+            <span>What to fix</span>
+            <Text span c="dimmed" size="sm" fw={500} className="tnum">
+              {fb.errors.length}
+            </Text>
+          </Group>
+        </Title>
         {fb.errors.length === 0 ? (
-          <div className="card">
-            <Empty icon={<CheckCircle2 size={32} color="var(--success)" />} title="Aucune faute — no mistakes found!">
+          <Card>
+            <Empty icon={<CheckCircle2 size={32} color="var(--mantine-color-green-filled)" />} title="Aucune faute — no mistakes found!">
               Look at the “More natural” version for ways to sound even more fluent.
             </Empty>
-          </div>
+          </Card>
         ) : (
-          <ol className="fix-list">
+          <Stack component="ol" gap={8} m={0} p={0} style={{ listStyle: 'none' }}>
             {fb.errors.map((e, i) => {
               const lesson = e.lesson ? LESSON_BY_ID[e.lesson] : undefined
+              const on = active === i
               return (
-                <li
+                <Card
+                  component="li"
                   key={i}
                   id={`err-${i}`}
-                  className={`fix${active === i ? ' fix--active' : ''}`}
+                  padding="md"
+                  radius="md"
                   onMouseEnter={() => setActive(i)}
+                  style={{
+                    scrollMargin: 90,
+                    transition: 'border-color 0.15s, box-shadow 0.15s',
+                    ...(on
+                      ? {
+                          borderColor: 'var(--mantine-primary-color-filled)',
+                          boxShadow: '0 0 0 3px var(--mantine-primary-color-light)',
+                        }
+                      : {}),
+                  }}
                 >
-                  <span className="fix__n tnum" aria-hidden>
-                    {i + 1}
-                  </span>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="fix__change fr" lang="fr">
-                      <del>{frTypo(e.original)}</del>
-                      <ArrowRight size={15} aria-hidden className="subtle" />
-                      <ins>{frTypo(e.correction) || '(remove)'}</ins>
-                      <span className="badge fix__cat">{e.category}</span>
-                    </div>
-                    <p className="fix__why">{e.explanation}</p>
-                    {lesson && (
-                      <Link to={`/grammar/${lesson.id}`} className="fix__lesson">
-                        Review: {lesson.title} <ArrowRight size={14} aria-hidden />
-                      </Link>
-                    )}
-                    {!located.has(i) && <p className="hint">(couldn’t pinpoint this one in your text)</p>}
-                  </div>
-                </li>
+                  <Group gap={14} wrap="nowrap" align="flex-start">
+                    <ThemeIcon variant="default" radius="xl" size={26} fz={12.5} fw={700} className="tnum" aria-hidden>
+                      {i + 1}
+                    </ThemeIcon>
+                    <Box style={{ minWidth: 0, flex: 1 }}>
+                      {/* The before → after change keeps the shared diff styles (red strike, green insert). */}
+                      <div className="fix__change fr" lang="fr">
+                        <del>{frTypo(e.original)}</del>
+                        <Text span c="dimmed" display="inline-flex">
+                          <ArrowRight size={15} aria-hidden />
+                        </Text>
+                        <ins>{frTypo(e.correction) || '(remove)'}</ins>
+                        <Badge color="gray" ml={4} tt="capitalize">
+                          {e.category}
+                        </Badge>
+                      </div>
+                      <Text fz={14.5} c="dimmed" mt={4}>
+                        {e.explanation}
+                      </Text>
+                      {lesson && (
+                        <Anchor component={Link} to={`/grammar/${lesson.id}`} fz={13.5} fw={600} mt={6} display="inline-flex" style={{ alignItems: 'center', gap: 4 }}>
+                          Review: {lesson.title} <ArrowRight size={14} aria-hidden />
+                        </Anchor>
+                      )}
+                      {!located.has(i) && (
+                        <Text size="xs" c="dimmed" mt={4}>
+                          (couldn’t pinpoint this one in your text)
+                        </Text>
+                      )}
+                    </Box>
+                  </Group>
+                </Card>
               )
             })}
-          </ol>
+          </Stack>
         )}
-      </section>
+      </Box>
 
-      <div className="grid-2 section" style={{ alignItems: 'start' }}>
+      <SimpleGrid cols={{ base: 1, sm: 2 }} mt="xl" style={{ alignItems: 'start' }}>
         {fb.strengths.length > 0 && (
-          <section className="card" aria-labelledby="strengths-title">
-            <h2 id="strengths-title" className="card__title" style={{ marginBottom: 10 }}>
+          <Card component="section" aria-labelledby="strengths-title">
+            <Title order={2} id="strengths-title" fz="md" fw={650} mb={10}>
               What went well
-            </h2>
-            <ul className="strengths">
-              {fb.strengths.map((s, i) => (
-                <li key={i}>
+            </Title>
+            <List
+              spacing={10}
+              fz={14.5}
+              center={false}
+              icon={
+                <Text span c="green" display="flex" mt={3}>
                   <Check size={16} aria-hidden />
-                  <span>{s}</span>
-                </li>
+                </Text>
+              }
+            >
+              {fb.strengths.map((s, i) => (
+                <List.Item key={i}>{s}</List.Item>
               ))}
-            </ul>
-          </section>
+            </List>
+          </Card>
         )}
         {vocab.length > 0 && (
-          <section className="card" aria-labelledby="vocab-title">
-            <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
-              <h2 id="vocab-title" className="card__title">
+          <Card component="section" aria-labelledby="vocab-title">
+            <Group justify="space-between" mb={10}>
+              <Title order={2} id="vocab-title" fz="md" fw={650}>
                 Words to keep
-              </h2>
+              </Title>
               {vocab.some((v) => !v.added) && (
-                <button
-                  type="button"
-                  className="btn btn--secondary btn--sm"
+                <Button
+                  variant="default"
+                  size="xs"
+                  leftSection={<Plus size={15} aria-hidden />}
                   onClick={() => {
                     const fresh = vocab.filter((v) => !v.added).map((v) => v.word)
                     addCustomWords(fresh)
                     toast(`Added ${fresh.length} word${fresh.length > 1 ? 's' : ''} to your flashcards`)
                   }}
                 >
-                  <Plus size={15} aria-hidden /> Add all
-                </button>
+                  Add all
+                </Button>
               )}
-            </div>
-            <ul className="keep-list">
+            </Group>
+            <Stack component="ul" gap={10} m={0} p={0} style={{ listStyle: 'none' }}>
               {vocab.map((v) => (
-                <li key={v.word.id}>
+                <Group component="li" key={v.word.id} gap={8} wrap="nowrap">
                   <SpeakButton text={v.word.fr} size="sm" />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="fr" lang="fr">
+                  <Box style={{ minWidth: 0, flex: 1 }}>
+                    <Text fz={17} className="fr" lang="fr">
                       {frTypo(v.fr)}
-                    </div>
-                    <div className="muted small">{v.en}</div>
-                  </div>
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {v.en}
+                    </Text>
+                  </Box>
                   {v.added ? (
-                    <span className="badge badge--success">
-                      <Check size={12} aria-hidden /> added
-                    </span>
+                    <Badge color="green" leftSection={<Check size={12} aria-hidden />}>
+                      added
+                    </Badge>
                   ) : (
-                    <button
-                      type="button"
-                      className="icon-btn icon-btn--sm icon-btn--outline"
+                    <ActionIcon
+                      variant="default"
+                      size="md"
                       aria-label={`Add ${v.fr} to flashcards`}
                       title="Add to flashcards"
                       onClick={() => {
@@ -255,29 +298,29 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
                       }}
                     >
                       <Plus size={15} aria-hidden />
-                    </button>
+                    </ActionIcon>
                   )}
-                </li>
+                </Group>
               ))}
-            </ul>
-          </section>
+            </Stack>
+          </Card>
         )}
-      </div>
+      </SimpleGrid>
 
-      <div className="result-actions">
-        <button type="button" className="btn btn--ghost" style={{ color: 'var(--danger)' }} onClick={() => setConfirmDelete(true)}>
-          <Trash2 size={16} aria-hidden /> Delete
-        </button>
-        <div className="spacer" />
-        <Link to="/writing" className="btn btn--secondary">
+      <Divider mt={32} mb={20} />
+      <Group gap={8}>
+        <Button variant="subtle" color="red" leftSection={<Trash2 size={16} aria-hidden />} onClick={() => setConfirmDelete(true)}>
+          Delete
+        </Button>
+        <Button component={Link} to="/writing" variant="default" ml="auto">
           New text
-        </Link>
+        </Button>
         {fb.errors.length > 0 && (
-          <Link to={`/writing/new?rewrite=${entry.id}`} className="btn btn--primary">
-            <RotateCcw size={16} aria-hidden /> Rewrite it yourself
-          </Link>
+          <Button component={Link} to={`/writing/new?rewrite=${entry.id}`} leftSection={<RotateCcw size={16} aria-hidden />}>
+            Rewrite it yourself
+          </Button>
         )}
-      </div>
+      </Group>
 
       <Dialog
         open={confirmDelete}
@@ -285,23 +328,31 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
         title="Delete this text?"
         actions={
           <>
-            <button className="btn btn--ghost" onClick={() => setConfirmDelete(false)} autoFocus>
+            <Button variant="subtle" color="gray" onClick={() => setConfirmDelete(false)} data-autofocus>
               Cancel
-            </button>
-            <button
-              className="btn btn--danger"
+            </Button>
+            <Button
+              color="red"
               onClick={() => {
                 deleteWriting(entry.id)
                 navigate('/writing', { replace: true })
               }}
             >
               Delete
-            </button>
+            </Button>
           </>
         }
       >
-        <p className="muted">The text and its feedback will be removed from this browser.</p>
+        <Text c="dimmed">The text and its feedback will be removed from this browser.</Text>
       </Dialog>
-    </div>
+    </Container>
+  )
+}
+
+function BackLink() {
+  return (
+    <Anchor component={Link} to="/writing" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
+      <ArrowLeft size={16} aria-hidden /> Writing
+    </Anchor>
   )
 }

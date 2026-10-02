@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Badge, Box, Button, Card, Container, Group, NavLink, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
 import { ArrowRight, Check, Feather, PencilLine, Sparkles } from 'lucide-react'
 import { WRITING_PROMPTS, type WritingPrompt } from '../../data/writing'
 import { LEVELS, LEVEL_INFO } from '../../data/types'
@@ -7,6 +9,7 @@ import { useStore, type LessonProgress, type WritingEntry } from '../../lib/stor
 import { useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { ConnectAiCard } from '../../components/AiSetup'
+import { PageHeader } from '../../components/PageHeader'
 
 /** Suggest a prompt that practices grammar the learner has recently mastered. */
 function suggest(lessons: Record<string, LessonProgress>, written: Set<string>, startLevel: string | null): WritingPrompt | undefined {
@@ -21,8 +24,18 @@ function suggest(lessons: Record<string, LessonProgress>, written: Set<string>, 
   return WRITING_PROMPTS.find((w) => !written.has(w.id) && w.level === (startLevel ?? 'A1')) ?? WRITING_PROMPTS.find((w) => !written.has(w.id))
 }
 
-export function scoreClass(score: number): string {
-  return score >= 85 ? 'badge--success' : score >= 60 ? 'badge--warning' : 'badge--danger'
+/** Badge colour for a 0–100 correction score. */
+export function scoreColor(score: number): MantineColor {
+  return score >= 85 ? 'green' : score >= 60 ? 'orange' : 'red'
+}
+
+/** A small badge with a 0–100 score, coloured by how good it is. */
+export function ScoreBadge({ score, miw }: { score: number; miw?: number }) {
+  return (
+    <Badge color={scoreColor(score)} className="tnum" miw={miw} style={{ flexShrink: 0 }}>
+      {score}
+    </Badge>
+  )
 }
 
 export default function WritingHome() {
@@ -35,141 +48,162 @@ export default function WritingHome() {
   const pick = suggest(lessons, written, startLevel)
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <div className="page-eyebrow">Expression écrite</div>
-          <h1 className="page-title">Writing</h1>
-          <p className="page-subtitle">
-            Write a short text and get it corrected like a teacher would: every mistake explained, linked to the lesson that
-            covers it, plus a more natural version to learn from.
-          </p>
-        </div>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Expression écrite"
+        title="Writing"
+        subtitle="Write a short text and get it corrected like a teacher would: every mistake explained, linked to the lesson that covers it, plus a more natural version to learn from."
+      />
 
       {!ai && (
-        <div style={{ marginBottom: 24 }}>
+        <Box mb="lg">
           <ConnectAiCard title="Connect an AI to get corrections">
             Corrections come from the AI model of your choice, with your own key. You can still write without it — you just won’t get feedback until one is connected.
           </ConnectAiCard>
-        </div>
+        </Box>
       )}
 
-      <div className="grid-2">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
         {pick && (
-          <Link to={`/writing/new?prompt=${pick.id}`} className="card card--interactive writing-suggest">
-            <div className="row" style={{ gap: 8, marginBottom: 10 }}>
-              <span className="pill">
-                <Sparkles size={14} aria-hidden /> Suggested for you
-              </span>
+          <Card component={Link} to={`/writing/new?prompt=${pick.id}`} c="inherit" td="none">
+            <Group gap={8} mb={10}>
+              <Badge leftSection={<Sparkles size={12} aria-hidden />} tt="none">
+                Suggested for you
+              </Badge>
               <LevelBadge level={pick.level} />
-            </div>
-            <div className="writing-card__fr fr" lang="fr">
+            </Group>
+            <Text fz={23} fw={560} lh={1.25} mb={4} className="fr" lang="fr">
               {pick.titleFr}
-            </div>
-            <div className="muted">{pick.task}</div>
-            <div className="subtle small" style={{ marginTop: 8 }}>
+            </Text>
+            <Text c="dimmed">{pick.task}</Text>
+            <Text size="sm" c="dimmed" mt={8}>
               Practices {pick.focus}
-            </div>
-            <span className="btn btn--primary btn--sm" style={{ marginTop: 14, pointerEvents: 'none' }} aria-hidden>
-              Start writing <ArrowRight size={15} />
-            </span>
-          </Link>
+            </Text>
+            <Box mt={14}>
+              <Button component="span" size="xs" rightSection={<ArrowRight size={15} />} style={{ pointerEvents: 'none' }} aria-hidden>
+                Start writing
+              </Button>
+            </Box>
+          </Card>
         )}
-        <div className="stack" style={{ gap: 12 }}>
-          <Link to="/writing/new?prompt=free" className="card card--interactive hero-card action-card">
-            <div className="hero-card__icon hero-card__icon--amber">
-              <Feather size={22} aria-hidden />
-            </div>
-            <div>
-              <div className="card__title">Free writing</div>
-              <div className="card__meta">A diary entry, a message, anything</div>
-            </div>
-            <ArrowRight size={18} className="subtle" aria-hidden />
-          </Link>
-          <Link to="/writing/new?prompt=custom" className="card card--interactive hero-card action-card">
-            <div className="hero-card__icon">
-              <PencilLine size={22} aria-hidden />
-            </div>
-            <div>
-              <div className="card__title">Your own topic</div>
-              <div className="card__meta">Set the task yourself</div>
-            </div>
-            <ArrowRight size={18} className="subtle" aria-hidden />
-          </Link>
-        </div>
-      </div>
+        <Stack gap={12}>
+          <ActionCard to="/writing/new?prompt=free" icon={<Feather size={22} aria-hidden />} color="orange" title="Free writing" meta="A diary entry, a message, anything" />
+          <ActionCard to="/writing/new?prompt=custom" icon={<PencilLine size={22} aria-hidden />} title="Your own topic" meta="Set the task yourself" />
+        </Stack>
+      </SimpleGrid>
 
       {writings.length > 0 && <History writings={writings} />}
 
       {LEVELS.map((level) => (
-        <section key={level} className="section" aria-labelledby={`wl-${level}`}>
-          <div className="level-head" style={{ marginBottom: 12 }}>
+        <Box component="section" key={level} mt="xl" aria-labelledby={`wl-${level}`}>
+          <Group gap={8} mb={12}>
             <LevelBadge level={level} />
-            <h2 id={`wl-${level}`} className="level-head__title">
+            <Title order={2} size="h4" id={`wl-${level}`}>
               {LEVEL_INFO[level].name}
-            </h2>
-          </div>
-          <div className="writing-grid">
+            </Title>
+          </Group>
+          <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing={10}>
             {WRITING_PROMPTS.filter((p) => p.level === level).map((p) => (
-              <Link key={p.id} to={`/writing/new?prompt=${p.id}`} className="writing-card card--interactive">
-                <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
-                  <span className="writing-card__fr fr" lang="fr">
+              <Card key={p.id} component={Link} to={`/writing/new?prompt=${p.id}`} padding="md" radius="md" c="inherit" td="none">
+                <Group justify="space-between" gap={8} wrap="nowrap" align="flex-start">
+                  <Text fz={19} fw={560} lh={1.25} className="fr" lang="fr">
                     {p.titleFr}
-                  </span>
+                  </Text>
                   {written.has(p.id) && (
-                    <span className="badge badge--success" title="You’ve written this one">
-                      <Check size={12} aria-hidden /> done
-                    </span>
+                    <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />} title="You’ve written this one" style={{ flexShrink: 0 }}>
+                      done
+                    </Badge>
                   )}
-                </div>
-                <div className="writing-card__en muted">{p.title}</div>
-                <div className="writing-card__focus subtle small">
+                </Group>
+                <Text size="sm" c="dimmed" mt={4}>
+                  {p.title}
+                </Text>
+                <Text size="sm" c="dimmed" mt={6}>
                   {p.focus} · {p.words[0]}–{p.words[1]} words
-                </div>
-              </Link>
+                </Text>
+              </Card>
             ))}
-          </div>
-        </section>
+          </SimpleGrid>
+        </Box>
       ))}
-    </div>
+    </Container>
+  )
+}
+
+function ActionCard({ to, icon, color, title, meta }: { to: string; icon: ReactNode; color?: MantineColor; title: string; meta: string }) {
+  return (
+    <Card component={Link} to={to} padding="md" c="inherit" td="none">
+      <Group gap="md" wrap="nowrap">
+        <ThemeIcon variant="light" color={color} size={44} radius="md">
+          {icon}
+        </ThemeIcon>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Text fw={650}>{title}</Text>
+          <Text size="sm" c="dimmed">
+            {meta}
+          </Text>
+        </Box>
+        <Text span c="dimmed" display="flex">
+          <ArrowRight size={18} aria-hidden />
+        </Text>
+      </Group>
+    </Card>
   )
 }
 
 function History({ writings }: { writings: WritingEntry[] }) {
   return (
-    <section className="section" aria-labelledby="history-title">
-      <div className="section-title">
-        <span id="history-title">Your texts</span>
-        <span className="tnum">{writings.length}</span>
-      </div>
-      <div className="card card--flush">
-        <ul className="list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {writings.slice(0, 12).map((w) => (
-            <li key={w.id}>
-              <Link to={`/writing/${w.id}`} className="list-row history-row">
-                <span className={`badge ${scoreClass(w.feedback.score)} tnum history-row__score`}>{w.feedback.score}</span>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="history-row__title">
+    <Box component="section" mt="xl" aria-labelledby="history-title">
+      <Title order={2} size="h4" mb="xs">
+        <Group component="span" gap={8} wrap="nowrap">
+          <span id="history-title">Your texts</span>
+          <Text span c="dimmed" size="sm" fw={500} className="tnum">
+            {writings.length}
+          </Text>
+        </Group>
+      </Title>
+      <Card padding={0}>
+        <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+          {writings.slice(0, 12).map((w, i) => (
+            <Box component="li" key={w.id} style={i > 0 ? { borderTop: '1px solid var(--mantine-color-default-border)' } : undefined}>
+              <NavLink
+                component={Link}
+                to={`/writing/${w.id}`}
+                px="md"
+                py="sm"
+                td="none"
+                noWrap
+                leftSection={<ScoreBadge score={w.feedback.score} miw={38} />}
+                label={
+                  <Text span fw={600}>
                     {w.title}
-                    {w.revisionOf && <span className="subtle small"> · rewrite</span>}
-                  </div>
-                  <div className="history-row__excerpt fr" lang="fr">
+                    {w.revisionOf && (
+                      <Text span size="sm" c="dimmed" fw={400}>
+                        {' '}
+                        · rewrite
+                      </Text>
+                    )}
+                  </Text>
+                }
+                description={
+                  <Text span fz={14.5} className="fr" lang="fr">
                     {w.text.slice(0, 110)}
                     {w.text.length > 110 ? '…' : ''}
-                  </div>
-                </div>
-                <div className="history-row__meta subtle small">
-                  <div>{new Date(w.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric' })}</div>
-                  <div>
-                    {w.feedback.errors.length} fix{w.feedback.errors.length === 1 ? '' : 'es'}
-                  </div>
-                </div>
-              </Link>
-            </li>
+                  </Text>
+                }
+                rightSection={
+                  <Text span size="sm" c="dimmed" ta="right" display="block" style={{ whiteSpace: 'nowrap' }}>
+                    <span style={{ display: 'block' }}>{new Date(w.createdAt).toLocaleDateString('en', { month: 'short', day: 'numeric' })}</span>
+                    <span style={{ display: 'block' }}>
+                      {w.feedback.errors.length} fix{w.feedback.errors.length === 1 ? '' : 'es'}
+                    </span>
+                  </Text>
+                }
+              />
+            </Box>
           ))}
-        </ul>
-      </div>
-    </section>
+        </Box>
+      </Card>
+    </Box>
   )
 }

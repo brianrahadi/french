@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Group, Stack } from '@mantine/core'
 import { addDays, dayKey, startOfDay } from '../lib/date'
 import type { DayActivity } from '../lib/store'
 
@@ -61,7 +62,7 @@ export function Heatmap({ activity, goal }: { activity: Record<string, DayActivi
   }
 
   return (
-    <div className="heatmap" ref={ref}>
+    <Stack gap={6} ref={ref}>
       <div className="heatmap__months" aria-hidden style={{ gridTemplateColumns: `repeat(${weeks}, ${CELL}px)` }}>
         {months.map((m) => (
           <span key={m.col} style={{ gridColumn: m.col + 1 }}>
@@ -83,13 +84,13 @@ export function Heatmap({ activity, goal }: { activity: Record<string, DayActivi
           </div>
         ))}
       </div>
-      <div className="heatmap__legend" aria-hidden>
+      <Group gap={4} justify="flex-end" c="dimmed" fz={11} aria-hidden>
         Less
         {[0, 1, 2, 3, 4].map((l) => (
-          <span key={l} className="heatmap__cell" style={{ background: `var(--heat-${l})` }} />
+          <span key={l} className="heatmap__cell" style={{ background: `var(--heat-${l})`, width: 11, height: 11 }} />
         ))}
         More
-      </div>
-    </div>
+      </Group>
+    </Stack>
   )
 }

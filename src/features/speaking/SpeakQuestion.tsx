@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { ActionIcon, Badge, Box, Button, Chip, Group, Stack, Text } from '@mantine/core'
 import { Ear, Mic, Play, RotateCcw, Snail, Square, Volume2 } from 'lucide-react'
+import { BottomSheet } from '../../components/BottomSheet'
 import { CheckBar } from '../../components/CheckBar'
 import { MarkedText } from '../../components/MarkedText'
 import { Kbd } from '../../components/ui'
@@ -21,6 +23,8 @@ export interface SpeakAnswer {
   transcript: string
   attempts: number
 }
+
+const VERDICT_COLOR = { correct: 'green', almost: 'orange', wrong: 'red' } as const
 
 const verdict = (score: number): 'correct' | 'almost' | 'wrong' => (score >= 90 ? 'correct' : score >= 60 ? 'almost' : 'wrong')
 
@@ -116,8 +120,11 @@ export function SpeakQuestion({
   return (
     <>
       {context}
-      <div className="q-kicker">{mode === 'read' ? 'Read this sentence aloud' : 'Listen, then say it back'}</div>
+      <Text size="xs" fw={650} c="dimmed" tt="uppercase" lts="0.05em" mb="sm">
+        {mode === 'read' ? 'Read this sentence aloud' : 'Listen, then say it back'}
+      </Text>
 
+      {/* The recognised-words view keeps its own classes (say-ok / say-miss marks). */}
       <div className={`say-sentence fr${revealed ? '' : ' say-sentence--hidden'}`} lang="fr" aria-live="polite">
         {revealed ? (
           shown ? (
@@ -130,63 +137,105 @@ export function SpeakQuestion({
             frTypo(sentence.fr)
           )
         ) : (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setRevealed(true)}>
+          <Button variant="subtle" color="gray" size="xs" onClick={() => setRevealed(true)}>
             Show the sentence
-          </button>
+          </Button>
         )}
       </div>
-      {revealed && <p className="say-en">{sentence.en}</p>}
+      {revealed && (
+        <Text c="dimmed" fz={15} mb="lg">
+          {sentence.en}
+        </Text>
+      )}
 
-      <div className="say-controls">
-        <button type="button" className={`btn btn--secondary${speaking ? ' is-playing' : ''}`} onClick={() => listen(false)} disabled={listening}>
-          <Volume2 size={17} aria-hidden /> Listen
-        </button>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={() => listen(true)} disabled={listening} aria-label="Listen slowly">
+      <Group justify="center" gap="sm" mt="xs" mb="md" wrap="nowrap">
+        <Button
+          variant={speaking ? 'light' : 'default'}
+          onClick={() => listen(false)}
+          disabled={listening}
+          leftSection={<Volume2 size={17} aria-hidden />}
+        >
+          Listen
+        </Button>
+        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => listen(true)} disabled={listening} aria-label="Listen slowly" title="Listen slowly">
           <Snail size={16} aria-hidden />
-        </button>
+        </ActionIcon>
 
-        <button
-          type="button"
-          className={`mic-btn${listening ? ' mic-btn--on' : ''}`}
-          onClick={toggleMic}
-          disabled={busy || done}
-          aria-label={listening ? 'Stop recording' : 'Start recording'}
-          aria-pressed={listening}
-          ref={(el) => {
+        <Box
+          pos="relative"
+          mx={8}
+          ref={(el: HTMLDivElement | null) => {
             cap.meterRef.current = el
           }}
         >
-          {listening ? <Square size={24} aria-hidden /> : <Mic size={28} aria-hidden />}
-        </button>
+          {/* Ring that grows with the input level (the capture hook sets --level on this box). */}
+          <Box
+            pos="absolute"
+            inset={-6}
+            style={{
+              borderRadius: '50%',
+              border: '3px solid color-mix(in srgb, var(--mantine-color-red-6) 55%, transparent)',
+              opacity: listening ? 1 : 0,
+              transform: 'scale(calc(1 + var(--level, 0) * 0.35))',
+              transition: 'transform 0.08s linear, opacity 0.2s',
+              pointerEvents: 'none',
+            }}
+          />
+          <ActionIcon
+            size={84}
+            radius="xl"
+            variant="filled"
+            color={listening ? 'red' : undefined}
+            onClick={toggleMic}
+            disabled={busy || done}
+            aria-label={listening ? 'Stop recording' : 'Start recording'}
+            aria-pressed={listening}
+          >
+            {listening ? <Square size={24} aria-hidden /> : <Mic size={28} aria-hidden />}
+          </ActionIcon>
+        </Box>
 
-        <button
-          type="button"
-          className="btn btn--secondary"
+        <Button
+          variant="default"
           onClick={() => playUrl(cap.result?.audioUrl ?? null)}
           disabled={!cap.result?.audioUrl || listening}
+          leftSection={<Play size={16} aria-hidden />}
         >
-          <Play size={16} aria-hidden /> You
-        </button>
-      </div>
+          You
+        </Button>
+      </Group>
 
-      <div className="say-status" role="status" aria-live="polite">
+      <Text ta="center" fz={15} mih={26} role="status" aria-live="polite">
         {cap.state === 'idle' && !attempts && (
-          <span className="subtle">
+          <Text span c="dimmed" fz="inherit">
             Tap the microphone{' '}
-            <span className="hide-sm">
+            <Text span visibleFrom="sm" fz="inherit">
               or press <Kbd>Space</Kbd>
-            </span>{' '}
+            </Text>{' '}
             and speak.
-          </span>
+          </Text>
         )}
-        {cap.state === 'starting' && <span className="subtle">Starting the microphone…</span>}
+        {cap.state === 'starting' && (
+          <Text span c="dimmed" fz="inherit">
+            Starting the microphone…
+          </Text>
+        )}
         {listening && (
-          <span className="say-live">
-            <Ear size={15} aria-hidden /> {cap.interim ? `« ${cap.interim} »` : recordOnly || cap.mode === 'ai' ? 'Recording… tap to stop' : 'Listening…'}
-          </span>
+          <Text span className="fr" c="dimmed" fz="inherit">
+            <Ear size={15} aria-hidden color="var(--mantine-color-red-6)" style={{ verticalAlign: '-2px' }} />{' '}
+            {cap.interim ? `« ${cap.interim} »` : recordOnly || cap.mode === 'ai' ? 'Recording… tap to stop' : 'Listening…'}
+          </Text>
         )}
-        {cap.state === 'processing' && <span className="subtle">Transcribing…</span>}
-        {cap.state === 'error' && <span className="text-danger">{cap.error}</span>}
+        {cap.state === 'processing' && (
+          <Text span c="dimmed" fz="inherit">
+            Transcribing…
+          </Text>
+        )}
+        {cap.state === 'error' && (
+          <Text span c="red" fz="inherit">
+            {cap.error}
+          </Text>
+        )}
         {cap.state === 'done' && !recordOnly && last && (
           <span>
             <strong className="tnum">{last.match.score}%</strong> understood
@@ -198,64 +247,78 @@ export function SpeakQuestion({
             )}
           </span>
         )}
-        {cap.state === 'done' && recordOnly && <span className="subtle">Compare your recording with the model, then rate yourself.</span>}
-      </div>
+        {cap.state === 'done' && recordOnly && (
+          <Text span c="dimmed" fz="inherit">
+            Compare your recording with the model, then rate yourself.
+          </Text>
+        )}
+      </Text>
 
       {tips.length > 0 && cap.state === 'done' && (
-        <ul className="say-tips">
+        <Stack
+          component="ul"
+          gap={8}
+          mt="md"
+          mb={0}
+          p="md"
+          bg="var(--mantine-color-default-hover)"
+          style={{ listStyle: 'none', borderRadius: 'var(--mantine-radius-md)' }}
+        >
           {tips.map((t) => (
-            <li key={t.id}>
-              <span className="badge">{t.label}</span> {t.tip}
-            </li>
+            <Text component="li" key={t.id} size="sm">
+              <Badge color="gray" mr={6}>
+                {t.label}
+              </Badge>{' '}
+              {t.tip}
+            </Text>
           ))}
-        </ul>
+        </Stack>
       )}
 
       {recordOnly && attempts > 0 && !done && (
-        <div className="row-wrap say-self" role="group" aria-label="How did it sound?">
-          {[
-            ['Needs work', 40],
-            ['Good', 75],
-            ['Great', 95],
-          ].map(([label, v]) => (
-            <button
-              key={label}
-              type="button"
-              className="chip"
-              aria-pressed={selfScore === v}
-              onClick={() => setSelfScore(v as number)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <Chip.Group value={selfScore === null ? null : String(selfScore)} onChange={(v) => setSelfScore(Number(v))}>
+          <Group justify="center" gap={8} mt="md" role="group" aria-label="How did it sound?">
+            {(
+              [
+                ['Needs work', 40],
+                ['Good', 75],
+                ['Great', 95],
+              ] as const
+            ).map(([label, v]) => (
+              <Chip key={label} value={String(v)}>
+                {label}
+              </Chip>
+            ))}
+          </Group>
+        </Chip.Group>
       )}
 
       {score === null ? (
         <CheckBar onSkip={next} skipLabel="Skip" />
       ) : (
-        <div className={`sheet sheet--${verdict(score)} say-sheet`}>
-          <div className="sheet__inner">
-            <div className="sheet__body">
-              <div className="sheet__title" style={{ marginBottom: 2 }}>
-                {score >= 90 ? 'Très bien\u00a0!' : score >= 60 ? 'Pas mal\u00a0!' : 'Keep practising'}
-              </div>
-              <p className="small" style={{ margin: 0 }}>
-                {recordOnly
-                  ? 'Comparing yourself with a native model is one of the best ways to improve.'
-                  : `Best: ${score}% of the words understood${attempts > 1 ? ` · ${attempts} tries` : ''}`}
-              </p>
-            </div>
-            <div className="sheet__actions">
-              <button type="button" className="btn btn--ghost" onClick={toggleMic} disabled={busy || listening}>
-                <RotateCcw size={16} aria-hidden /> Try again
-              </button>
-              <button type="button" className="btn btn--lg btn--primary" onClick={next} disabled={listening}>
-                Next <Kbd>↵</Kbd>
-              </button>
-            </div>
-          </div>
-        </div>
+        <BottomSheet
+          verdict={verdict(score)}
+          label="Result"
+          actions={
+            <>
+              <Button variant="subtle" color="gray" onClick={toggleMic} disabled={busy || listening} leftSection={<RotateCcw size={16} aria-hidden />}>
+                Try again
+              </Button>
+              <Button size="lg" color={VERDICT_COLOR[verdict(score)]} onClick={next} disabled={listening} rightSection={<Kbd>↵</Kbd>}>
+                Next
+              </Button>
+            </>
+          }
+        >
+          <Text fw={700} fz="lg" mb={2} c={`${VERDICT_COLOR[verdict(score)]}.8`}>
+            {score >= 90 ? 'Très bien\u00a0!' : score >= 60 ? 'Pas mal\u00a0!' : 'Keep practising'}
+          </Text>
+          <Text size="sm">
+            {recordOnly
+              ? 'Comparing yourself with a native model is one of the best ways to improve.'
+              : `Best: ${score}% of the words understood${attempts > 1 ? ` · ${attempts} tries` : ''}`}
+          </Text>
+        </BottomSheet>
       )}
       <NextHotkey enabled={score !== null && !done && !listening} onNext={next} />
     </>

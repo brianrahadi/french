@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, BookOpenText, Check, Languages, LoaderCircle, Pause, Play, Square } from 'lucide-react'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, Loader, SegmentedControl, Text, VisuallyHidden } from '@mantine/core'
+import { ArrowLeft, BookOpenText, Check, Languages, Pause, Play, Square } from 'lucide-react'
 import { TEXT_BY_ID } from '../../data/texts'
 import type { Level } from '../../data/types'
 import { Callout, Empty, LevelBadge } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
@@ -71,14 +73,14 @@ export default function ReaderPage() {
 
   if (!doc)
     return (
-      <div className="page">
-        <Link to="/reading" className="back-link">
+      <Container size={760} py="xl">
+        <Anchor component={Link} to="/reading" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
           <ArrowLeft size={16} aria-hidden /> Reading
-        </Link>
+        </Anchor>
         <Empty icon={<BookOpenText size={30} />} title="This text isn’t here any more">
-          It may have been deleted. <Link to="/reading">Back to your texts</Link>
+          It may have been deleted. <Anchor component={Link} to="/reading">Back to your texts</Anchor>
         </Empty>
-      </div>
+      </Container>
     )
   return <Reader key={doc.id} doc={doc} />
 }
@@ -207,67 +209,86 @@ function Reader({ doc }: { doc: Doc }) {
   }
 
   return (
-    <div className="page page--reader">
-      <Link to="/reading" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Reading
-      </Link>
-      <header className="reader-head">
-        <div className="row" style={{ gap: 8, marginBottom: 6 }}>
+    <Container size={760} py="xl">
+      <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/reading', label: 'Reading' }} fr>
+        <Group gap={8} mt="xs">
           {doc.level && <LevelBadge level={doc.level} />}
-          <span className="small subtle">
+          <Text size="sm" c="dimmed">
             {words} words · {Math.max(1, Math.round(words / 120))} min
-          </span>
+          </Text>
           {read && (
-            <span className="badge badge--success">
-              <Check size={12} aria-hidden /> read
-            </span>
+            <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
+              read
+            </Badge>
           )}
-        </div>
-        <h1 className="page-title fr" lang="fr">
-          {frTypo(doc.title)}
-        </h1>
-        {doc.subtitle && <p className="muted">{doc.subtitle}</p>}
-      </header>
+        </Group>
+      </PageHeader>
 
-      <div className="reader-bar" role="toolbar" aria-label="Reading tools">
+      <Group
+        role="toolbar"
+        aria-label="Reading tools"
+        gap={8}
+        pos="sticky"
+        top={0}
+        mx={-8}
+        mb={10}
+        px={8}
+        py={10}
+        bg="var(--bg)"
+        style={{ zIndex: 5, borderBottom: '1px solid var(--mantine-color-default-border)' }}
+      >
         {speechSupported && (
-          <div className="row" style={{ gap: 4 }}>
+          <Group gap={4}>
             {playing === 'playing' ? (
-              <button type="button" className="btn btn--secondary btn--sm" onClick={pause}>
-                <Pause size={15} aria-hidden /> Pause
-              </button>
+              <Button variant="default" size="xs" leftSection={<Pause size={15} aria-hidden />} onClick={pause}>
+                Pause
+              </Button>
             ) : (
-              <button type="button" className="btn btn--secondary btn--sm" onClick={play}>
-                <Play size={15} aria-hidden /> {playing === 'paused' ? 'Resume' : 'Listen'}
-              </button>
+              <Button variant="default" size="xs" leftSection={<Play size={15} aria-hidden />} onClick={play}>
+                {playing === 'paused' ? 'Resume' : 'Listen'}
+              </Button>
             )}
             {playing && (
-              <button type="button" className="icon-btn icon-btn--sm" onClick={stop} aria-label="Stop reading">
+              <ActionIcon variant="subtle" color="gray" size="sm" onClick={stop} aria-label="Stop reading">
                 <Square size={14} aria-hidden />
-              </button>
+              </ActionIcon>
             )}
-          </div>
+          </Group>
         )}
-        <button type="button" className="btn btn--secondary btn--sm" onClick={toggleTranslation} aria-pressed={showEn} disabled={translating}>
-          {translating ? <LoaderCircle size={15} className="spin" aria-hidden /> : <Languages size={15} aria-hidden />}
+        <Button
+          variant={showEn ? 'light' : 'default'}
+          size="xs"
+          onClick={toggleTranslation}
+          aria-pressed={showEn}
+          disabled={translating}
+          leftSection={translating ? <Loader size={14} aria-hidden /> : <Languages size={15} aria-hidden />}
+        >
           {showEn ? 'Hide translation' : 'Translation'}
-        </button>
-        <div className="spacer" />
-        <div className="segmented reader-size" role="group" aria-label="Text size">
-          {SIZES.map((s, i) => (
-            <button key={s.id} type="button" aria-pressed={size === i} onClick={() => setFont(i)} style={{ fontSize: 11 + i * 3 }} aria-label={`Text size ${i + 1}`}>
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      {error && (
-        <div style={{ marginBottom: 12 }}>
-          <Callout kind="warn">{error}</Callout>
-        </div>
-      )}
+        </Button>
+        <SegmentedControl
+          ml="auto"
+          size="xs"
+          aria-label="Text size"
+          value={String(size)}
+          onChange={(v) => setFont(Number(v))}
+          data={SIZES.map((s, i) => ({
+            value: String(i),
+            label: (
+              <>
+                <Text span inherit fz={11 + i * 3} className="fr" aria-hidden>
+                  {s.label}
+                </Text>
+                <VisuallyHidden>Text size {i + 1}</VisuallyHidden>
+              </>
+            ),
+          }))}
+        />
+      </Group>
+      {error && <Callout kind="warn">{error}</Callout>}
 
-      <p className="hint reader-hint">Tap any word to see what it means here. Use ‹ › in the popup to select a whole expression.</p>
+      <Text size="sm" c="dimmed" mb={18}>
+        Tap any word to see what it means here. Use ‹ › in the popup to select a whole expression.
+      </Text>
 
       <article className="reader-body fr" lang="fr" style={{ fontSize: SIZES[size].size }}>
         {doc.paragraphs.map((p, i) => (
@@ -287,35 +308,39 @@ function Reader({ doc }: { doc: Doc }) {
       {checking ? (
         <WordCheck words={toCheck} onDone={() => setChecking(false)} />
       ) : (
-        <footer className="reader-foot card">
-          <div style={{ minWidth: 0 }}>
-            <div className="card__title">{read ? 'Finished' : 'Done reading?'}</div>
-            <p className="small muted">
-              {saved.length
-                ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
-                    .slice(0, 6)
-                    .map((w) => frTypo(w.fr))
-                    .join(', ')}${saved.length > 6 ? '…' : ''}`
-                : 'Tap words you don’t know to add them to your flashcards.'}
-            </p>
-          </div>
-          <div className="row" style={{ gap: 8 }}>
-            {read && toCheck.length > 0 && (
-              <button type="button" className="btn btn--secondary" onClick={() => setChecking(true)}>
-                Check {toCheck.length} word{toCheck.length > 1 ? 's' : ''}
-              </button>
-            )}
-            {saved.length > 0 && (
-              <Link to="/vocab/study" className="btn btn--secondary">
-                Study them
-              </Link>
-            )}
-            <button type="button" className="btn btn--primary" onClick={handleMarkAsRead}>
-              <Check size={16} aria-hidden /> {read ? 'Read again' : 'Mark as read'}
-            </button>
-          </div>
-        </footer>
+        <Card component="footer" mt={28}>
+          <Group justify="space-between" gap={14}>
+            <Box miw={0}>
+              <Text fw={650} mb={2}>
+                {read ? 'Finished' : 'Done reading?'}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {saved.length
+                  ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
+                      .slice(0, 6)
+                      .map((w) => frTypo(w.fr))
+                      .join(', ')}${saved.length > 6 ? '…' : ''}`
+                  : 'Tap words you don’t know to add them to your flashcards.'}
+              </Text>
+            </Box>
+            <Group gap={8}>
+              {read && toCheck.length > 0 && (
+                <Button variant="default" onClick={() => setChecking(true)}>
+                  Check {toCheck.length} word{toCheck.length > 1 ? 's' : ''}
+                </Button>
+              )}
+              {saved.length > 0 && (
+                <Button variant="default" component={Link} to="/vocab/study">
+                  Study them
+                </Button>
+              )}
+              <Button leftSection={<Check size={16} aria-hidden />} onClick={handleMarkAsRead}>
+                {read ? 'Read again' : 'Mark as read'}
+              </Button>
+            </Group>
+          </Group>
+        </Card>
       )}
-    </div>
+    </Container>
   )
 }

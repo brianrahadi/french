@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { Box, Button, Group, SimpleGrid, Stack, Text } from '@mantine/core'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import type { Word } from '../../data/types'
 import { SpeakButton, useSpeak } from '../../components/SpeakButton'
 import { AccentBar } from '../../components/AccentBar'
+import { BottomSheet } from '../../components/BottomSheet'
 import { Diff } from '../../components/Diff'
 import { GenderTag, Kbd } from '../../components/ui'
 import { checkAnswer, normalize } from '../../lib/answer'
@@ -12,6 +14,15 @@ import { previewIntervals, Rating, State, type Grade } from '../../lib/srs'
 import { definite, displayFr, frTypo, glossParts, posLabel, productionAnswers, speakText, startsWithVowelSound } from '../../lib/words'
 
 /* Flashcard building blocks shared by the vocabulary session and the mixed daily session. */
+
+/** Small uppercase line above the card saying what to do. */
+function Kicker({ children }: { children: ReactNode }) {
+  return (
+    <Group gap={8} mb={14} c="dimmed" fz={12.5} fw={650} tt="uppercase" lts="0.05em">
+      {children}
+    </Group>
+  )
+}
 
 export function FrWord({ w, size = 'lg' }: { w: Word; size?: 'lg' | 'md' }) {
   const art = w.pos === 'n' && w.g && !w.custom ? definite(w) : ''
@@ -37,7 +48,7 @@ export function WordMeta({ w }: { w: Word }) {
 export function Example({ w, autoPlay = false }: { w: Word; autoPlay?: boolean }) {
   if (!w.ex) return null
   return (
-    <div className="row" style={{ alignItems: 'flex-start', justifyContent: 'center', gap: 6, textAlign: 'center' }}>
+    <Group align="flex-start" justify="center" gap={6} ta="center" wrap="nowrap">
       <div>
         <div className="flash__example" lang="fr">
           {frTypo(w.ex)}
@@ -45,7 +56,7 @@ export function Example({ w, autoPlay = false }: { w: Word; autoPlay?: boolean }
         {w.exEn && <div className="flash__example-en">{w.exEn}</div>}
       </div>
       <SpeakButton text={w.ex} size="sm" autoPlay={autoPlay} label="Listen to the example" />
-    </div>
+    </Group>
   )
 }
 
@@ -54,34 +65,36 @@ export function IntroCard({ word: w, onDone }: { word: Word; onDone: (known: boo
   useHotkeys({ Enter: () => onDone(false), Space: () => onDone(false), k: () => onDone(true) })
   return (
     <>
-      <div className="q-kicker">
+      <Kicker>
         <Sparkles size={15} aria-hidden /> New word · {w.level}
-      </div>
+      </Kicker>
       <div className="flash">
-        <div className="row" style={{ gap: 6 }}>
+        <Group gap={6} justify="center">
           <FrWord w={w} />
           <SpeakButton text={speakText(w)} autoPlay={autoplay} />
-        </div>
+        </Group>
         <WordMeta w={w} />
         <div className="flash__divider" />
         <div className="flash__en">{w.en}</div>
-        {w.ex && <div style={{ marginTop: 22 }}><Example w={w} /></div>}
+        {w.ex && (
+              <Box mt={22}>
+                <Example w={w} />
+              </Box>
+            )}
         {w.note && <p className="flash__note">{w.note}</p>}
       </div>
-      <div className="sheet sheet--neutral">
-        <div className="sheet__inner" style={{ alignItems: 'center' }}>
-          <div className="sheet__body">
-            <button type="button" className="btn btn--ghost" onClick={() => onDone(true)}>
-              I already know this <Kbd>K</Kbd>
-            </button>
-          </div>
-          <div className="sheet__actions">
-            <button type="button" className="btn btn--primary btn--lg" onClick={() => onDone(false)} autoFocus>
-              Got it <Kbd>↵</Kbd>
-            </button>
-          </div>
-        </div>
-      </div>
+      <BottomSheet
+        verdict="neutral"
+        actions={
+          <Button size="lg" onClick={() => onDone(false)} autoFocus rightSection={<Kbd>↵</Kbd>}>
+            Got it
+          </Button>
+        }
+      >
+        <Button variant="subtle" color="gray" onClick={() => onDone(true)} rightSection={<Kbd>K</Kbd>}>
+          I already know this
+        </Button>
+      </BottomSheet>
     </>
   )
 }
@@ -90,11 +103,11 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
   const card = useStore((s) => s.cards[id])
   const retention = useStore((s) => s.settings.retention)
   const labels = useMemo(() => (card ? previewIntervals(card, new Date(), retention) : null), [card, retention])
-  const buttons: { g: Grade; label: string; cls: string }[] = [
-    { g: Rating.Again, label: 'Again', cls: 'again' },
-    { g: Rating.Hard, label: 'Hard', cls: 'hard' },
-    { g: Rating.Good, label: 'Good', cls: 'good' },
-    { g: Rating.Easy, label: 'Easy', cls: 'easy' },
+  const buttons: { g: Grade; label: string; color: string }[] = [
+    { g: Rating.Again, label: 'Again', color: 'red' },
+    { g: Rating.Hard, label: 'Hard', color: 'orange' },
+    { g: Rating.Good, label: 'Good', color: 'green' },
+    { g: Rating.Easy, label: 'Easy', color: 'indigo' },
   ]
   const def = suggested ?? Rating.Good
   useHotkeys({
@@ -106,30 +119,40 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
     Space: () => onRate(def),
   })
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div className="rating-bar" role="group" aria-label="How well did you remember?">
-        {buttons.map((b, i) => (
-          <button
-            key={b.g}
-            type="button"
-            className={`rate-btn rate-btn--${b.cls}${b.g === suggested ? ' rate-btn--suggested' : ''}`}
-            onClick={() => onRate(b.g)}
-            aria-keyshortcuts={String(i + 1)}
-          >
-            {b.label}
-            <small>
-              {labels?.[b.g] ?? ''}
-              <span className="kbd-hint"> · {i + 1}</span>
-            </small>
-          </button>
-        ))}
-      </div>
+    <Stack gap={12}>
+      <SimpleGrid cols={4} spacing={8} role="group" aria-label="How well did you remember?">
+        {buttons.map((b, i) => {
+          const isSuggested = b.g === suggested
+          return (
+            <Button
+              key={b.g}
+              variant={isSuggested ? 'light' : 'default'}
+              color={b.color}
+              c={isSuggested ? undefined : b.color}
+              h={58}
+              px={6}
+              fullWidth
+              onClick={() => onRate(b.g)}
+              aria-keyshortcuts={String(i + 1)}
+              style={isSuggested ? { outline: `2px solid var(--mantine-color-${b.color}-filled)`, outlineOffset: -2 } : undefined}
+            >
+              <Stack gap={2} align="center">
+                {b.label}
+                <Text span size="xs" fw={560} c="dimmed" className="tnum">
+                  {labels?.[b.g] ?? ''}
+                  <span className="kbd-hint"> · {i + 1}</span>
+                </Text>
+              </Stack>
+            </Button>
+          )
+        })}
+      </SimpleGrid>
       {card && card.state !== State.New && (
-        <div className="subtle small" style={{ textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+        <Text size="sm" c="dimmed" ta="center" ff="monospace">
           Interval: {card.scheduled_days}d · Stability: {card.stability.toFixed(2)}
-        </div>
+        </Text>
       )}
-    </div>
+    </Stack>
   )
 }
 
@@ -139,12 +162,12 @@ export function RecognitionCard({ word: w, id, onRate }: { word: Word; id: strin
   useHotkeys({ Enter: () => setRevealed(true), Space: () => setRevealed(true) }, { enabled: !revealed })
   return (
     <>
-      <div className="q-kicker">What does this mean?</div>
+      <Kicker>What does this mean?</Kicker>
       <div className="flash">
-        <div className="row" style={{ gap: 6 }}>
+        <Group gap={6} justify="center">
           <FrWord w={w} />
           <SpeakButton text={speakText(w)} autoPlay={autoplay} />
-        </div>
+        </Group>
         <WordMeta w={w} />
         {revealed && (
           <>
@@ -152,25 +175,31 @@ export function RecognitionCard({ word: w, id, onRate }: { word: Word; id: strin
             <div className="flash__en" aria-live="polite">
               {w.en}
             </div>
-            {w.ex && <div style={{ marginTop: 22 }}><Example w={w} /></div>}
+            {w.ex && (
+              <Box mt={22}>
+                <Example w={w} />
+              </Box>
+            )}
             {w.note && <p className="flash__note">{w.note}</p>}
           </>
         )}
       </div>
-      <div className="sheet sheet--neutral">
-        <div className="sheet__inner" style={{ justifyContent: 'center' }}>
-          {revealed ? (
-            <RatingBar id={id} onRate={onRate} />
-          ) : (
-            <button type="button" className="btn btn--primary btn--lg btn--block" onClick={() => setRevealed(true)} style={{ maxWidth: 420 }}>
-              Show answer <Kbd>Space</Kbd>
-            </button>
-          )}
-        </div>
-      </div>
+      <BottomSheet verdict="neutral">
+        {revealed ? (
+          <RatingBar id={id} onRate={onRate} />
+        ) : (
+          <Button size="lg" fullWidth maw={420} mx="auto" display="flex" onClick={() => setRevealed(true)} rightSection={<Kbd>Space</Kbd>}>
+            Show answer
+          </Button>
+        )}
+      </BottomSheet>
     </>
   )
 }
+
+type Verdict = 'correct' | 'almost' | 'wrong' | 'partial'
+const sheetVerdict = (v: Verdict) => (v === 'correct' ? 'correct' : v === 'wrong' ? 'wrong' : 'almost')
+const VERDICT_COLOR = { correct: 'green', almost: 'orange', wrong: 'red' } as const
 
 export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string; onRate: (g: Grade) => void }) {
   const autoplay = useStore((s) => s.settings.autoplay)
@@ -210,33 +239,41 @@ export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string
 
   return (
     <>
-      <div className="q-kicker">Say it in French</div>
+      <Kicker>Say it in French</Kicker>
       <div className="flash">
         <div className="flash__en">{glossParts(w.en).join(', ')}</div>
         <div className="flash__pos">
           {posLabel(w)}
           {hintArticle ? ' — include the article' : ''}
         </div>
-        {w.exEn && !result && <p className="flash__example-en" style={{ marginTop: 14 }}>“{w.exEn}”</p>}
+        {w.exEn && !result && (
+          <Box component="p" className="flash__example-en" mt={14}>
+            “{w.exEn}”
+          </Box>
+        )}
         {result && (
           <>
             <div className="flash__divider" />
-            <div className="row" style={{ gap: 6 }}>
+            <Group gap={6} justify="center">
               <FrWord w={w} />
               <SpeakButton text={speakText(w)} />
-            </div>
+            </Group>
             {w.pos === 'n' && w.g && !w.both && (startsWithVowelSound(w.fr) || w.pl) && (
               <div className="flash__pos">
                 <GenderTag g={w.g} />
               </div>
             )}
-            {w.ex && <div style={{ marginTop: 18 }}><Example w={w} /></div>}
+            {w.ex && (
+              <Box mt={18}>
+                <Example w={w} />
+              </Box>
+            )}
             {w.note && <p className="flash__note">{w.note}</p>}
           </>
         )}
       </div>
 
-      <div style={{ marginTop: 20 }}>
+      <Box mt={20}>
         <input
           ref={ref}
           className={`answer-input${verdictCls ?? ''}`}
@@ -259,47 +296,42 @@ export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string
           }}
         />
         {!result && <AccentBar inputRef={ref} onInsert={setValue} />}
-      </div>
+      </Box>
 
-      <div className={`sheet ${result ? `sheet--${result.verdict === 'correct' ? 'correct' : result.verdict === 'wrong' ? 'wrong' : 'almost'} sheet--animate` : 'sheet--neutral'}`}>
-        <div className="sheet__inner" style={result ? { flexDirection: 'column', alignItems: 'stretch' } : { alignItems: 'center' }}>
-          {result ? (
-            <>
-              <div className="sheet__title" aria-live="assertive">
-                {result.verdict === 'correct' && (
-                  <>
-                    <CheckCircle2 size={22} aria-hidden /> Correct !
-                  </>
-                )}
-                {result.verdict === 'almost' && 'Almost — watch the accents'}
-                {result.verdict === 'partial' && 'Right word — now add the article to learn its gender'}
-                {result.verdict === 'wrong' && (value.trim() ? 'Not quite' : 'Here’s the answer')}
-              </div>
-              {result.verdict !== 'correct' && value.trim() && (
-                <div className="sheet__answer">
-                  <Diff given={value} expected={result.expected} />
-                </div>
-              )}
-              <div style={{ marginTop: 12 }}>
-                <RatingBar id={id} onRate={onRate} suggested={suggested} />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="sheet__body">
-                <button type="button" className="btn btn--ghost" onClick={() => check(true)}>
-                  Show answer
-                </button>
-              </div>
-              <div className="sheet__actions">
-                <button type="button" className="btn btn--primary btn--lg" disabled={!value.trim()} onMouseDown={(e) => e.preventDefault()} onClick={() => check()}>
-                  Check <Kbd>↵</Kbd>
-                </button>
-              </div>
-            </>
+      {result ? (
+        <BottomSheet verdict={sheetVerdict(result.verdict)} animate label="Result">
+          <Group gap={8} c={`${VERDICT_COLOR[sheetVerdict(result.verdict)]}.8`} aria-live="assertive">
+            {result.verdict === 'correct' && <CheckCircle2 size={22} aria-hidden />}
+            <Text fw={700} fz={18} c="inherit">
+              {result.verdict === 'correct' && 'Correct !'}
+              {result.verdict === 'almost' && 'Almost — watch the accents'}
+              {result.verdict === 'partial' && 'Right word — now add the article to learn its gender'}
+              {result.verdict === 'wrong' && (value.trim() ? 'Not quite' : 'Here’s the answer')}
+            </Text>
+          </Group>
+          {result.verdict !== 'correct' && value.trim() && (
+            <Text mt={6} fz={18} className="fr" lang="fr" component="div">
+              <Diff given={value} expected={result.expected} />
+            </Text>
           )}
-        </div>
-      </div>
+          <Box mt={12}>
+            <RatingBar id={id} onRate={onRate} suggested={suggested} />
+          </Box>
+        </BottomSheet>
+      ) : (
+        <BottomSheet
+          verdict="neutral"
+          actions={
+            <Button size="lg" disabled={!value.trim()} onMouseDown={(e) => e.preventDefault()} onClick={() => check()} rightSection={<Kbd>↵</Kbd>}>
+              Check
+            </Button>
+          }
+        >
+          <Button variant="subtle" color="gray" onClick={() => check(true)}>
+            Show answer
+          </Button>
+        </BottomSheet>
+      )}
     </>
   )
 }

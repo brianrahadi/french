@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { NavLink } from '@mantine/core'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ActionIcon, Alert, Anchor, Avatar, Box, Button, Card, Group, Loader, NavLink, Stack, Text, ThemeIcon } from '@mantine/core'
 import { Link } from 'react-router'
-import { AlertTriangle, Cloud, CloudCog, CloudOff, LoaderCircle, LogIn, LogOut, RefreshCw, X } from 'lucide-react'
+import { AlertTriangle, Cloud, CloudCog, CloudOff, LogIn, LogOut, RefreshCw, X } from 'lucide-react'
 import { signInWithGoogle, signOut, syncConfigured, syncNow, useSync, type SyncState } from '../lib/sync/engine'
 
 /** "just now", "3 min ago", "at 14:05" */
@@ -25,18 +25,18 @@ function useTick(ms = 30_000) {
 export function GoogleButton({ label = 'Continue with Google', size }: { label?: string; size?: 'sm' }) {
   const [busy, setBusy] = useState(false)
   return (
-    <button
-      type="button"
-      className={`btn btn--primary${size === 'sm' ? ' btn--sm' : ''}`}
+    <Button
+      size={size === 'sm' ? 'xs' : 'sm'}
       disabled={busy}
+      leftSection={busy ? <Loader size={14} color="currentColor" aria-hidden /> : <LogIn size={16} aria-hidden />}
       onClick={async () => {
         setBusy(true)
         await signInWithGoogle()
         setBusy(false)
       }}
     >
-      {busy ? <LoaderCircle size={16} className="spin" aria-hidden /> : <LogIn size={16} aria-hidden />} {label}
-    </button>
+      {label}
+    </Button>
   )
 }
 
@@ -50,6 +50,27 @@ const LABEL: Record<SyncState, string> = {
   error: 'Sync paused',
 }
 
+const LINE_COLOR: Partial<Record<SyncState, string>> = { synced: 'green', error: 'orange', offline: 'orange' }
+
+/** Icon + title + one line of text, the head of every sync card. */
+function CardHead({ icon, title, children }: { icon: ReactNode; title: ReactNode; children?: ReactNode }) {
+  return (
+    <Group gap="md" wrap="nowrap" align="center">
+      {icon}
+      <Box miw={0}>
+        <Text fw={650}>{title}</Text>
+        {children}
+      </Box>
+    </Group>
+  )
+}
+
+const cloudIcon = (Icon: typeof Cloud, hideOnPhone?: boolean) => (
+  <ThemeIcon variant="light" size={40} radius="xl" visibleFrom={hideOnPhone ? 'xs' : undefined}>
+    <Icon size={20} aria-hidden />
+  </ThemeIcon>
+)
+
 /** Settings section: sign in with Google, sync status, sign out. */
 export function SyncAccount() {
   const { state, user, lastSyncAt, error } = useSync()
@@ -58,102 +79,117 @@ export function SyncAccount() {
 
   if (!syncConfigured)
     return (
-      <div className="card sync-card">
-        <div className="sync-card__head">
-          <span className="sync-icon">
-            <CloudCog size={20} aria-hidden />
-          </span>
-          <div>
-            <div className="card__title">Sync across devices</div>
-            <p className="small muted" style={{ margin: '2px 0 0' }}>
-              This copy of the app isn’t connected to a sync server yet, so progress stays in this browser. Whoever runs it can
-              connect a free Supabase project with Google sign-in — the README explains how in a few steps.
-            </p>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <CardHead icon={cloudIcon(CloudCog)} title="Sync across devices">
+          <Text size="sm" c="dimmed" mt={2}>
+            This copy of the app isn’t connected to a sync server yet, so progress stays in this browser. Whoever runs it can
+            connect a free Supabase project with Google sign-in — the README explains how in a few steps.
+          </Text>
+        </CardHead>
+      </Card>
     )
 
   if (!user)
     return (
-      <div className="card sync-card">
-        <div className="sync-card__head">
-          <span className="sync-icon">
-            <Cloud size={20} aria-hidden />
-          </span>
-          <div style={{ minWidth: 0 }}>
-            <div className="card__title">Keep your progress on every device</div>
-            <p className="small muted" style={{ margin: '2px 0 0' }}>
+      <Card>
+        <Stack gap="sm">
+          <CardHead icon={cloudIcon(Cloud)} title="Keep your progress on every device">
+            <Text size="sm" c="dimmed" mt={2}>
               Sign in with Google and your flashcards, lessons, mistakes, texts and conversations stay in sync between your
               phone and computer. What’s already on this device is kept and merged.
-            </p>
-          </div>
-        </div>
-        {error && <p className="small text-danger">{error}</p>}
-        <div className="sync-card__actions">
-          {state === 'starting' ? (
-            <span className="small subtle">
-              <LoaderCircle size={14} className="spin" aria-hidden /> Connecting…
-            </span>
-          ) : (
-            <GoogleButton />
+            </Text>
+          </CardHead>
+          {error && (
+            <Text size="sm" c="red">
+              {error}
+            </Text>
           )}
-          <Link to="/privacy" className="small subtle">
-            What’s stored and where
-          </Link>
-        </div>
-      </div>
+          <Group gap="md">
+            {state === 'starting' ? (
+              <Group gap={6} c="dimmed">
+                <Loader size={14} color="currentColor" aria-hidden />
+                <Text size="sm">Connecting…</Text>
+              </Group>
+            ) : (
+              <GoogleButton />
+            )}
+            <Anchor component={Link} to="/privacy" size="sm" c="dimmed">
+              What’s stored and where
+            </Anchor>
+          </Group>
+        </Stack>
+      </Card>
     )
 
   return (
-    <div className="card sync-card">
-      <div className="sync-card__head">
-        {user.avatar ? (
-          <img className="sync-avatar" src={user.avatar} alt="" referrerPolicy="no-referrer" />
-        ) : (
-          <span className="sync-avatar sync-avatar--initial" aria-hidden>
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-        )}
-        <div style={{ minWidth: 0 }}>
-          <div className="card__title">{user.name}</div>
-          <div className="small muted sync-card__email">{user.email}</div>
-        </div>
-      </div>
-      <div className={`sync-line sync-line--${state}`} role="status">
-        <SyncGlyph state={state} />
-        <span>
-          {LABEL[state]}
-          {state === 'synced' && lastSyncAt ? ` · ${since(lastSyncAt)}` : ''}
-        </span>
-      </div>
-      {error && state !== 'synced' && <p className="small text-danger">{error}</p>}
-      <p className="hint" style={{ margin: 0 }}>
-        Progress saves to your account when you pause or switch apps, and updates whenever you open the app. AI keys, voice and theme stay on each device.
-      </p>
-      <div className="sync-card__actions">
-        <button type="button" className="btn btn--secondary btn--sm" onClick={() => void syncNow()} disabled={state === 'syncing'}>
-          <RefreshCw size={15} aria-hidden className={state === 'syncing' ? 'spin' : undefined} /> Sync now
-        </button>
-        <button
-          type="button"
-          className="btn btn--ghost btn--sm"
-          disabled={leaving}
-          onClick={async () => {
-            setLeaving(true)
-            await signOut()
-            setLeaving(false)
-          }}
+    <Card>
+      <Stack gap="sm">
+        <CardHead
+          icon={
+            <Avatar src={user.avatar || null} alt="" size={44} radius="xl" color="indigo" variant="filled" imageProps={{ referrerPolicy: 'no-referrer' }}>
+              {user.name.charAt(0).toUpperCase()}
+            </Avatar>
+          }
+          title={user.name}
         >
-          <LogOut size={15} aria-hidden /> Sign out
-        </button>
-      </div>
-    </div>
+          <Text size="sm" c="dimmed" truncate>
+            {user.email}
+          </Text>
+        </CardHead>
+        <Alert
+          role="status"
+          variant="light"
+          color={LINE_COLOR[state] ?? 'gray'}
+          icon={<SyncGlyph state={state} />}
+          py={8}
+          px="sm"
+          styles={{ icon: { marginInlineEnd: 8 } }}
+        >
+          <Text size="sm" fw={600} c="inherit">
+            {LABEL[state]}
+            {state === 'synced' && lastSyncAt ? ` · ${since(lastSyncAt)}` : ''}
+          </Text>
+        </Alert>
+        {error && state !== 'synced' && (
+          <Text size="sm" c="red">
+            {error}
+          </Text>
+        )}
+        <Text size="xs" c="dimmed">
+          Progress saves to your account when you pause or switch apps, and updates whenever you open the app. AI keys, voice and theme stay on each device.
+        </Text>
+        <Group gap="sm">
+          <Button
+            variant="default"
+            size="xs"
+            onClick={() => void syncNow()}
+            disabled={state === 'syncing'}
+            leftSection={state === 'syncing' ? <Loader size={14} color="currentColor" aria-hidden /> : <RefreshCw size={15} aria-hidden />}
+          >
+            Sync now
+          </Button>
+          <Button
+            variant="subtle"
+            color="gray"
+            size="xs"
+            disabled={leaving}
+            leftSection={<LogOut size={15} aria-hidden />}
+            onClick={async () => {
+              setLeaving(true)
+              await signOut()
+              setLeaving(false)
+            }}
+          >
+            Sign out
+          </Button>
+        </Group>
+      </Stack>
+    </Card>
   )
 }
 
 export function SyncGlyph({ state, size = 16 }: { state: SyncState; size?: number }) {
-  if (state === 'syncing' || state === 'starting') return <LoaderCircle size={size} className="spin" aria-hidden />
+  if (state === 'syncing' || state === 'starting') return <Loader size={size} color="currentColor" aria-hidden />
   if (state === 'offline') return <CloudOff size={size} aria-hidden />
   if (state === 'error') return <AlertTriangle size={size} aria-hidden />
   return <Cloud size={size} aria-hidden />
@@ -196,33 +232,40 @@ export function SyncPrompt() {
   })
   if (!syncConfigured || user || hidden || state !== 'signed-out') return null
   return (
-    <section className="card sync-prompt" aria-label="Sync across devices">
-      <span className="sync-icon">
-        <Cloud size={20} aria-hidden />
-      </span>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div className="card__title">Study on your phone too?</div>
-        <p className="small muted" style={{ margin: '2px 0 0' }}>
-          Sign in with Google to keep your progress in sync on all your devices.
-        </p>
-        {error && <p className="small text-danger" style={{ margin: '4px 0 0' }}>{error}</p>}
-      </div>
-      <GoogleButton size="sm" label="Sign in" />
-      <button
-        type="button"
-        className="icon-btn icon-btn--sm"
-        aria-label="Not now"
-        onClick={() => {
-          setHidden(true)
-          try {
-            localStorage.setItem(DISMISS, '1')
-          } catch {
-            /* ignore */
-          }
-        }}
-      >
-        <X size={16} aria-hidden />
-      </button>
-    </section>
+    <Card component="section" aria-label="Sync across devices" padding="md" mb="md">
+      <Group gap="md" wrap="wrap">
+        {cloudIcon(Cloud, true)}
+        <Box miw={0} style={{ flex: '1 1 220px' }}>
+          <Text fw={650}>Study on your phone too?</Text>
+          <Text size="sm" c="dimmed" mt={2}>
+            Sign in with Google to keep your progress in sync on all your devices.
+          </Text>
+          {error && (
+            <Text size="sm" c="red" mt={4}>
+              {error}
+            </Text>
+          )}
+        </Box>
+        <Group gap="xs" wrap="nowrap">
+          <GoogleButton size="sm" label="Sign in" />
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            aria-label="Not now"
+            onClick={() => {
+              setHidden(true)
+              try {
+                localStorage.setItem(DISMISS, '1')
+              } catch {
+                /* ignore */
+              }
+            }}
+          >
+            <X size={16} aria-hidden />
+          </ActionIcon>
+        </Group>
+      </Group>
+    </Card>
   )
 }

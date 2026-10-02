@@ -2,7 +2,8 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 're
 import { create } from 'zustand'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router'
-import { Check, ChevronLeft, ChevronRight, LoaderCircle, Plus, Sparkles, X } from 'lucide-react'
+import { ActionIcon, Anchor, Badge, Button, CloseButton, Group, Loader, Paper, Stack, Text, TextInput } from '@mantine/core'
+import { Check, ChevronLeft, ChevronRight, Plus, Sparkles } from 'lucide-react'
 import { GenderTag } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
@@ -282,118 +283,138 @@ function WordCard({
   }
 
   return (
-    <div className="lk-card">
-      <div className="lk-card__head">
+    <Stack gap={8} fz={15} lh={1.45}>
+      <Group gap={6} wrap="nowrap">
         <SpeakButton text={phrase} size="sm" />
-        <span className="lk-card__word fr" lang="fr">
+        <Text span fz={21} fw={600} miw={0} className="fr" lang="fr" style={{ overflowWrap: 'anywhere' }}>
           {frTypo(phrase)}
-        </span>
-        <div className="spacer" />
-        <div className="lk-card__extend" role="group" aria-label="Select a phrase">
-          <button type="button" className="icon-btn icon-btn--sm" onClick={onLeft} disabled={!canLeft} aria-label="Include the previous word" title="Include the previous word">
+        </Text>
+        <ActionIcon.Group ml="auto" role="group" aria-label="Select a phrase">
+          <ActionIcon variant="default" size="md" onClick={onLeft} disabled={!canLeft} aria-label="Include the previous word" title="Include the previous word">
             <ChevronLeft size={16} aria-hidden />
-          </button>
-          <button type="button" className="icon-btn icon-btn--sm" onClick={onRight} disabled={!canRight} aria-label="Include the next word" title="Include the next word">
+          </ActionIcon>
+          <ActionIcon variant="default" size="md" onClick={onRight} disabled={!canRight} aria-label="Include the next word" title="Include the next word">
             <ChevronRight size={16} aria-hidden />
-          </button>
-        </div>
-        <button type="button" className="icon-btn icon-btn--sm" onClick={onClose} aria-label="Close">
-          <X size={16} aria-hidden />
-        </button>
-      </div>
+          </ActionIcon>
+        </ActionIcon.Group>
+        <CloseButton onClick={onClose} aria-label="Close" />
+      </Group>
 
       {(gloss || loading || error) && (
-        <div className="lk-card__ai" aria-live="polite">
+        <Paper px="sm" py={10} radius="md" bg="var(--mantine-primary-color-light)" aria-live="polite">
           {gloss ? (
             <>
-              <div className="lk-card__meaning">{gloss.meaning || '—'}</div>
-              <div className="lk-card__lemma">
+              <Text fz={17} fw={650}>
+                {gloss.meaning || '—'}
+              </Text>
+              <Group gap={6} mt={2} fz={14}>
                 <span className="fr" lang="fr">
                   {frTypo(gloss.lemma)}
                 </span>
-                {!gloss.isBasic && <span className="subtle">· {gloss.pos}</span>}
+                {!gloss.isBasic && (
+                  <Text span inherit c="dimmed">
+                    · {gloss.pos}
+                  </Text>
+                )}
                 {gloss.gender && <GenderTag g={gloss.gender} />}
-              </div>
-              {gloss.note && <p className="lk-card__note">{gloss.note}</p>}
+              </Group>
+              {gloss.note && (
+                <Text fz={13.5} c="dimmed" mt={6}>
+                  {gloss.note}
+                </Text>
+              )}
               {gloss.isBasic && (
-                <div className="small muted" style={{ marginTop: 8 }}>
-                  <Sparkles size={12} aria-hidden style={{ verticalAlign: '-1px' }} />{' '}
-                  Basic translation. <Link to="/settings#ai">Connect an AI</Link> for grammar context.
-                </div>
+                <Text size="sm" c="dimmed" mt={8}>
+                  <Sparkles size={12} aria-hidden style={{ verticalAlign: '-1px' }} /> Basic translation.{' '}
+                  <Anchor component={Link} to="/settings#ai" inherit>
+                    Connect an AI
+                  </Anchor>{' '}
+                  for grammar context.
+                </Text>
               )}
             </>
           ) : loading ? (
-            <div className="lk-card__loading">
-              <LoaderCircle size={15} className="spin" aria-hidden /> {ai ? 'Meaning in this sentence…' : 'Translating…'}
-            </div>
+            <Group gap={8} fz={14} c="dimmed">
+              <Loader size={14} aria-hidden /> {ai ? 'Meaning in this sentence…' : 'Translating…'}
+            </Group>
           ) : (
-            <p className="small text-danger">
+            <Text size="sm" c="red">
               {error}{' '}
-              <button type="button" className="link-btn" onClick={() => setAttempt((a) => a + 1)}>
+              <Anchor component="button" type="button" inherit onClick={() => setAttempt((a) => a + 1)}>
                 Retry
-              </button>
-            </p>
+              </Anchor>
+            </Text>
           )}
-        </div>
+        </Paper>
       )}
 
       {(builtin || forms.length > 0) && (
-        <div className="lk-card__dict">
+        <Stack gap={2} fz={14.5}>
           {builtin && (
             <div>
               <span className="fr" lang="fr">
                 {frTypo(displayFr(builtin))}
               </span>{' '}
-              <span className="subtle small">{posLabel(builtin)}</span>{' '}
-              {builtin.g && !builtin.both && <GenderTag g={builtin.g} />} <span className="muted">— {builtin.en}</span>
+              <Text span size="sm" c="dimmed">
+                {posLabel(builtin)}
+              </Text>{' '}
+              {builtin.g && !builtin.both && <GenderTag g={builtin.g} />}{' '}
+              <Text span inherit c="dimmed">
+                — {builtin.en}
+              </Text>
             </div>
           )}
           {forms.slice(0, 2).map((f) => (
-            <div key={f.inf + f.label} className="small muted">
+            <Text key={f.inf + f.label} size="sm" c="dimmed">
               Form of{' '}
-              <Link to={`/verbs/${encodeURIComponent(f.inf)}`} className="fr" lang="fr">
+              <Anchor component={Link} to={`/verbs/${encodeURIComponent(f.inf)}`} inherit className="fr" lang="fr">
                 {f.inf}
-              </Link>{' '}
+              </Anchor>{' '}
               ({f.en}) · {f.label}
-            </div>
+            </Text>
           ))}
-        </div>
+        </Stack>
       )}
 
       {gloss?.sentenceTranslation && (
-        <p className="lk-card__sentence">
-          <span className="subtle">Sentence:</span> {gloss.sentenceTranslation}
-        </p>
+        <Text fz={13.5} c="dimmed">
+          <Text span inherit fw={600}>
+            Sentence:
+          </Text>{' '}
+          {gloss.sentenceTranslation}
+        </Text>
       )}
 
-      <div className="lk-card__actions">
+      <Group gap={8} pt={8} style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}>
         {inDeck ? (
-          <span className="badge badge--success">
-            <Check size={12} aria-hidden /> In your flashcards
-          </span>
+          <Badge color="green" leftSection={<Check size={12} aria-hidden />}>
+            In your flashcards
+          </Badge>
         ) : (
           <>
             {!useBuiltin && !gloss?.meaning && !builtin && (
-              <input
-                className="input input--sm"
+              <TextInput
+                size="xs"
+                flex={1}
+                miw={140}
                 placeholder="Meaning in English"
                 value={meaning}
-                onChange={(e) => setMeaning(e.target.value)}
+                onChange={(e) => setMeaning(e.currentTarget.value)}
                 onKeyDown={(e) => e.key === 'Enter' && en && add()}
                 aria-label="Meaning in English"
               />
             )}
-            <button type="button" className="btn btn--primary btn--sm" onClick={add} disabled={!useBuiltin && !en}>
-              <Plus size={15} aria-hidden /> {useBuiltin ? 'Learn this word' : 'Add to flashcards'}
-            </button>
+            <Button size="xs" leftSection={<Plus size={15} aria-hidden />} onClick={add} disabled={!useBuiltin && !en}>
+              {useBuiltin ? 'Learn this word' : 'Add to flashcards'}
+            </Button>
           </>
         )}
         {onShrink && (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={onShrink}>
+          <Button variant="subtle" color="gray" size="xs" onClick={onShrink}>
             Just the first word
-          </button>
+          </Button>
         )}
-      </div>
-    </div>
+      </Group>
+    </Stack>
   )
 }
