@@ -6,15 +6,46 @@ import { LESSON_BY_ID } from '../data/grammar'
 import { STUDY_SKILLS, type DayActivity, type State, type StudySkill } from './store'
 import { dayKey } from './date'
 
-export type Month = { year: number; month: number } // month: 0–11
+/** A week (Monday to Sunday) or a calendar month. */
+export type PeriodKind = 'week' | 'month'
+export interface Period {
+  kind: PeriodKind
+  /** First day, at local midnight. */
+  start: Date
+}
 
-export const monthOf = (d: Date): Month => ({ year: d.getFullYear(), month: d.getMonth() })
-export const addMonths = (m: Month, n: number): Month => monthOf(new Date(m.year, m.month + n, 1))
-export const sameMonth = (a: Month, b: Month) => a.year === b.year && a.month === b.month
-export const monthPrefix = (m: Month) => `${m.year}-${String(m.month + 1).padStart(2, '0')}`
-export const daysIn = (m: Month) => new Date(m.year, m.month + 1, 0).getDate()
-export const monthLabel = (m: Month, style: 'long' | 'short' | 'narrow' = 'long') =>
-  new Date(m.year, m.month, 1).toLocaleDateString('en', style === 'long' ? { month: 'long', year: 'numeric' } : { month: style })
+export function periodOf(kind: PeriodKind, d: Date = new Date()): Period {
+  if (kind === 'month') return { kind, start: new Date(d.getFullYear(), d.getMonth(), 1) }
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+  return { kind, start }
+}
+
+export function shiftPeriod(p: Period, n: number): Period {
+  const d = new Date(p.start)
+  if (p.kind === 'month') d.setMonth(d.getMonth() + n)
+  else d.setDate(d.getDate() + 7 * n)
+  return { kind: p.kind, start: d }
+}
+
+export const samePeriod = (a: Period, b: Period) => a.kind === b.kind && a.start.getTime() === b.start.getTime()
+
+/** Every day of the period, in order. */
+export function periodDays(p: Period): Date[] {
+  const n = p.kind === 'week' ? 7 : new Date(p.start.getFullYear(), p.start.getMonth() + 1, 0).getDate()
+  return Array.from({ length: n }, (_, i) => new Date(p.start.getFullYear(), p.start.getMonth(), p.start.getDate() + i))
+}
+
+/** "October 2026" or "Sep 28 – Oct 4". `short` is for chart axes: "O" or "28/9". */
+export function periodLabel(p: Period, short = false): string {
+  if (p.kind === 'month')
+    return p.start.toLocaleDateString('en', short ? { month: 'narrow' } : { month: 'long', year: 'numeric' })
+  if (short) return `${p.start.getDate()}/${p.start.getMonth() + 1}`
+  const end = shiftPeriod(p, 1).start
+  end.setDate(end.getDate() - 1)
+  const f = (d: Date) => d.toLocaleDateString('en', { month: 'short', day: 'numeric' })
+  return `${f(p.start)} – ${f(end)}`
+}
 
 type Stats = Pick<State, 'activity' | 'cards' | 'lessons' | 'read' | 'stories' | 'writings' | 'conversations' | 'audio' | 'listening' | 'speaking'>
 
@@ -45,45 +76,39 @@ export function skillsByDay(s: Stats): Record<string, Partial<Record<StudySkill,
   return out
 }
 
-export interface MonthRecap {
-  month: Month
-  /** Days with any activity (1-based day numbers). */
-  activeDays: number[]
+export interface Recap {
+  period: Period
+  /** Day keys with any activity. */
+  activeDays: string[]
   answers: number
   correct: number
   newWords: number
   skills: Record<StudySkill, number>
 }
 
-export function monthRecap(s: Stats, m: Month, bySkill = skillsByDay(s)): MonthRecap {
-  const prefix = monthPrefix(m) + '-'
+export function recap(s: Stats, p: Period, bySkill = skillsByDay(s)): Recap {
   const skills = Object.fromEntries(STUDY_SKILLS.map((k) => [k, 0])) as Record<StudySkill, number>
-  const days = new Set<number>()
+  const activeDays: string[] = []
   let answers = 0
   let correct = 0
   let newWords = 0
-  for (const [day, a] of Object.entries(s.activity) as [string, DayActivity][]) {
-    if (!day.startsWith(prefix) || !a.items) continue
-    days.add(Number(day.slice(8)))
-    answers += a.items
-    correct += a.correct
-    newWords += a.newWords
+  for (const day of periodDays(p).map((d) => dayKey(d))) {
+    const a: DayActivity | undefined = s.activity[day]
+    const sk = bySkill[day]
+    if (a?.items || (sk && Object.values(sk).some(Boolean))) activeDays.push(day)
+    answers += a?.items ?? 0
+    correct += a?.correct ?? 0
+    newWords += a?.newWords ?? 0
+    for (const k of STUDY_SKILLS) skills[k] += sk?.[k] ?? 0
   }
-  for (const [day, d] of Object.entries(bySkill)) {
-    if (!day.startsWith(prefix)) continue
-    days.add(Number(day.slice(8)))
-    for (const k of STUDY_SKILLS) skills[k] += d[k] ?? 0
-  }
-  return { month: m, activeDays: [...days].sort((a, b) => a - b), answers, correct, newWords, skills }
+  return { period: p, activeDays, answers, correct, newWords, skills }
 }
 
-/** Answers per month, oldest first, ending with `last`. */
-export function answersByMonth(s: Pick<State, 'activity'>, last: Month, count = 12): { month: Month; answers: number }[] {
+/** Answers per period, oldest first, ending with `last`. */
+export function answersHistory(s: Pick<State, 'activity'>, last: Period, count = 12): { period: Period; answers: number }[] {
   return Array.from({ length: count }, (_, i) => {
-    const m = addMonths(last, i - count + 1)
-    const prefix = monthPrefix(m) + '-'
-    let answers = 0
-    for (const [day, a] of Object.entries(s.activity)) if (day.startsWith(prefix)) answers += a.items
-    return { month: m, answers }
+    const period = shiftPeriod(last, i - count + 1)
+    const answers = periodDays(period).reduce((n, d) => n + (s.activity[dayKey(d)]?.items ?? 0), 0)
+    return { period, answers }
   })
 }
