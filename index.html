@@ -14,7 +14,8 @@
       try {
         var s = JSON.parse(localStorage.getItem('petit-a-petit') || '{}')
         var t = s && s.state && s.state.settings && s.state.settings.theme
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-mantine-color-scheme', t)
       } catch (e) {}
     </script>
   </head>

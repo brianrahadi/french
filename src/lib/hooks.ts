@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { useStore } from './store'
 
 type Handler = (e: KeyboardEvent) => void
 
@@ -42,16 +41,6 @@ export function useHotkeys(map: Record<string, Handler>, opts: { enabled?: boole
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [enabled, allow])
-}
-
-/** Keeps <html data-theme> in sync with the theme setting. */
-export function useThemeSync() {
-  const theme = useStore((s) => s.settings.theme)
-  useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'system') delete root.dataset.theme
-    else root.dataset.theme = theme
-  }, [theme])
 }
 
 export function useDocumentTitle(title: string) {
