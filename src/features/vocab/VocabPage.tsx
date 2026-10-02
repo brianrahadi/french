@@ -295,13 +295,15 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
 
   return (
     <div>
-      <Group justify="flex-end">
-        <Button variant="default" size="xs" onClick={() => setDecksActive(allDecksIds, !allActive)}>
-          {allActive ? 'Turn all off' : 'Turn all on'}
-        </Button>
-      </Group>
-
-      <Shelf title="Learning now" count={on.length}>
+      <Shelf
+        title="Learning now"
+        count={on.length}
+        action={
+          <Button variant="subtle" size="xs" onClick={() => setDecksActive(allDecksIds, !allActive)}>
+            {allActive ? 'Turn all off' : 'Turn all on'}
+          </Button>
+        }
+      >
         {on.map(card)}
         {on.length === 0 && <ActionTile icon={<Layers size={18} aria-hidden />} title="No deck switched on" sub="Pick one from the row below." />}
       </Shelf>

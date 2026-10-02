@@ -9,6 +9,9 @@ const base = process.env.BASE_PATH ?? '/'
 
 export default defineConfig({
   base,
+  // Always the same address: sign-in and progress are stored per address, so a dev
+  // server that silently moved to :5174 would look signed out with no progress.
+  server: { port: 5173, strictPort: true },
   plugins: [
     // Lessons, vocabulary, texts, role-plays, writing prompts and pronunciation sets live in content/*.md.
     contentPlugin(),

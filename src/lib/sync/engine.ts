@@ -68,6 +68,30 @@ let again = false
 let channel: RealtimeChannel | null = null
 let unsubscribeStore: (() => void) | null = null
 let started = false
+/** True while the learner signs out on purpose (any other sign-out is unexpected). */
+let leaving = false
+
+/** Where Supabase keeps the session (access + refresh token) in this browser. */
+const AUTH_KEY = 'petit-a-petit-auth'
+
+/** The user in the saved session, even when its token couldn't be refreshed yet. */
+function storedUser(): User | null {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY)
+    return raw ? ((JSON.parse(raw) as { user?: User }).user ?? null) : null
+  } catch {
+    return null
+  }
+}
+
+/** Asks the browser not to clear this site's storage (and with it the sign-in) when space runs low. */
+function keepStorage() {
+  try {
+    void navigator.storage?.persist?.()
+  } catch {
+    /* not supported */
+  }
+}
 
 const status = (patch: Partial<SyncStatus>) => useSync.setState(patch)
 
@@ -75,7 +99,7 @@ async function getClient(): Promise<SupabaseClient> {
   if (client) return client
   const { createClient } = await import('@supabase/supabase-js')
   client = createClient(URL_!, KEY!, {
-    auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'petit-a-petit-auth' },
+    auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: AUTH_KEY },
   })
   return client
 }
@@ -295,6 +319,7 @@ function stopWatching() {
 function signedIn(u: User) {
   if (userId === u.id) return
   userId = u.id
+  keepStorage()
   remoteVersion = 0
   lastSynced = ''
   status({ user: toUser(u), state: 'syncing', error: '' })
@@ -343,15 +368,25 @@ export async function initSync(): Promise<string | null> {
       }
       back = path
     }
-    if (error) status({ error: friendly(error) })
+    // The session is saved but its token couldn't be refreshed right now (offline, server
+    // waking up): stay signed in; Supabase keeps retrying and reports TOKEN_REFRESHED.
+    const saved = !user && error ? storedUser() : null
+    if (error && !saved) status({ error: friendly(error) })
     c.auth.onAuthStateChange((event, session) => {
       // Supabase advises not to call it from inside this callback, so defer.
       setTimeout(() => {
         if (session?.user) signedIn(session.user)
-        else if (event === 'SIGNED_OUT') signedOut()
+        else if (event === 'SIGNED_OUT') {
+          if (!leaving) {
+            console.warn('[sync] signed out by the auth server (refresh token expired or revoked)')
+            status({ error: 'You were signed out because your sign-in expired. Sign in again to keep syncing.' })
+          }
+          signedOut()
+        }
       })
     })
     if (user) signedIn(user)
+    else if (saved) status({ user: toUser(saved), state: 'offline' })
     else status({ state: 'signed-out' })
   } catch (e) {
     status({ state: 'error', error: friendly(e) })
@@ -395,7 +430,12 @@ export async function signInWithGoogle(): Promise<void> {
 export async function signOut(): Promise<void> {
   await pushNow().catch(() => {})
   const c = await getClient()
-  // Only this device: stay signed in on the others.
-  await c.auth.signOut({ scope: 'local' })
+  leaving = true
+  try {
+    // Only this device: stay signed in on the others.
+    await c.auth.signOut({ scope: 'local' })
+  } finally {
+    leaving = false
+  }
   signedOut()
 }
