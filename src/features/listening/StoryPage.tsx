@@ -212,11 +212,6 @@ function Story({ story }: { story: StoryDef }) {
             {listens > 0 && ` · heard ${listens}×`}
           </Text>
         </Group>
-        {step === 'listen' && (
-          <Text size="sm" c="dimmed" mt="sm">
-            Listen without the text first — as many times as you like. Get the gist, then the details. When you’re ready, answer the questions.
-          </Text>
-        )}
       </Card>
 
       {/* ── Step 1: listening */}

@@ -56,7 +56,6 @@ export default function DictationPage() {
         back={{ to: '/practice', label: 'Practice' }}
         eyebrow="Dictée"
         title="Dictation"
-        subtitle="Hear a sentence, type it, and see which sounds you missed."
         actions={
           <>
             {harder.length > 0 && (

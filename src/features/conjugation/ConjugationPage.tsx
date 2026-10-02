@@ -61,7 +61,6 @@ export default function ConjugationPage() {
       <PageHeader
         eyebrow="Conjugaison"
         title="Conjugation"
-        subtitle="Type the right form, fast. Drills adapt to you — verbs and tenses you miss come back more often."
         actions={
           <Button component={Link} to="/verbs" variant="default" leftSection={<Table2 size={17} aria-hidden />}>
             Verb tables

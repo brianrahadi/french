@@ -64,12 +64,6 @@ export default function VocabPage() {
       <PageHeader
         eyebrow="Vocabulaire"
         title="Vocabulary"
-        subtitle={
-          <>
-            Spaced repetition (FSRS) brings each word back right before you’d forget it — first French → English, then
-            typing it in French.
-          </>
-        }
       />
 
       <Card px={24} py={22}>
@@ -265,7 +259,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
             toggle: () => setDecksActive(FREQUENCY_DECK_IDS, !freqActive),
             note: (
               <Text size="xs" c="dimmed" mt={4}>
-                Most common first, in order. Words already in a themed deck are shared.
+                Most common first.
               </Text>
             ),
           },
@@ -301,16 +295,13 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
 
   return (
     <div>
-      <Group justify="space-between" align="flex-start">
-        <Text size="sm" c="dimmed" maw={600}>
-          Switch on the decks you want new words from. Words are introduced in order, a few each day (change the number in Settings).
-        </Text>
+      <Group justify="flex-end">
         <Button variant="default" size="xs" onClick={() => setDecksActive(allDecksIds, !allActive)}>
           {allActive ? 'Turn all off' : 'Turn all on'}
         </Button>
       </Group>
 
-      <Shelf title="Learning now" count={on.length} hint={on.length ? 'New words come from these decks.' : 'Switch on a deck below to start getting new words.'}>
+      <Shelf title="Learning now" count={on.length}>
         {on.map(card)}
         {on.length === 0 && <ActionTile icon={<Layers size={18} aria-hidden />} title="No deck switched on" sub="Pick one from the row below." />}
       </Shelf>
@@ -318,7 +309,6 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
       <Shelf
         title="More decks"
         count={off.length}
-        hint={<>For your level ({level}) and below{showHarder && harder.length ? ', plus harder ones' : ''}.</>}
         action={
           harder.length > 0 && (
             <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
@@ -334,7 +324,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
       </Shelf>
 
       {done.length > 0 && (
-        <Shelf title="All words started" count={done.length} hint="Every word in these decks is in your reviews.">
+        <Shelf title="All words started" count={done.length}>
           {done.map(card)}
         </Shelf>
       )}
@@ -564,7 +554,7 @@ function AddTab({ onDone }: { onDone: () => void }) {
             Add a word
           </Title>
           <Text size="sm" c="dimmed">
-            Found a word on LingQ or in a podcast? Add it here. For nouns, type the article (le, la, un, une) so you learn its gender.
+            For nouns, include the article (le, la, un, une).
           </Text>
           <TextInput id="add-fr" label="French" classNames={{ input: 'fr' }} lang="fr" value={fr} onChange={(e) => setFr(e.currentTarget.value)} placeholder="la bibliothèque" required />
           <TextInput id="add-en" label="English" value={en} onChange={(e) => setEn(e.currentTarget.value)} placeholder="library" required />

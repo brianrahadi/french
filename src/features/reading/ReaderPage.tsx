@@ -287,7 +287,7 @@ function Reader({ doc }: { doc: Doc }) {
       {error && <Callout kind="warn">{error}</Callout>}
 
       <Text size="sm" c="dimmed" mb={18}>
-        Tap any word to see what it means here. Use ‹ › in the popup to select a whole expression.
+        Tap a word for its meaning.
       </Text>
 
       <article className="reader-body fr" lang="fr" style={{ fontSize: SIZES[size].size }}>

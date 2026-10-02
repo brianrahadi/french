@@ -348,11 +348,6 @@ function Welcome({ onPick }: { onPick: (l: Level) => void }) {
           Bienvenue&nbsp;! Where would you like to start?
         </Title>
       </Group>
-      <Text c="dimmed" maw="62ch">
-        Three short daily habits: review vocabulary with spaced repetition, learn one grammar point at a time, and drill
-        verb forms until they’re automatic. It pairs well with input from LingQ and listening with Alexa — and you can
-        import your Anki or LingQ words under Vocabulary → Add & import.
-      </Text>
       <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="sm" mt="md">
         {LEVELS.map((l) => (
           <Card key={l} component="button" type="button" padding="md" ta="left" onClick={() => onPick(l)} style={{ font: 'inherit', color: 'inherit', cursor: 'pointer' }}>
@@ -366,9 +361,6 @@ function Welcome({ onPick }: { onPick: (l: Level) => void }) {
           </Card>
         ))}
       </SimpleGrid>
-      <Text size="sm" c="dimmed" mt="sm">
-        You can change decks any time, and mark words you already know with one key.
-      </Text>
     </Card>
   )
 }

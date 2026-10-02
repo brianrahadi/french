@@ -205,7 +205,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
               <div>
                 <Text fw={650}>Lesson complete — bravo !</Text>
                 <Text size="sm" c="dimmed">
-                  Do one lesson a day. If you got fewer than about 80% right, repeat this one tomorrow before moving on.
+                  One a day. Repeat it tomorrow if it felt hard.
                 </Text>
               </div>
             </Group>
@@ -325,11 +325,6 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
           )
         })}
       </Group>
-
-      <Text size="sm" c="dimmed" mt="lg">
-        How it works: listen, and when you’re asked something, answer <strong>out loud</strong> before the answer comes — even if you’re not sure.
-        That effort is what makes it stick. No need to look at the screen.
-      </Text>
     </Container>
   )
 }

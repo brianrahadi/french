@@ -280,8 +280,7 @@ export default function SettingsPage() {
 
       <Section id="set-ai" anchor="ai" title="AI (writing, conversation, reading)">
         <Text size="sm" c="dimmed">
-          Writing corrections, conversation practice and reading help use an AI model of your choice. Requests go straight
-          from this browser to the provider with your own key — nothing passes through a server of ours.
+          Your key is sent only to the provider you choose.
         </Text>
         <AiSetup />
       </Section>

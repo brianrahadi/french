@@ -44,7 +44,6 @@ export default function SpeakingPage() {
       <PageHeader
         eyebrow="Expression orale"
         title="Speaking"
-        subtitle="Read sentences aloud or repeat after a native voice. Speech recognition shows which words came across clearly, and you can play your recording next to the model."
       />
 
       {!micSupported ? (

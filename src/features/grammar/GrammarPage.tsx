@@ -59,7 +59,6 @@ export default function GrammarPage() {
       <PageHeader
         eyebrow="Grammaire"
         title="Grammar"
-        subtitle="Short explanations, then practice with instant feedback. Score 80% to master a lesson — it comes back for spaced review so you don’t forget it."
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }}>

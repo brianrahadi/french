@@ -68,7 +68,6 @@ export default function WeakPage() {
       <PageHeader
         eyebrow="Points faibles"
         title="Weak spots"
-        subtitle="What keeps tripping you up — collected from drills, flashcards, writing, conversations, dictation and speaking. Recent mistakes count most; a run of right answers makes a spot fade."
       />
 
       {nothing ? (

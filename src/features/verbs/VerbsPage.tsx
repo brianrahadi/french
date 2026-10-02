@@ -52,7 +52,6 @@ export default function VerbsPage() {
       <PageHeader
         eyebrow="Tableaux de conjugaison"
         title="Verb tables"
-        subtitle="Every verb in every tense, with audio. Tap a verb to see its full conjugation."
       />
       <Group gap="sm" mb="md">
         <TextInput

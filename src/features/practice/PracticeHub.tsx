@@ -14,7 +14,6 @@ interface Drill {
   icon: React.ReactNode
   color?: MantineColor
   title: string
-  text: string
   meta: string
   badge?: number
 }
@@ -33,7 +32,6 @@ export default function PracticeHub() {
       icon: <Target size={22} aria-hidden />,
       color: 'pink',
       title: 'Weak spots',
-      text: 'Everything you got wrong, grouped by the rule behind it — with a session that targets it.',
       meta: weak ? plural(weak, 'weak spot') : 'Nothing stands out right now',
       badge: weak,
     },
@@ -41,7 +39,6 @@ export default function PracticeHub() {
       to: '/conjugation',
       icon: <PenLine size={22} aria-hidden />,
       title: 'Conjugation',
-      text: 'Type the right form, fast. Verbs and tenses you miss come back more often.',
       meta: Object.keys(s.conj).length ? plural(Object.keys(s.conj).length, 'verb form') + ' practised' : 'Start with the present tense',
     },
     {
@@ -49,7 +46,6 @@ export default function PracticeHub() {
       icon: <Headphones size={22} aria-hidden />,
       color: 'cyan',
       title: 'Dictation',
-      text: 'Hear a sentence, write it down, and see exactly which sounds you missed.',
       meta: Object.keys(s.listening).length ? plural(Object.keys(s.listening).length, 'sentence') + ' written' : 'Start with sentences using your words',
     },
     {
@@ -57,7 +53,6 @@ export default function PracticeHub() {
       icon: <Mic size={22} aria-hidden />,
       color: 'green',
       title: 'Speaking',
-      text: 'Read aloud or repeat after a native voice; see which words came across and compare recordings.',
       meta: Object.keys(s.speaking).length ? plural(Object.keys(s.speaking).length, 'sentence') + ' spoken' : 'Tricky sounds: u/ou, nasals, the r…',
     },
     {
@@ -65,7 +60,6 @@ export default function PracticeHub() {
       icon: <BookOpen size={22} aria-hidden />,
       color: 'violet',
       title: 'Grammar reviews',
-      text: 'Lessons you mastered come back for a quick review before you forget them.',
       meta: grammarDue ? `${plural(grammarDue, 'review')} due` : 'No reviews due',
       badge: grammarDue,
     },
@@ -74,14 +68,13 @@ export default function PracticeHub() {
       icon: <Table2 size={22} aria-hidden />,
       color: 'gray',
       title: 'Verb tables',
-      text: 'Every verb in every tense, with audio. Look up a form or drill one verb.',
       meta: `${VERBS.length} verbs`,
     },
   ]
 
   return (
     <Container size={960} py="xl">
-      <PageHeader eyebrow="S’entraîner" title="Practice" subtitle="Quick drills, one skill at a time. Stories, texts and conversations are in the Library." />
+      <PageHeader eyebrow="S’entraîner" title="Practice" />
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 'sm', sm: 'md' }}>
         {drills.map((d) => (
           <Card key={d.to} component={Link} to={d.to} c="inherit" td="none" padding="md">
@@ -100,10 +93,6 @@ export default function PracticeHub() {
                     </Badge>
                   )}
                 </Group>
-                {/* The description is for wide screens; on phones the title and status are enough. */}
-                <Text size="sm" c="dimmed" visibleFrom="sm" style={{ flex: 1 }}>
-                  {d.text}
-                </Text>
                 <Text size="sm" fw={500}>
                   {d.meta}
                 </Text>

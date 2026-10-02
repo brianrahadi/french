@@ -106,9 +106,7 @@ export function WordCheck({ words, onDone }: { words: TextWord[]; onDone: () => 
             {items.length} word{items.length === 1 ? '' : 's'} from your vocabulary
           </Text>
           <Text size="sm" c="dimmed">
-            Did you recognise them? Words you know are scheduled for later; the others start learning today. The meaning
-            shows once you answer, or tap <Languages size={13} aria-label="translate" style={{ verticalAlign: '-2px' }} /> to
-            translate a word and its sentence.
+            Did you recognise them?
           </Text>
           <Checkbox size="xs" mt={8} label="Show all meanings" checked={showAll} onChange={(e) => setShowAll(e.currentTarget.checked)} />
         </Box>

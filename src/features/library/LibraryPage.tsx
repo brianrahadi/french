@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Button, Container, Group, Text } from '@mantine/core'
+import { Button, Container } from '@mantine/core'
 import { BookOpen, ClipboardPaste, Feather, MessagesSquare, PencilLine, WandSparkles } from 'lucide-react'
 import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
@@ -116,11 +116,6 @@ export default function LibraryPage() {
       <PageHeader
         eyebrow="Bibliothèque"
         title="Library"
-        subtitle={
-          <>
-            Courses, stories, texts and conversations — one row each. Showing your level ({level}) and below; finished ones move to the bottom.
-          </>
-        }
         actions={
           <>
             {harder.length > 0 && (
@@ -207,16 +202,6 @@ export default function LibraryPage() {
           {done.map((e) => e.node)}
         </Shelf>
       )}
-
-      <Group mt="xl" c="dimmed">
-        <Text size="sm">
-          Looking for drills? Dictation, conjugation, speaking and weak spots are in{' '}
-          <Text component={Link} to="/practice" inherit c="var(--mantine-primary-color-filled)">
-            Practice
-          </Text>
-          .
-        </Text>
-      </Group>
 
       <PasteDialog open={paste} onClose={() => setPaste(false)} />
       <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? level} />

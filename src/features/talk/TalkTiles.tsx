@@ -105,7 +105,7 @@ export function FreeTalkDialog({ open, onClose, defaultLevel }: { open: boolean;
       ) : (
         <Stack gap="sm">
           <Text c="dimmed" size="sm">
-            Chat about anything with Camille, a friendly French speaker. Your messages get quietly corrected as you go.
+            Chat about anything with Camille.
           </Text>
           <Group gap="xs" align="flex-end" wrap="nowrap">
             <TextInput
