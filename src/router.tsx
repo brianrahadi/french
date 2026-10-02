@@ -43,6 +43,7 @@ export const router = createBrowserRouter(
         { path: 'audio', element: <Navigate to="/library#audio" replace /> },
         { path: 'audio/:id', lazy: page(() => import('./features/audio/AudioLessonPage')) },
         { path: 'listening', element: <Navigate to="/library#stories" replace /> },
+        { path: 'dictation', lazy: page(() => import('./features/listening/DictationPage')) },
         { path: 'listening/story/:id', lazy: page(() => import('./features/listening/StoryPage')) },
         { path: 'speaking', lazy: page(() => import('./features/speaking/SpeakingPage')) },
         { path: 'reading', element: <Navigate to="/library#texts" replace /> },

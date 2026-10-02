@@ -10,6 +10,7 @@ const WIDTH = { base: '72vw', xs: 232 }
  */
 export function Tile({
   to,
+  fluid,
   onClick,
   disabled,
   small,
@@ -24,6 +25,8 @@ export function Tile({
   highlight,
 }: {
   to?: string
+  /** Fill the grid cell instead of the fixed shelf width. */
+  fluid?: boolean
   /** Instead of `to`: the whole card is a button. */
   onClick?: () => void
   disabled?: boolean
@@ -50,7 +53,7 @@ export function Tile({
   const button = onClick ? { component: 'button' as const, type: 'button' as const, disabled, 'data-tile': true, ta: 'left' as const } : {}
   return (
     <Card
-      w={WIDTH}
+      w={fluid ? undefined : WIDTH}
       padding="md"
       onClick={open}
       {...button}

@@ -33,7 +33,7 @@ const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/', label: 'Today', short: 'Today', icon: House, end: true },
   { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/listening/story', '/audio', '/talk', '/writing'] },
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
-  { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/listening/session'] },
+  { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
 ]
 
 const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))

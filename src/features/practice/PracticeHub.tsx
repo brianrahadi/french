@@ -1,163 +1,117 @@
-import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { Anchor, Badge, Button, Card, Container, Group, SegmentedControl, Text } from '@mantine/core'
-import { ArrowRight, BookOpen, Mic, PenLine, Table2, Target } from 'lucide-react'
-import { LEVELS, type Level } from '../../data/types'
-import { Callout, LevelBadge } from '../../components/ui'
+import { useMemo } from 'react'
+import { Link } from 'react-router'
+import { Badge, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, type MantineColor } from '@mantine/core'
+import { BookOpen, Headphones, Mic, PenLine, Table2, Target } from 'lucide-react'
+import { VERBS } from '../../data/verbs'
 import { PageHeader } from '../../components/PageHeader'
-import { Shelf } from '../../components/Shelf'
-import { Tile } from '../../components/Tile'
-import { SpeakButton } from '../../components/SpeakButton'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
-import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
-import { speechSupported, useFrenchVoices } from '../../lib/speech'
-import { LISTEN_CATEGORIES, type ListenCategory } from '../../lib/french'
-import { frTypo } from '../../lib/words'
 import { dueLessons } from '../grammar/status'
 import { countWeakSpots } from '../weak/count'
-import { poolFor, sentenceById, type SentenceSource } from '../listening/sentences'
-import { PercentBadge } from '../listening/StoryTile'
 
-const LENGTHS = [5, 10, 15]
+interface Drill {
+  to: string
+  icon: React.ReactNode
+  color?: MantineColor
+  title: string
+  text: string
+  meta: string
+  badge?: number
+}
 
 /** Short drills that train one skill at a time (content to read, hear and talk about lives in the Library). */
 export default function PracticeHub() {
   useDocumentTitle('Practice')
-  const navigate = useNavigate()
-  const state = useStore()
-  const voices = useFrenchVoices()
-  const [n, setN] = useState(10)
-  const level = useCurrentLevel()
-  const [showHarder, setShowHarder] = useState(false)
-  const harder = harderLevels(level)
+  const s = useStore()
+  const weak = useMemo(() => countWeakSpots(s), [s])
+  const grammarDue = dueLessons(s.lessons).length
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
-  const weak = useMemo(() => countWeakSpots(state), [state])
-  const grammarDue = dueLessons(state.lessons).length
-
-  // Dictation sets: your words first, then your level and the ones below it.
-  const rank = (l: Level) => (withinLevel(l, level) ? LEVELS.indexOf(level) - LEVELS.indexOf(l) : 10 + LEVELS.indexOf(l))
-  const levelOrder = [...LEVELS].filter((l) => showHarder || withinLevel(l, level)).sort((a, b) => rank(a) - rank(b))
-  const sources: SentenceSource[] = [...(Object.keys(state.introduced).length >= 8 ? (['mine'] as const) : []), ...levelOrder]
-  const start = (src: SentenceSource) => navigate(`/listening/session?src=${encodeURIComponent(src)}&n=${n}`)
-
-  const recent = Object.entries(state.listening)
-    .sort((a, b) => b[1].at.localeCompare(a[1].at))
-    .slice(0, 12)
-    .map(([id, st]) => ({ s: sentenceById(id), st }))
-    .filter((x) => x.s)
-
-  const since = Date.now() - 30 * 86_400_000
-  const cats = new Map<ListenCategory, number>()
-  for (const m of state.mistakes)
-    if (m.source === 'listening' && !m.resolved && new Date(m.at).getTime() > since) {
-      const c = m.skill.slice(7) as ListenCategory
-      cats.set(c, (cats.get(c) ?? 0) + 1)
-    }
-  const topCats = [...cats.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
+  const drills: Drill[] = [
+    {
+      to: '/weak',
+      icon: <Target size={22} aria-hidden />,
+      color: 'pink',
+      title: 'Weak spots',
+      text: 'Everything you got wrong, grouped by the rule behind it — with a session that targets it.',
+      meta: weak ? plural(weak, 'weak spot') : 'Nothing stands out right now',
+      badge: weak,
+    },
+    {
+      to: '/conjugation',
+      icon: <PenLine size={22} aria-hidden />,
+      title: 'Conjugation',
+      text: 'Type the right form, fast. Verbs and tenses you miss come back more often.',
+      meta: Object.keys(s.conj).length ? plural(Object.keys(s.conj).length, 'verb form') + ' practised' : 'Start with the present tense',
+    },
+    {
+      to: '/dictation',
+      icon: <Headphones size={22} aria-hidden />,
+      color: 'cyan',
+      title: 'Dictation',
+      text: 'Hear a sentence, write it down, and see exactly which sounds you missed.',
+      meta: Object.keys(s.listening).length ? plural(Object.keys(s.listening).length, 'sentence') + ' written' : 'Start with sentences using your words',
+    },
+    {
+      to: '/speaking',
+      icon: <Mic size={22} aria-hidden />,
+      color: 'green',
+      title: 'Speaking',
+      text: 'Read aloud or repeat after a native voice; see which words came across and compare recordings.',
+      meta: Object.keys(s.speaking).length ? plural(Object.keys(s.speaking).length, 'sentence') + ' spoken' : 'Tricky sounds: u/ou, nasals, the r…',
+    },
+    {
+      to: '/grammar',
+      icon: <BookOpen size={22} aria-hidden />,
+      color: 'violet',
+      title: 'Grammar reviews',
+      text: 'Lessons you mastered come back for a quick review before you forget them.',
+      meta: grammarDue ? `${plural(grammarDue, 'review')} due` : 'No reviews due',
+      badge: grammarDue,
+    },
+    {
+      to: '/verbs',
+      icon: <Table2 size={22} aria-hidden />,
+      color: 'gray',
+      title: 'Verb tables',
+      text: 'Every verb in every tense, with audio. Look up a form or drill one verb.',
+      meta: `${VERBS.length} verbs`,
+    },
+  ]
 
   return (
     <Container size={960} py="xl">
       <PageHeader eyebrow="S’entraîner" title="Practice" subtitle="Quick drills, one skill at a time. Stories, texts and conversations are in the Library." />
-
-      {!speechSupported ? (
-        <Callout kind="warn">This browser can’t read text aloud, so dictation and speaking aren’t available here. Try Chrome, Edge or Safari.</Callout>
-      ) : (
-        voices.length === 0 && (
-          <Callout kind="tip">
-            No French voice found yet. On a Mac, add one in System Settings → Accessibility → Spoken Content → System voice → Manage voices
-            (French “Enhanced” or “Premium” voices sound best). Then pick it in Settings.
-          </Callout>
-        )
-      )}
-
-      <Shelf title="Drills">
-        <Tile to="/weak" top={<Target size={18} aria-hidden />} corner={weak > 0 && <Badge color="pink">{weak}</Badge>} title="Weak spots" sub="Everything you got wrong, grouped by the rule behind it." />
-        <Tile to="/conjugation" top={<PenLine size={18} aria-hidden />} title="Conjugation" sub="Type the right form, fast. Tenses you miss come back more." />
-        <Tile to="/speaking" top={<Mic size={18} aria-hidden />} title="Speaking" sub="Read aloud or repeat after a native voice; see which words came across." />
-        <Tile
-          to="/grammar"
-          top={<BookOpen size={18} aria-hidden />}
-          corner={grammarDue > 0 && <Badge>{grammarDue} due</Badge>}
-          title="Grammar reviews"
-          sub="Lessons you mastered come back for a quick review."
-        />
-        <Tile to="/verbs" top={<Table2 size={18} aria-hidden />} title="Verb tables" sub="Every verb in every tense, with audio." />
-      </Shelf>
-
-      <Shelf
-        title="Dictation"
-        hint="Hear a sentence, type it, and see which sounds you missed."
-        action={
-          <>
-            {harder.length > 0 && (
-              <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
-                {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
-              </Button>
-            )}
-            <SegmentedControl size="xs" value={String(n)} onChange={(v) => setN(Number(v))} data={LENGTHS.map(String)} aria-label="Sentences per session" />
-          </>
-        }
-      >
-        {sources.map((src) => (
-          <DictationTile key={src} src={src} n={n} onStart={() => start(src)} />
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 'sm', sm: 'md' }}>
+        {drills.map((d) => (
+          <Card key={d.to} component={Link} to={d.to} c="inherit" td="none" padding="md">
+            <Group align="flex-start" wrap="nowrap" gap="md" h="100%">
+              <ThemeIcon variant="light" color={d.color} size={44} radius="md">
+                {d.icon}
+              </ThemeIcon>
+              <Stack gap={4} style={{ flex: 1, minWidth: 0 }} h="100%">
+                <Group justify="space-between" wrap="nowrap" gap="xs">
+                  <Text fw={650} fz="lg">
+                    {d.title}
+                  </Text>
+                  {!!d.badge && (
+                    <Badge color={d.color} className="tnum">
+                      {d.badge}
+                    </Badge>
+                  )}
+                </Group>
+                {/* The description is for wide screens; on phones the title and status are enough. */}
+                <Text size="sm" c="dimmed" visibleFrom="sm" style={{ flex: 1 }}>
+                  {d.text}
+                </Text>
+                <Text size="sm" fw={500}>
+                  {d.meta}
+                </Text>
+              </Stack>
+            </Group>
+          </Card>
         ))}
-      </Shelf>
-
-      {topCats.length > 0 && (
-        <Shelf
-          title="Sounds that trip you up"
-          count={topCats.length}
-          action={
-            <Anchor component={Link} to="/weak" size="sm">
-              Weak spots <ArrowRight size={14} aria-hidden style={{ verticalAlign: '-2px' }} />
-            </Anchor>
-          }
-        >
-          {topCats.map(([c, count]) => (
-            <Card key={c} w={{ base: '72vw', xs: 232 }} padding="md" style={{ flexShrink: 0 }}>
-              <Group justify="space-between" wrap="nowrap" mb={6}>
-                <Text fw={650}>{LISTEN_CATEGORIES[c].label}</Text>
-                <Badge color="orange" className="tnum">
-                  {count}
-                </Badge>
-              </Group>
-              <Text size="sm" c="dimmed">
-                {LISTEN_CATEGORIES[c].tip}
-              </Text>
-            </Card>
-          ))}
-        </Shelf>
-      )}
-
-      {recent.length > 0 && (
-        <Shelf title="Recent dictation" count={recent.length}>
-          {recent.map(({ s, st }) => (
-            <Tile key={s!.id} done small top={<SpeakButton text={s!.fr} size="sm" />} corner={<PercentBadge score={st.last} />} title={frTypo(s!.fr)} fr sub={s!.en} />
-          ))}
-        </Shelf>
-      )}
+      </SimpleGrid>
     </Container>
-  )
-}
-
-function DictationTile({ src, n, onStart }: { src: SentenceSource; n: number; onStart: () => void }) {
-  const state = useStore()
-  const pool = useMemo(() => poolFor(src, state), [src, state])
-  const doneIn = pool.filter((x) => state.listening[x.id]).length
-  return (
-    <Tile
-      onClick={onStart}
-      disabled={!speechSupported || !pool.length}
-      top={src === 'mine' ? <Badge>mine</Badge> : <LevelBadge level={src as Level} />}
-      title={src === 'mine' ? 'My words' : `${src} sentences`}
-      sub={src === 'mine' ? 'Sentences with the words you’re learning' : `${pool.length} sentences`}
-      foot={
-        <>
-          {doneIn}/{pool.length} done · start {n}
-        </>
-      }
-      progress={pool.length ? doneIn / pool.length : 0}
-    />
   )
 }

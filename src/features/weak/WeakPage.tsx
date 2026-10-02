@@ -234,7 +234,7 @@ export default function WeakPage() {
       )}
 
       {weak.listening.length > 0 && (
-        <Section id="weak-listen" title="Listening" right={<SectionLink to="/practice">Dictation</SectionLink>}>
+        <Section id="weak-listen" title="Listening" right={<SectionLink to="/dictation">Dictation</SectionLink>}>
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
             {weak.listening.slice(0, 3).map(({ category, count }) => (
               <Card key={category}>
