@@ -404,6 +404,17 @@ function takeReturnPath(): string | null {
   }
 }
 
+/**
+ * Where Google sign-in comes back to: the live site (VITE_SITE_URL) everywhere
+ * except local development, which comes back to itself. Supabase only accepts
+ * addresses listed under Authentication → URL Configuration → Redirect URLs.
+ */
+function redirectUrl(): string {
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+  const site = import.meta.env.VITE_SITE_URL as string | undefined
+  return !local && site ? site : new URL(import.meta.env.BASE_URL, location.origin).href
+}
+
 export async function signInWithGoogle(): Promise<void> {
   status({ error: '' })
   const base = import.meta.env.BASE_URL
@@ -418,7 +429,7 @@ export async function signInWithGoogle(): Promise<void> {
     const c = await getClient()
     const { error } = await c.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: new URL(base, location.origin).href, queryParams: { prompt: 'select_account' } },
+      options: { redirectTo: redirectUrl(), queryParams: { prompt: 'select_account' } },
     })
     if (error) throw error
   } catch (e) {

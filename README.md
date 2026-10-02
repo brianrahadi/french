@@ -136,9 +136,9 @@ With a free [Supabase](https://supabase.com) project, people can **sign in with 
 2. **Create the table:** Dashboard → *SQL Editor* → paste [`supabase/schema.sql`](supabase/schema.sql) → *Run*.
 3. **Create a Google sign-in client** in the [Google Auth Platform console](https://console.cloud.google.com/auth/clients):
    - *Branding*: app name and support email. *Audience*: publish the app (while it’s in “Testing”, only the test users you list can sign in).
-   - *Clients → Create client → Web application*. **Authorized JavaScript origins:** `http://localhost:5173` and `https://<you>.github.io`. **Authorized redirect URI:** the callback URL shown in Supabase under *Authentication → Sign In / Providers → Google* (`https://<project-ref>.supabase.co/auth/v1/callback`).
+   - *Clients → Create client → Web application*. **Authorized JavaScript origins:** `http://localhost:5173` and your site (e.g. `https://french.brianrahadi.com`). **Authorized redirect URI:** the callback URL shown in Supabase under *Authentication → Sign In / Providers → Google* (`https://<project-ref>.supabase.co/auth/v1/callback`).
 4. **Turn on Google in Supabase:** *Authentication → Sign In / Providers → Google* → enable, paste the client ID and secret.
-5. **Allow the app’s addresses:** *Authentication → URL Configuration* → Site URL `https://<you>.github.io/french/`; Redirect URLs `http://localhost:5173/**` and `https://<you>.github.io/french/**`.
+5. **Allow the app’s addresses:** *Authentication → URL Configuration* → Site URL `https://french.brianrahadi.com/`; Redirect URLs `http://localhost:5173/**` and `https://french.brianrahadi.com/**`. The live site’s address is set in `.env.production` (`VITE_SITE_URL`): sign-in from anywhere but localhost returns there.
 6. **Connect the app:** copy `.env.example` to `.env.local` and fill in the Project URL and publishable key from *Project Settings → API Keys*. Restart `npm run dev` — *Settings → Account & sync* now shows **Continue with Google**.
 7. **For GitHub Pages:** add the same two values as repository variables (*Settings → Secrets and variables → Actions → Variables*): `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. The publishable key is meant to be public; row-level security protects the data.
 
