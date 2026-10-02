@@ -21,9 +21,12 @@ import {
 } from '@mantine/core'
 import { Layers, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
 import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, BUILTIN_WORDS, allWords, alreadyHave, deckWords } from '../../data/vocab'
-import { LEVELS, type Word } from '../../data/types'
+import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
+import { Shelf } from '../../components/Shelf'
+import { ActionTile } from '../../components/Tile'
+import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
@@ -174,10 +177,11 @@ function Forecast({ fc }: { fc: number[] }) {
   )
 }
 
-/** One deck: title (click to view its words), progress, and the switch that includes it in new words. */
+/** One deck in a shelf: title (click to view its words), progress, and the switch that includes it in new words. */
 function DeckCard({
   title,
   titleFr,
+  level,
   active,
   started,
   total,
@@ -188,6 +192,7 @@ function DeckCard({
 }: {
   title: string
   titleFr: string
+  level?: Level
   active: boolean
   started: number
   total: number
@@ -197,31 +202,39 @@ function DeckCard({
   children?: ReactNode
 }) {
   return (
-    <Card padding="sm" px="md" radius="md" style={active ? { borderColor: 'var(--mantine-color-indigo-4)' } : undefined}>
-      <Group align="flex-start" gap={14} wrap="nowrap">
-        <Box onClick={onView} style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} title="View words">
-          <Text fw={620}>{title}</Text>
+    <Card
+      w={{ base: '72vw', xs: 232 }}
+      padding="md"
+      style={{ flexShrink: 0, ...(active ? { borderColor: 'var(--mantine-primary-color-filled)' } : {}) }}
+      bg={total > 0 && started === total ? 'var(--surface-2)' : undefined}
+    >
+      <Stack gap={6} h="100%">
+        <Group justify="space-between" wrap="nowrap">
+          {level ? <LevelBadge level={level} /> : <Badge color="gray">{title === 'My words' ? 'yours' : 'frequency'}</Badge>}
+          <Switch checked={active} onChange={onToggle} label={`Include “${title}” in new words`} />
+        </Group>
+        <Box onClick={onView} style={{ cursor: 'pointer' }} title="View words">
+          <Text fw={650} fz={17} lh={1.3}>
+            {title}
+          </Text>
           <Text size="sm" c="dimmed" className="fr" lang="fr">
             {titleFr}
           </Text>
           {children}
-          <Group gap={10} mt={10} wrap="nowrap">
-            <Box flex={1}>
-              <ProgressBar value={total ? started / total : 0} label={`${title}: ${started} of ${total} words started`} thin />
-            </Box>
-            <Text size="sm" c="dimmed" className="tnum">
-              {started}/{total}
-              {known > 0 && ` · ${known} known`}
-            </Text>
-          </Group>
         </Box>
-        <Switch checked={active} onChange={onToggle} label={`Include “${title}” in new words`} />
-      </Group>
+        <Group gap={10} mt="auto" pt={6} wrap="nowrap">
+          <Box flex={1}>
+            <ProgressBar value={total ? started / total : 0} label={`${title}: ${started} of ${total} words started`} thin />
+          </Box>
+          <Text size="xs" c="dimmed" className="tnum">
+            {started}/{total}
+            {known > 0 && ` · ${known} known`}
+          </Text>
+        </Group>
+      </Stack>
     </Card>
   )
 }
-
-const DECK_GRID = { base: 1, sm: 2, md: 3 }
 
 function DecksTab({ onView }: { onView: (id: string) => void }) {
   const activeDecks = useStore((s) => s.activeDecks)
@@ -230,108 +243,102 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
   const customWords = useStore((s) => s.customWords)
   const toggleDeck = useStore((s) => s.toggleDeck)
   const setDecksActive = useStore((s) => s.setDecksActive)
+  const level = useCurrentLevel()
+  const [showHarder, setShowHarder] = useState(false)
+  const harder = harderLevels(level)
 
   const allDecksIds = useMemo(() => [...DECKS.map((d) => d.id), CUSTOM_DECK_ID], [])
   const allActive = allDecksIds.every((id) => activeDecks.includes(id))
 
-  const deckRow = (id: string, title: string, titleFr: string, words: Word[]) => (
+  // Every deck as one item, so they can be sorted onto shelves: on (being learned), off, all started.
+  type Item = { id: string; title: string; titleFr: string; level?: Level; words: Word[]; active: boolean; toggle: () => void; note?: ReactNode }
+  const freqActive = FREQUENCY_DECK_IDS.every((id) => activeDecks.includes(id))
+  const items: Item[] = [
+    ...(FREQUENCY_DECKS.length
+      ? [
+          {
+            id: FREQUENCY_ID,
+            title: `Top ${FREQUENCY_WORDS.length.toLocaleString('en')} words`,
+            titleFr: 'Les mots les plus fréquents',
+            words: FREQUENCY_WORDS,
+            active: freqActive,
+            toggle: () => setDecksActive(FREQUENCY_DECK_IDS, !freqActive),
+            note: (
+              <Text size="xs" c="dimmed" mt={4}>
+                Most common first, in order. Words already in a themed deck are shared.
+              </Text>
+            ),
+          },
+        ]
+      : []),
+    ...THEMED_DECKS.map((d) => ({ id: d.id, title: d.title, titleFr: d.titleFr, level: d.level, words: d.words, active: activeDecks.includes(d.id), toggle: () => toggleDeck(d.id) })),
+    ...(customWords.length
+      ? [{ id: CUSTOM_DECK_ID, title: 'My words', titleFr: 'Mes mots', words: customWords, active: activeDecks.includes(CUSTOM_DECK_ID), toggle: () => toggleDeck(CUSTOM_DECK_ID) }]
+      : []),
+  ]
+  const startedIn = (w: Word[]) => w.filter((x) => introduced[x.id]).length
+  const finished = (it: Item) => it.words.length > 0 && startedIn(it.words) === it.words.length
+  const card = (it: Item) => (
     <DeckCard
-      key={id}
-      title={title}
-      titleFr={titleFr}
-      active={activeDecks.includes(id)}
-      started={words.filter((w) => introduced[w.id]).length}
-      total={words.length}
-      known={words.filter((w) => wordStatus(w.id, cards) === 'mature').length}
-      onView={() => onView(id)}
-      onToggle={() => toggleDeck(id)}
-    />
+      key={it.id}
+      title={it.title}
+      titleFr={it.titleFr}
+      level={it.level}
+      active={it.active}
+      started={startedIn(it.words)}
+      total={it.words.length}
+      known={it.words.filter((w) => wordStatus(w.id, cards) === 'mature').length}
+      onView={() => onView(it.id)}
+      onToggle={it.toggle}
+    >
+      {it.note}
+    </DeckCard>
   )
+  const on = items.filter((it) => it.active && !finished(it))
+  // Off decks: your level and below (easiest first), harder ones only when asked for.
+  const off = items.filter((it) => !it.active && !finished(it) && (!it.level || showHarder || withinLevel(it.level, level)))
+  const done = items.filter(finished)
 
   return (
-    <Stack gap="xl">
+    <div>
       <Group justify="space-between" align="flex-start">
         <Text size="sm" c="dimmed" maw={600}>
-          Switch on the decks you want new words from. Words are introduced in order, a few each day (change the number in
-          Settings).
+          Switch on the decks you want new words from. Words are introduced in order, a few each day (change the number in Settings).
         </Text>
         <Button variant="default" size="xs" onClick={() => setDecksActive(allDecksIds, !allActive)}>
           {allActive ? 'Turn all off' : 'Turn all on'}
         </Button>
       </Group>
-      {LEVELS.map((level) => {
-        const levelDecks = THEMED_DECKS.filter((d) => d.level === level)
 
-        return (
-          <section key={level}>
-            <Group mb={10}>
-              <LevelBadge level={level} />
-            </Group>
-            <SimpleGrid cols={DECK_GRID} spacing={10}>
-              {levelDecks.map((d) => deckRow(d.id, d.title, d.titleFr, d.words))}
-            </SimpleGrid>
-          </section>
-        )
-      })}
-      {FREQUENCY_DECKS.length > 0 && <FrequencySection onView={() => onView(FREQUENCY_ID)} />}
-      <section>
-        <Group mb={10}>
-          <Badge color="gray">Yours</Badge>
-        </Group>
-        <SimpleGrid cols={DECK_GRID} spacing={10}>
-          {customWords.length ? (
-            deckRow(CUSTOM_DECK_ID, 'My words', 'Mes mots', customWords)
-          ) : (
-            <Card padding="sm" px="md" radius="md">
-              <Text fw={620}>My words</Text>
-              <Text size="sm" c="dimmed">
-                Add words from LingQ, Anki or your reading in the “Add & import” tab.
-              </Text>
-            </Card>
-          )}
-        </SimpleGrid>
-      </section>
-    </Stack>
-  )
-}
+      <Shelf title="Learning now" count={on.length} hint={on.length ? 'New words come from these decks.' : 'Switch on a deck below to start getting new words.'}>
+        {on.map(card)}
+        {on.length === 0 && <ActionTile icon={<Layers size={18} aria-hidden />} title="No deck switched on" sub="Pick one from the row below." />}
+      </Shelf>
 
-/**
- * The "5000 most frequent words": one switch for all of them. They're stored as
- * 100-word decks, which are switched on and off together and introduced in order,
- * most frequent first.
- */
-function FrequencySection({ onView }: { onView: () => void }) {
-  const activeDecks = useStore((s) => s.activeDecks)
-  const introduced = useStore((s) => s.introduced)
-  const cards = useStore((s) => s.cards)
-  const setDecksActive = useStore((s) => s.setDecksActive)
-  const active = FREQUENCY_DECK_IDS.every((id) => activeDecks.includes(id))
-  const total = FREQUENCY_WORDS.length
-  const started = FREQUENCY_WORDS.filter((w) => introduced[w.id]).length
-  const known = FREQUENCY_WORDS.filter((w) => wordStatus(w.id, cards) === 'mature').length
-  const title = `Top ${total.toLocaleString('en')} words`
-  return (
-    <section>
-      <Group mb={10}>
-        <Badge color="gray">Most frequent</Badge>
-      </Group>
-      <SimpleGrid cols={DECK_GRID} spacing={10}>
-        <DeckCard
-          title={title}
-          titleFr="Les mots les plus fréquents"
-          active={active}
-          started={started}
-          total={total}
-          known={known}
-          onView={onView}
-          onToggle={() => setDecksActive(FREQUENCY_DECK_IDS, !active)}
-        >
-          <Text size="sm" c="dimmed" mt={4}>
-            Most common first. Words already in a themed deck are shared, so you learn each one once.
-          </Text>
-        </DeckCard>
-      </SimpleGrid>
-    </section>
+      <Shelf
+        title="More decks"
+        count={off.length}
+        hint={<>For your level ({level}) and below{showHarder && harder.length ? ', plus harder ones' : ''}.</>}
+        action={
+          harder.length > 0 && (
+            <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
+              {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
+            </Button>
+          )
+        }
+      >
+        {off.map(card)}
+        {!customWords.length && (
+          <ActionTile icon={<Plus size={18} aria-hidden />} title="My words" sub="Add words from LingQ, Anki or your reading in “Add & import”." />
+        )}
+      </Shelf>
+
+      {done.length > 0 && (
+        <Shelf title="All words started" count={done.length} hint="Every word in these decks is in your reviews.">
+          {done.map(card)}
+        </Shelf>
+      )}
+    </div>
   )
 }
 
