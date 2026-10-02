@@ -132,7 +132,7 @@ function Story({ story }: { story: StoryDef }) {
   const pct = Math.round((correct / story.questions.length) * 100)
   const submit = () => {
     recordSentence('stories', story.id, pct)
-    logActivityBulk(story.questions.length, correct)
+    logActivityBulk(story.questions.length, correct, 'listening')
     setStep('results')
     setShowText(true)
     window.scrollTo({ top: 0 })

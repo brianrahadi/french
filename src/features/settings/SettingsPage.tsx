@@ -33,7 +33,6 @@ import { useDocumentTitle } from '../../lib/hooks'
 import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
 import { AiSetup } from '../../components/AiSetup'
-import { SyncAccount } from '../../components/SyncAccount'
 import { useSync } from '../../lib/sync/engine'
 
 /** A titled settings group: an h2 and the controls in a Card (or bare, for cards that bring their own). */
@@ -130,10 +129,6 @@ export default function SettingsPage() {
   return (
     <Container size={760} py="xl">
       <PageHeader eyebrow="Réglages" title="Settings" />
-
-      <Section id="set-account" anchor="account" title={<>Account &amp; sync</>} bare>
-        <SyncAccount />
-      </Section>
 
       <Section id="set-study" title="Study">
         <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="lg">

@@ -43,7 +43,7 @@ function SpeakingSession() {
     if (a.attempts > 0) {
       recordSentence('speaking', a.sentence.id, a.score)
       if (a.match) noteSpeaking(a.sentence, a.match)
-      logActivity(a.score >= 60)
+      logActivity(a.score >= 60, { skill: 'speaking' })
     }
   }
 

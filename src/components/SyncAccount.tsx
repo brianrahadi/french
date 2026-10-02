@@ -196,22 +196,20 @@ export function SyncGlyph({ state, size = 16 }: { state: SyncState; size?: numbe
 }
 
 /** Compact status for the sidebar: synced / syncing / sign-in prompt. */
-export function SyncBadge() {
-  const { state, user, lastSyncAt } = useSync()
+/** The sidebar's profile link: your picture (or initial) and the sync state. */
+export function ProfileLink({ active }: { active: boolean }) {
+  const { state, user } = useSync()
   useTick()
-  if (!syncConfigured) return null
-  if (!user)
-    return (
-      <NavLink component={Link} to="/settings#account" label="Sign in to sync" leftSection={<Cloud size={19} aria-hidden />} fw={550} style={{ borderRadius: 'var(--mantine-radius-md)' }} />
-    )
+  const problem = state === 'error' || state === 'offline'
   return (
     <NavLink
       component={Link}
-      to="/settings#account"
-      title={state === 'synced' && lastSyncAt ? `Synced ${since(lastSyncAt)}` : LABEL[state]}
-      label={state === 'synced' ? 'Synced' : LABEL[state]}
-      leftSection={<SyncGlyph state={state} size={19} />}
-      c={state === 'error' ? 'red' : undefined}
+      to="/profile"
+      active={active}
+      label={user?.name ?? 'Profile'}
+      description={!user && syncConfigured ? 'Sign in to sync' : problem ? LABEL[state] : undefined}
+      leftSection={<Avatar src={user?.avatar} name={user?.name} size={24} radius="xl" imageProps={{ referrerPolicy: 'no-referrer' }} />}
+      rightSection={user && <SyncGlyph state={state} size={15} />}
       fw={550}
       style={{ borderRadius: 'var(--mantine-radius-md)' }}
     />

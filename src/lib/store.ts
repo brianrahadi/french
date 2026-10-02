@@ -47,10 +47,16 @@ export interface ConjStat {
   lastAt: string
 }
 
+/** The six skills the profile stats are split into. */
+export type StudySkill = 'vocabulary' | 'grammar' | 'reading' | 'writing' | 'listening' | 'speaking'
+export const STUDY_SKILLS: StudySkill[] = ['vocabulary', 'grammar', 'reading', 'writing', 'listening', 'speaking']
+
 export interface DayActivity {
   items: number
   correct: number
   newWords: number
+  /** Items per skill (recorded since the profile stats were added). */
+  skills?: Partial<Record<StudySkill, number>>
 }
 
 export interface ConjConfig {
@@ -188,7 +194,7 @@ interface Actions {
   markRead: (id: string) => void
   addWriting: (e: WritingEntry) => void
   deleteWriting: (id: string) => void
-  logActivityBulk: (items: number, correct: number) => void
+  logActivityBulk: (items: number, correct: number, skill?: StudySkill) => void
   setStartLevel: (level: Level, decks: string[]) => void
   updateSettings: (patch: Partial<Settings>) => void
   introduceWord: (wordId: string, dirs: CardDir[], alreadyKnown?: boolean) => void
@@ -209,7 +215,7 @@ interface Actions {
   recordLesson: (lessonId: string, score: number) => void
   recordConj: (inf: string, tense: Tense, correct: boolean) => void
   setConjConfig: (c: Partial<ConjConfig>) => void
-  logActivity: (correct: boolean, opts?: { newWord?: boolean }) => void
+  logActivity: (correct: boolean, opts?: { newWord?: boolean; skill?: StudySkill }) => void
   importData: (data: unknown) => void
   ignoreWord: (wordId: string) => void
   resetAll: () => void
@@ -283,12 +289,13 @@ const tombstone = (s: State, keys: string[]): Pick<State, 'sync'> => {
 }
 
 /** Adds to today's activity, both in total and for this device. */
-function addActivity(s: State, items: number, correct: number, newWords: number): Partial<State> {
+function addActivity(s: State, items: number, correct: number, newWords: number, skill?: StudySkill): Partial<State> {
   const k = dayKey()
   const bump = (d?: DayActivity): DayActivity => ({
     items: (d?.items ?? 0) + items,
     correct: (d?.correct ?? 0) + correct,
     newWords: (d?.newWords ?? 0) + newWords,
+    ...(skill || d?.skills ? { skills: { ...d?.skills, ...(skill ? { [skill]: (d?.skills?.[skill] ?? 0) + items } : {}) } } : {}),
   })
   const mine = s.sync.devices[DEVICE_ID] ?? {}
   return {
@@ -381,7 +388,7 @@ export const useStore = create<State & Actions>()(
 
       deleteWriting: (id) => set((s) => ({ writings: s.writings.filter((w) => w.id !== id), ...tombstone(s, [`writing:${id}`]) })),
 
-      logActivityBulk: (items, correct) => set((s) => addActivity(s, items, correct, 0)),
+      logActivityBulk: (items, correct, skill) => set((s) => addActivity(s, items, correct, 0, skill)),
 
       introduceWord: (wordId, dirs, alreadyKnown = false) =>
         set((s) => {
@@ -560,7 +567,7 @@ export const useStore = create<State & Actions>()(
 
       setConjConfig: (c) => set((s) => ({ conjConfig: { ...s.conjConfig, ...c }, ...stamp(s, ['conjConfig']) })),
 
-      logActivity: (correct, opts) => set((s) => addActivity(s, 1, correct ? 1 : 0, opts?.newWord ? 1 : 0)),
+      logActivity: (correct, opts) => set((s) => addActivity(s, 1, correct ? 1 : 0, opts?.newWord ? 1 : 0, opts?.skill)),
 
       importData: (data) => {
         const d = data as { state?: Partial<State> } & Partial<State>

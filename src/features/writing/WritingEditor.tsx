@@ -115,7 +115,7 @@ export default function WritingEditor() {
       noteCorrections('writing', feedback.errors, text.trim(), id)
       // Count writing toward the daily goal: roughly one "answer" per ten words.
       const items = Math.max(1, Math.round(words / 10))
-      logActivityBulk(items, Math.round((items * feedback.score) / 100))
+      logActivityBulk(items, Math.round((items * feedback.score) / 100), 'writing')
       saveDraft(draftKey, '')
       navigate(`/writing/${id}`, { replace: true })
     } catch (e) {

@@ -198,7 +198,7 @@ function Reader({ doc }: { doc: Doc }) {
   }
 
   const finish = () => {
-    if (!read) logActivityBulk(Math.max(1, Math.round(words / 25)), Math.max(1, Math.round(words / 25)))
+    if (!read) logActivityBulk(Math.max(1, Math.round(words / 25)), Math.max(1, Math.round(words / 25)), 'reading')
     markRead(doc.id)
     toast('Texte terminé — bravo !')
   }

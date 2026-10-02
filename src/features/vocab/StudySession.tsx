@@ -91,7 +91,7 @@ function StudySession({ extra }: { extra: number }) {
   const onIntroduced = (wordId: string, known: boolean) => {
     const dirs = dirsFor(directions)
     introduceWord(wordId, dirs, known)
-    logActivity(true, { newWord: true })
+    logActivity(true, { newWord: true, skill: 'vocabulary' })
     setSession((s) => {
       let items = s.items
       if (!known) {
@@ -105,7 +105,7 @@ function StudySession({ extra }: { extra: number }) {
 
   const onRated = (id: string, grade: Grade) => {
     const next = rateCard(id, grade)
-    logActivity(grade !== Rating.Again)
+    logActivity(grade !== Rating.Again, { skill: 'vocabulary' })
     if (grade === Rating.Again) {
       const { wordId, dir } = parseCardId(id)
       const w = findWord(wordId, useStore.getState().customWords)

@@ -189,7 +189,7 @@ function TalkChat({ c }: { c: Conversation }) {
       })
       if (me.role === 'me') {
         noteCorrections('talk', r.corrections, me.text, latest.id)
-        logActivity(r.corrections.length === 0)
+        logActivity(r.corrections.length === 0, { skill: 'speaking' })
       }
       if (voice) speak(r.reply, { voiceURI, rate })
       if (scenario && newlyMet.length) {

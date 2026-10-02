@@ -71,7 +71,7 @@ export default function PracticeSession() {
 
   const onAnswered = (g: Graded) => {
     setAnswered(true)
-    logActivity(g.pass)
+    logActivity(g.pass, { skill: 'grammar' })
     if (!(exIndex in firstTry)) {
       noteGrammar(lesson.id, promptText(ex), g, 'explain' in ex ? ex.explain : undefined)
       setFirstTry((f) => ({ ...f, [exIndex]: g.pass }))

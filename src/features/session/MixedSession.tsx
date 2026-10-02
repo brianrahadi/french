@@ -163,7 +163,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   const onIntroduced = (wordId: string, known: boolean) => {
     const dirs = dirsFor(directions)
     introduceWord(wordId, dirs, known)
-    logActivity(true, { newWord: true })
+    logActivity(true, { newWord: true, skill: 'vocabulary' })
     setRun((r) => {
       let items = r.items
       if (!known) {
@@ -177,7 +177,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   const onRated = (id: string, grade: Grade) => {
     const next = rateCard(id, grade)
     const ok = grade !== Rating.Again
-    logActivity(ok)
+    logActivity(ok, { skill: 'vocabulary' })
     if (!ok) {
       const { wordId, dir } = parseCardId(id)
       const w = findWord(wordId, customWords)
@@ -196,7 +196,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   }
 
   const onGrammar = (item: Extract<MixedItem, { kind: 'grammar' }>, g: Graded) => {
-    logActivity(g.pass)
+    logActivity(g.pass, { skill: 'grammar' })
     if (item.retry) return
     const ex = LESSON_BY_ID[item.lessonId].exercises[item.index]
     noteGrammar(item.lessonId, promptText(ex), g, 'explain' in ex ? ex.explain : undefined)
@@ -226,7 +226,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   }
 
   const onConj = (item: Extract<MixedItem, { kind: 'conj' }>, a: DrillAnswer) => {
-    logActivity(a.pass)
+    logActivity(a.pass, { skill: 'grammar' })
     if (item.retry) return
     recordConj(a.item.inf, a.item.tense, a.pass)
     noteConj(a.item.inf, a.item.tense, { pass: a.pass, given: a.given, expected: fullForm(a.item) })
@@ -241,7 +241,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   }
 
   const onFix = (item: Extract<MixedItem, { kind: 'fix' }>, a: FixAnswer) => {
-    logActivity(a.pass)
+    logActivity(a.pass, { skill: 'grammar' })
     if (a.pass) resolveMistake(a.mistake.id)
     if (item.retry) return
     setRun((r) => ({
@@ -255,7 +255,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   const onListen = (a: DictationAnswer) => {
     recordSentence('listening', a.sentence.id, a.result.score)
     noteDictation(a.sentence, a.result)
-    logActivity(a.result.score >= 70)
+    logActivity(a.result.score >= 70, { skill: 'listening' })
     setRun((r) => ({ ...r, listen: bump(r.listen, a.result.score >= 70) }))
   }
 
@@ -263,7 +263,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     if (!a.attempts) return
     recordSentence('speaking', a.sentence.id, a.score)
     if (a.match) noteSpeaking(a.sentence, a.match)
-    logActivity(a.score >= 60)
+    logActivity(a.score >= 60, { skill: 'speaking' })
     setRun((r) => ({ ...r, say: bump(r.say, a.score >= 60) }))
   }
 

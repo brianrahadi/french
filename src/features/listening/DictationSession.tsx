@@ -44,7 +44,7 @@ function DictationSession() {
     setLog((l) => [...l, a])
     recordSentence('listening', a.sentence.id, a.result.score)
     noteDictation(a.sentence, a.result)
-    logActivity(a.result.score >= 70)
+    logActivity(a.result.score >= 70, { skill: 'listening' })
   }
   const next = () => {
     setAnswered(false)

@@ -76,7 +76,7 @@ function DrillSession() {
       recordConj(a.item.inf, a.item.tense, a.pass)
       noteConj(a.item.inf, a.item.tense, { pass: a.pass, given: a.given, expected: fullForm(a.item) })
     }
-    logActivity(a.pass)
+    logActivity(a.pass, { skill: 'grammar' })
     if (!a.pass && !requeued.has(pos) && firstTime) {
       setQueue((q) => [...q, a.item])
       setRequeued((r) => new Set(r).add(pos))

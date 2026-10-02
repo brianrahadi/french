@@ -82,7 +82,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
       setPlaying(false)
       setFinished(true)
       saveAudio(lesson.id, 0, steps.length, true)
-      logActivityBulk(steps.filter((s) => s.kind === 'turn' && !s.repeat).length, 0)
+      logActivityBulk(steps.filter((s) => s.kind === 'turn' && !s.repeat).length, 0, 'listening')
     }
     let timer: ReturnType<typeof setTimeout> | undefined
     if (st.kind === 'en') void say(st.text, { lang: 'en', rate: 1 }).then(advance)

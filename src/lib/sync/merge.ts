@@ -15,7 +15,7 @@
  * "local"), so ties are always broken by content.
  */
 import type { Word } from '../../data/types'
-import { DEVICE_SETTINGS, MAX_MISTAKES, initialState, type DayActivity, type Settings, type State } from '../store'
+import { DEVICE_SETTINGS, MAX_MISTAKES, initialState, type DayActivity, type Settings, type State, type StudySkill } from '../store'
 
 /** What is stored in the cloud: everything except derived and per-device data. */
 export type SyncDoc = Omit<State, 'activity' | 'settings'> & {
@@ -86,6 +86,13 @@ export function normalizeDoc(raw: unknown): SyncDoc {
   }
 }
 
+/** Same device, two copies of a day: each count only grows, so take the larger. */
+function maxSkills(a: DayActivity['skills'] = {}, b: DayActivity['skills'] = {}): DayActivity['skills'] {
+  const out = { ...a }
+  for (const [k, n] of Object.entries(b) as [StudySkill, number][]) out[k] = Math.max(out[k] ?? 0, n)
+  return out
+}
+
 /** Total daily activity across devices. */
 export function sumActivity(devices: Record<string, Record<string, DayActivity>>): Record<string, DayActivity> {
   const out: Record<string, DayActivity> = {}
@@ -95,6 +102,10 @@ export function sumActivity(devices: Record<string, Record<string, DayActivity>>
       t.items += a.items
       t.correct += a.correct
       t.newWords += a.newWords
+      if (a.skills) {
+        t.skills ??= {}
+        for (const [k, n] of Object.entries(a.skills) as [StudySkill, number][]) t.skills[k] = (t.skills[k] ?? 0) + n
+      }
     }
   return out
 }
@@ -174,7 +185,12 @@ export function mergeDocs(local: SyncDoc, remote: SyncDoc, now = new Date()): Sy
       for (const [day, a] of Object.entries(days)) {
         const cur = mine[day]
         mine[day] = cur
-          ? { items: Math.max(cur.items, a.items), correct: Math.max(cur.correct, a.correct), newWords: Math.max(cur.newWords, a.newWords) }
+          ? {
+              items: Math.max(cur.items, a.items),
+              correct: Math.max(cur.correct, a.correct),
+              newWords: Math.max(cur.newWords, a.newWords),
+              ...(cur.skills || a.skills ? { skills: maxSkills(cur.skills, a.skills) } : {}),
+            }
           : { ...a }
       }
     }

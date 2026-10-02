@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
-import { SyncBadge } from './SyncAccount'
+import { ProfileLink } from './SyncAccount'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -92,7 +92,7 @@ export function Layout() {
           <Stack gap={2}>{NAV.map(link)}</Stack>
         </AppShell.Section>
         <AppShell.Section>
-          <SyncBadge />
+          <ProfileLink active={isActive(pathname, '/profile')} />
           {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
         </AppShell.Section>
       </AppShell.Navbar>
