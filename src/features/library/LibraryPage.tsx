@@ -147,7 +147,6 @@ export default function LibraryPage() {
         id="grammar"
         title="Grammar course"
         count={grammar.length}
-        hint="Short explanations, then exercises. Reviews that are due come first."
         action={
           <Button component={Link} to="/grammar" variant="subtle" size="xs" leftSection={<BookOpen size={14} aria-hidden />}>
             All lessons
@@ -159,19 +158,19 @@ export default function LibraryPage() {
         ))}
       </Shelf>
 
-      <Shelf id="audio" title="Audio course" count={audioTodo.length} hint="Hands-free, like Pimsleur: listen and answer out loud. One a day, in order.">
+      <Shelf id="audio" title="Audio course" count={audioTodo.length}>
         {audioTodo.map((l) => (
           <AudioTile key={l.id} l={l} p={audio[l.id]} next={l === nextAudio} />
         ))}
       </Shelf>
 
-      <Shelf id="stories" title="Mini stories" count={storiesTodo.length} hint="1–2 minutes of listening, no text, then questions in French.">
+      <Shelf id="stories" title="Mini stories" count={storiesTodo.length}>
         {storiesTodo.map((x) => (
           <StoryTile key={x.id} s={x} />
         ))}
       </Shelf>
 
-      <Shelf id="texts" title="Graded texts" count={texts.length} hint="Tap any word for its meaning in context, then check the words you knew.">
+      <Shelf id="texts" title="Graded texts" count={texts.length}>
         {texts.map((t) => (
           <GradedTile key={t.id} t={t} />
         ))}
@@ -187,14 +186,14 @@ export default function LibraryPage() {
         </Shelf>
       )}
 
-      <Shelf id="talk" title="Conversations" count={scenarios.length} hint="Role-play with an AI partner; your messages are corrected as you go.">
+      <Shelf id="talk" title="Conversations" count={scenarios.length}>
         <ActionTile icon={<MessagesSquare size={18} aria-hidden />} title="Free conversation" sub="Chat about anything with Camille" onClick={() => setFreeTalk(true)} />
         {scenarios.map((x) => (
           <ScenarioTile key={x.id} s={x} />
         ))}
       </Shelf>
 
-      <Shelf id="writing" title="Writing" count={prompts.length + (suggested ? 1 : 0)} hint="Write a short text and get it corrected like a teacher would.">
+      <Shelf id="writing" title="Writing" count={prompts.length + (suggested ? 1 : 0)}>
         {suggested && <PromptTile p={suggested} suggested />}
         <ActionTile icon={<Feather size={18} aria-hidden />} title="Free writing" sub="A diary entry, a message, anything" to="/writing/new?prompt=free" />
         {prompts.map((p) => (
@@ -204,7 +203,7 @@ export default function LibraryPage() {
       </Shelf>
 
       {done.length > 0 && (
-        <Shelf id="completed" title="Completed" count={done.length} hint="Go back to anything — it gets easier every time.">
+        <Shelf id="completed" title="Completed" count={done.length}>
           {done.map((e) => e.node)}
         </Shelf>
       )}
