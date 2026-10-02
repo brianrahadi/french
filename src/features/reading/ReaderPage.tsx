@@ -74,11 +74,11 @@ export default function ReaderPage() {
   if (!doc)
     return (
       <Container size={760} py="xl">
-        <Anchor component={Link} to="/reading" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
-          <ArrowLeft size={16} aria-hidden /> Reading
+        <Anchor component={Link} to="/library#texts" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
+          <ArrowLeft size={16} aria-hidden /> Library
         </Anchor>
         <Empty icon={<BookOpenText size={30} />} title="This text isn’t here any more">
-          It may have been deleted. <Anchor component={Link} to="/reading">Back to your texts</Anchor>
+          It may have been deleted. <Anchor component={Link} to="/library#texts">Back to your texts</Anchor>
         </Empty>
       </Container>
     )
@@ -210,7 +210,7 @@ function Reader({ doc }: { doc: Doc }) {
 
   return (
     <Container size={760} py="xl">
-      <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/reading', label: 'Reading' }} fr>
+      <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/library#texts', label: 'Library' }} fr>
         <Group gap={8} mt="xs">
           {doc.level && <LevelBadge level={doc.level} />}
           <Text size="sm" c="dimmed">

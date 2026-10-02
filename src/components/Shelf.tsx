@@ -6,12 +6,15 @@ import { Box, Group, Scroller, Text, Title } from '@mantine/core'
  * can show many collections without growing tall.
  */
 export function Shelf({
+  id,
   title,
   count,
   action,
   hint,
   children,
 }: {
+  /** Anchor for links like /library#stories. */
+  id?: string
   title: ReactNode
   count?: number
   /** Something on the right of the title, e.g. a filter or a "see all" link. */
@@ -21,7 +24,7 @@ export function Shelf({
   children: ReactNode
 }) {
   return (
-    <Box component="section" mt="xl">
+    <Box component="section" mt="xl" id={id} style={{ scrollMarginTop: 16 }}>
       <Group justify="space-between" gap="sm" mb={hint ? 2 : 'xs'}>
         <Title order={2} size="h4">
           <Group component="span" gap={8} wrap="nowrap">

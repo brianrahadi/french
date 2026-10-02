@@ -35,9 +35,9 @@ export default function AudioLessonPage() {
   if (!lesson)
     return (
       <Container size={720} py="xl">
-        <PageHeader back={{ to: '/audio', label: 'Audio lessons' }} title="Audio lessons" />
+        <PageHeader back={{ to: '/library#audio', label: 'Library' }} title="Audio lessons" />
         <Empty icon={<AudioLines size={30} />} title="This lesson isn’t here">
-          <Anchor component={Link} to="/audio">
+          <Anchor component={Link} to="/library#audio">
             Back to the lessons
           </Anchor>
         </Empty>
@@ -179,7 +179,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
 
   return (
     <Container size={720} py="xl">
-      <PageHeader back={{ to: '/audio', label: 'Audio lessons' }} title={frTypo(lesson.title)} fr subtitle={lesson.titleEn}>
+      <PageHeader back={{ to: '/library#audio', label: 'Library' }} title={frTypo(lesson.title)} fr subtitle={lesson.titleEn}>
         <Group gap={8} mt="sm">
           <LevelBadge level={lesson.level} />
           <Text size="sm" c="dimmed">

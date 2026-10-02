@@ -56,7 +56,7 @@ import { speak, stopSpeaking } from '../../lib/speech'
 import { customWord, frTypo } from '../../lib/words'
 import { LookupText } from '../reading/LookupText'
 import { conversationFeedback, nextTurn, setupFor } from './api'
-import { useStartConversation } from './TalkHome'
+import { useStartConversation } from './start'
 import type { ChatTurn, Conversation } from './types'
 
 const pref = (k: string, fallback: boolean) => {
@@ -82,10 +82,10 @@ export default function TalkChatRoute() {
   if (!c)
     return (
       <Container size={720} py="xl">
-        <PageHeader back={{ to: '/talk', label: 'Talk' }} title="Conversation" />
+        <PageHeader back={{ to: '/library#talk', label: 'Library' }} title="Conversation" />
         <Empty icon={<Flag size={30} />} title="This conversation isn’t here any more">
           It may have been deleted.{' '}
-          <Anchor component={Link} to="/talk" inherit>
+          <Anchor component={Link} to="/library#talk" inherit>
             Start a new one
           </Anchor>
         </Empty>
@@ -252,7 +252,7 @@ function TalkChat({ c }: { c: Conversation }) {
   return (
     <div className="chat">
       <Group component="header" gap={8} wrap="nowrap" px="md" py={10} bg="var(--surface)" style={{ borderBottom: '1px solid var(--border)' }}>
-        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/talk')} aria-label="Back to conversations">
+        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/library#talk')} aria-label="Back to conversations">
           <ArrowLeft size={20} aria-hidden />
         </ActionIcon>
         <Stack gap={0} flex={1} miw={0} lh={1.25}>
@@ -869,7 +869,7 @@ function FeedbackPanel({
         <Button onClick={onAgain} leftSection={<RotateCcw size={16} aria-hidden />}>
           Practice again
         </Button>
-        <Button component={Link} to="/talk" variant="default">
+        <Button component={Link} to="/library#talk" variant="default">
           Other situations
         </Button>
       </Group>

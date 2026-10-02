@@ -28,9 +28,9 @@ export default function StoryPage() {
   if (!story)
     return (
       <Container size={760} py="xl">
-        <PageHeader back={{ to: '/listening', label: 'Listening' }} title="Listening" />
+        <PageHeader back={{ to: '/library#stories', label: 'Library' }} title="Listening" />
         <Empty icon={<Headphones size={30} />} title="This story isn’t here">
-          <Anchor component={Link} to="/listening">
+          <Anchor component={Link} to="/library#stories">
             Back to the stories
           </Anchor>
         </Empty>
@@ -151,7 +151,7 @@ function Story({ story }: { story: StoryDef }) {
 
   return (
     <Container size={760} py="xl">
-      <PageHeader back={{ to: '/listening', label: 'Listening' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
+      <PageHeader back={{ to: '/library#stories', label: 'Library' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
         <Group gap={8} mt="sm">
           <LevelBadge level={story.level} />
           <Text size="sm" c="dimmed">

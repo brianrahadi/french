@@ -1,23 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { ActionIcon, Badge, Button, Chip, Container, Group, SegmentedControl, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core'
-import { BookOpenText, Check, ClipboardPaste, Trash2, WandSparkles } from 'lucide-react'
-import { BUILTIN_TEXTS, type ReaderTextDef } from '../../data/texts'
+import { ActionIcon, Badge, Button, Chip, Group, SegmentedControl, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core'
+import { BookOpenText, Check, Trash2, WandSparkles } from 'lucide-react'
+import type { ReaderTextDef } from '../../data/texts'
 import { LEVELS, type Level } from '../../data/types'
 import { findWord } from '../../data/vocab'
 import { ConnectAiCard } from '../../components/AiSetup'
 import { Dialog } from '../../components/Dialog'
-import { PageHeader } from '../../components/PageHeader'
 import { Callout, LevelBadge } from '../../components/ui'
-import { Shelf } from '../../components/Shelf'
-import { ActionTile, Tile } from '../../components/Tile'
+import { Tile } from '../../components/Tile'
 import type { ReaderText } from './types'
 import { newId, useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { countWords } from '../../lib/ai/writing'
 import { ago } from '../../lib/date'
-import { useDocumentTitle } from '../../lib/hooks'
-import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { parseCardId, State } from '../../lib/srs'
 import { displayFr, frTypo } from '../../lib/words'
 import { generateText } from './ai'
@@ -29,124 +25,33 @@ const LENGTHS: { label: string; words: number }[] = [
   { label: 'Long', words: 400 },
 ]
 
-export default function ReadingHome() {
-  useDocumentTitle('Reading')
-  const texts = useStore((s) => s.texts)
-  const read = useStore((s) => s.read)
+/** Confirm before deleting a saved text. */
+export function DeleteTextDialog({ id, onClose }: { id: string | null; onClose: () => void }) {
   const deleteText = useStore((s) => s.deleteText)
-  const [confirm, setConfirm] = useState<string | null>(null)
-  const [paste, setPaste] = useState(false)
-  const [generate, setGenerate] = useState<Level | null>(null)
-
-  // Unfinished things first, shelf by shelf; everything finished goes to the last shelf.
-  const opened = texts.filter((t) => !read[t.id] && t.openedAt).sort((a, b) => (b.openedAt ?? '').localeCompare(a.openedAt ?? ''))
-  const fresh = texts.filter((t) => !read[t.id] && !t.openedAt)
-  const level = useCurrentLevel()
-  const [showHarder, setShowHarder] = useState(false)
-  const harder = harderLevels(level)
-  // Your level first, then easier ones; harder levels only when asked for.
-  const rank = (l: Level) => (withinLevel(l, level) ? LEVELS.indexOf(level) - LEVELS.indexOf(l) : 10 + LEVELS.indexOf(l))
-  const graded = BUILTIN_TEXTS.filter((t) => !read[t.id] && (showHarder || withinLevel(t.level, level))).sort((a, b) => rank(a.level) - rank(b.level))
-  const done = [
-    ...texts.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: t, builtin: undefined })),
-    ...BUILTIN_TEXTS.filter((t) => read[t.id]).map((t) => ({ at: read[t.id], user: undefined, builtin: t })),
-  ].sort((a, b) => b.at.localeCompare(a.at))
-
   return (
-    <Container size={960} py="xl">
-      <PageHeader
-        eyebrow="Compréhension écrite"
-        title="Reading"
-        subtitle="Tap any word to see what it means in its sentence and add it to your flashcards."
-        actions={
-          <>
-            <Button variant="default" leftSection={<ClipboardPaste size={16} aria-hidden />} onClick={() => setPaste(true)}>
-              Paste a text
-            </Button>
-            <Button leftSection={<WandSparkles size={16} aria-hidden />} onClick={() => setGenerate(level)}>
-              Write me a story
-            </Button>
-          </>
-        }
-      />
-
-      {opened.length > 0 && (
-        <Shelf title="Continue reading" count={opened.length}>
-          {opened.map((t) => (
-            <UserTextTile key={t.id} t={t} onDelete={() => setConfirm(t.id)} />
-          ))}
-        </Shelf>
-      )}
-
-      {fresh.length > 0 && (
-        <Shelf title="Your texts" count={fresh.length}>
-          {fresh.map((t) => (
-            <UserTextTile key={t.id} t={t} onDelete={() => setConfirm(t.id)} />
-          ))}
-        </Shelf>
-      )}
-
-      <Shelf
-        title="Graded texts"
-        count={graded.length}
-        hint={<>For your level ({level}) and below{showHarder && harder.length > 0 ? ', plus harder ones' : ''}.</>}
-        action={
-          harder.length > 0 && (
-            <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
-              {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
-            </Button>
-          )
-        }
-      >
-        {graded.map((t) => (
-          <GradedTile key={t.id} t={t} />
-        ))}
-        <ActionTile
-          icon={<WandSparkles size={18} aria-hidden />}
-          title={`${graded.length ? 'Want more?' : 'All read!'} Write a new ${level} story`}
-          sub="On any topic, with your words"
-          onClick={() => setGenerate(level)}
-        />
-      </Shelf>
-
-      {done.length > 0 && (
-        <Shelf title="Completed" count={done.length} hint="Read them again any time — you’ll be surprised how much easier they get.">
-          {done.map((d) =>
-            d.user ? (
-              <UserTextTile key={d.user.id} t={d.user} done onDelete={() => setConfirm(d.user!.id)} />
-            ) : (
-              <GradedTile key={d.builtin!.id} t={d.builtin!} done />
-            ),
-          )}
-        </Shelf>
-      )}
-
-      <PasteDialog open={paste} onClose={() => setPaste(false)} />
-      <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? level} />
-      <Dialog
-        open={!!confirm}
-        onClose={() => setConfirm(null)}
-        title="Delete this text?"
-        actions={
-          <>
-            <Button variant="default" onClick={() => setConfirm(null)} data-autofocus>
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={() => {
-                if (confirm) deleteText(confirm)
-                setConfirm(null)
-              }}
-            >
-              Delete
-            </Button>
-          </>
-        }
-      >
-        <Text c="dimmed">Words you added from it stay in your flashcards.</Text>
-      </Dialog>
-    </Container>
+    <Dialog
+      open={!!id}
+      onClose={onClose}
+      title="Delete this text?"
+      actions={
+        <>
+          <Button variant="default" onClick={onClose} data-autofocus>
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            onClick={() => {
+              if (id) deleteText(id)
+              onClose()
+            }}
+          >
+            Delete
+          </Button>
+        </>
+      }
+    >
+      <Text c="dimmed">Words you added from it stay in your flashcards.</Text>
+    </Dialog>
   )
 }
 
@@ -156,7 +61,7 @@ const doneBadge = (
   </Badge>
 )
 
-function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
+export function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
   const words = countWords(t.paragraphs.map((p) => p.fr).join(' '))
   return (
     <Tile
@@ -183,7 +88,7 @@ function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
   )
 }
 
-function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; onDelete: () => void }) {
+export function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; onDelete: () => void }) {
   return (
     <Tile
       to={`/reading/${t.id}`}
@@ -213,7 +118,7 @@ function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; on
   )
 }
 
-function PasteDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function PasteDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate()
   const saveText = useStore((s) => s.saveText)
   const [title, setTitle] = useState('')
@@ -288,7 +193,7 @@ function PasteDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
   )
 }
 
-function GenerateDialog({ open, onClose, defaultLevel }: { open: boolean; onClose: () => void; defaultLevel: Level }) {
+export function GenerateDialog({ open, onClose, defaultLevel }: { open: boolean; onClose: () => void; defaultLevel: Level }) {
   const navigate = useNavigate()
   const ai = useAiConfig()
   const cards = useStore((s) => s.cards)

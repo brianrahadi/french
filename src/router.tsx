@@ -1,4 +1,4 @@
-import { createBrowserRouter, Link } from 'react-router'
+import { createBrowserRouter, Link, Navigate } from 'react-router'
 import { FocusLayout, Layout } from './components/Layout'
 
 // Each page is code-split and loaded on demand.
@@ -33,19 +33,21 @@ export const router = createBrowserRouter(
         { path: 'conjugation', lazy: page(() => import('./features/conjugation/ConjugationPage')) },
         { path: 'verbs', lazy: page(() => import('./features/verbs/VerbsPage')) },
         { path: 'verbs/:inf', lazy: page(() => import('./features/verbs/VerbDetailPage')) },
-        { path: 'writing', lazy: page(() => import('./features/writing/WritingHome')) },
+        { path: 'library', lazy: page(() => import('./features/library/LibraryPage')) },
+        // Old content homes now live as rows in the Library.
+        { path: 'writing', element: <Navigate to="/library#writing" replace /> },
         { path: 'writing/new', lazy: page(() => import('./features/writing/WritingEditor')) },
         { path: 'writing/:id', lazy: page(() => import('./features/writing/WritingResult')) },
         { path: 'practice', lazy: page(() => import('./features/practice/PracticeHub')) },
         { path: 'weak', lazy: page(() => import('./features/weak/WeakPage')) },
-        { path: 'audio', lazy: page(() => import('./features/audio/AudioHome')) },
+        { path: 'audio', element: <Navigate to="/library#audio" replace /> },
         { path: 'audio/:id', lazy: page(() => import('./features/audio/AudioLessonPage')) },
-        { path: 'listening', lazy: page(() => import('./features/listening/ListeningPage')) },
+        { path: 'listening', element: <Navigate to="/library#stories" replace /> },
         { path: 'listening/story/:id', lazy: page(() => import('./features/listening/StoryPage')) },
         { path: 'speaking', lazy: page(() => import('./features/speaking/SpeakingPage')) },
-        { path: 'reading', lazy: page(() => import('./features/reading/ReadingHome')) },
+        { path: 'reading', element: <Navigate to="/library#texts" replace /> },
         { path: 'reading/:id', lazy: page(() => import('./features/reading/ReaderPage')) },
-        { path: 'talk', lazy: page(() => import('./features/talk/TalkHome')) },
+        { path: 'talk', element: <Navigate to="/library#talk" replace /> },
         { path: 'settings', lazy: page(() => import('./features/settings/SettingsPage')) },
         { path: 'privacy', lazy: page(() => import('./features/privacy/PrivacyPage')) },
         { path: '*', Component: NotFound },

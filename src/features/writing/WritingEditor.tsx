@@ -146,7 +146,7 @@ export default function WritingEditor() {
     <Container size={760} py="xl">
       <Anchor
         component={Link}
-        to={original ? `/writing/${original.id}` : '/writing'}
+        to={original ? `/writing/${original.id}` : '/library#writing'}
         size="sm"
         fw={600}
         c="dimmed"
@@ -154,7 +154,7 @@ export default function WritingEditor() {
         display="inline-flex"
         style={{ alignItems: 'center', gap: 6 }}
       >
-        <ArrowLeft size={16} aria-hidden /> {original ? 'Back to feedback' : 'Writing'}
+        <ArrowLeft size={16} aria-hidden /> {original ? 'Back to feedback' : 'Library'}
       </Anchor>
 
       <Card component="section" aria-labelledby="task-title">

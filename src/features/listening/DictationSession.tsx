@@ -53,12 +53,12 @@ function DictationSession() {
 
   if (!items.length) {
     return (
-      <FocusShell progress={0} exitTo="/listening" label="Dictation">
+      <FocusShell progress={0} exitTo="/practice" label="Dictation">
         <Stack align="center" ta="center" gap="xs" pt="xl">
           <Title order={1} className="fr" fz={28} fw={600}>
             No sentences here yet
           </Title>
-          <Button component={Link} to="/listening" mt="sm">
+          <Button component={Link} to="/practice" mt="sm">
             Choose other sentences
           </Button>
         </Stack>
@@ -68,7 +68,7 @@ function DictationSession() {
 
   if (done) {
     return (
-      <FocusShell progress={1} exitTo="/listening" label="Dictation" count={`${items.length}/${items.length}`}>
+      <FocusShell progress={1} exitTo="/practice" label="Dictation" count={`${items.length}/${items.length}`}>
         <DictationSummary log={log} />
       </FocusShell>
     )
@@ -76,7 +76,7 @@ function DictationSession() {
 
   const progress = (pos + (answered ? 1 : 0)) / items.length
   return (
-    <FocusShell progress={progress} exitTo="/listening" label="Dictation" count={`${pos + 1}/${items.length}`}>
+    <FocusShell progress={progress} exitTo="/practice" label="Dictation" count={`${pos + 1}/${items.length}`}>
       <DictationQuestion key={items[pos].id + pos} sentence={items[pos]} onAnswered={onAnswered} onContinue={next} />
     </FocusShell>
   )
@@ -85,7 +85,7 @@ function DictationSession() {
 function DictationSummary({ log }: { log: DictationAnswer[] }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  useHotkeys({ Enter: () => navigate('/listening') })
+  useHotkeys({ Enter: () => navigate('/practice') })
   const avg = log.length ? Math.round(log.reduce((a, x) => a + x.result.score, 0) / log.length) : 0
   const perfect = log.filter((x) => x.result.perfect).length
   const cats: Partial<Record<ListenCategory, number>> = {}
@@ -132,7 +132,7 @@ function DictationSummary({ log }: { log: DictationAnswer[] }) {
         >
           New sentences
         </Button>
-        <Button component={Link} to="/listening" size="lg" rightSection={<Kbd>↵</Kbd>}>
+        <Button component={Link} to="/practice" size="lg" rightSection={<Kbd>↵</Kbd>}>
           Done
         </Button>
       </Group>

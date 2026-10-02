@@ -100,7 +100,7 @@ export function Tile({
 }
 
 /** A dashed "do something" card at the end of a Shelf (e.g. "write a new story"). */
-export function ActionTile({ icon, title, sub, onClick }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; onClick?: () => void }) {
+export function ActionTile({ icon, title, sub, onClick, to }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; onClick?: () => void; to?: string }) {
   const body = (
     <Stack gap={6} justify="center" h="100%">
       <ThemeIcon variant="light" size="lg" radius="md">
@@ -116,7 +116,11 @@ export function ActionTile({ icon, title, sub, onClick }: { icon: ReactNode; tit
   )
   return (
     <Card w={WIDTH} padding="md" style={{ borderStyle: 'dashed', flexShrink: 0 }} bg="transparent">
-      {onClick ? (
+      {to ? (
+        <UnstyledButton component={Link} to={to} h="100%">
+          {body}
+        </UnstyledButton>
+      ) : onClick ? (
         <UnstyledButton onClick={onClick} h="100%">
           {body}
         </UnstyledButton>

@@ -12,7 +12,7 @@ import { useStore, type WritingEntry } from '../../lib/store'
 import { segmentText } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { customWord, frTypo } from '../../lib/words'
-import { ScoreBadge } from './WritingHome'
+import { ScoreBadge } from './tiles'
 
 type View = 'marked' | 'corrected' | 'improved'
 
@@ -28,7 +28,7 @@ export default function WritingResult() {
         <BackLink />
         <Empty icon={<PencilLine size={30} />} title="This text isn’t here any more">
           It may have been deleted.{' '}
-          <Anchor component={Link} to="/writing">
+          <Anchor component={Link} to="/library#writing">
             Write something new
           </Anchor>
         </Empty>
@@ -312,7 +312,7 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
         <Button variant="subtle" color="red" leftSection={<Trash2 size={16} aria-hidden />} onClick={() => setConfirmDelete(true)}>
           Delete
         </Button>
-        <Button component={Link} to="/writing" variant="default" ml="auto">
+        <Button component={Link} to="/library#writing" variant="default" ml="auto">
           New text
         </Button>
         {fb.errors.length > 0 && (
@@ -335,7 +335,7 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
               color="red"
               onClick={() => {
                 deleteWriting(entry.id)
-                navigate('/writing', { replace: true })
+                navigate('/library#writing', { replace: true })
               }}
             >
               Delete
@@ -351,8 +351,8 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
 
 function BackLink() {
   return (
-    <Anchor component={Link} to="/writing" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
-      <ArrowLeft size={16} aria-hidden /> Writing
+    <Anchor component={Link} to="/library#writing" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
+      <ArrowLeft size={16} aria-hidden /> Library
     </Anchor>
   )
 }

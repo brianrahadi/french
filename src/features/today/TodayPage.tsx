@@ -172,7 +172,7 @@ export default function TodayPage() {
               Next lesson
             </Button>
           ) : (
-            <Button component={Link} to="/writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
+            <Button component={Link} to="/library#writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
               Write
             </Button>
           )}
@@ -218,7 +218,7 @@ export default function TodayPage() {
             />
           ) : (
             <ActionCard
-              to="/talk"
+              to="/library#talk"
               icon={<MessagesSquare size={22} aria-hidden />}
               tone="amber"
               title="Conversation"
@@ -239,16 +239,16 @@ export default function TodayPage() {
           </Anchor>
         </Group>
         <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="sm">
-          <SkillTile to="/listening" icon={<Headphones size={20} aria-hidden />} label="Listen" meta="Dictation" />
+          <SkillTile to="/library#stories" icon={<Headphones size={20} aria-hidden />} label="Listen" meta="Mini stories" />
           <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
-          <SkillTile to="/reading" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
+          <SkillTile to="/library#texts" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
           <SkillTile
-            to="/writing"
+            to="/library#writing"
             icon={<NotebookPen size={20} aria-hidden />}
             label="Write"
             meta={state.writings.length ? `${state.writings.length} corrected` : 'With corrections'}
           />
-          <SkillTile to="/talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
+          <SkillTile to="/library#talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
         </SimpleGrid>
       </Box>
 
