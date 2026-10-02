@@ -1,8 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { Button, Group, Text } from '@mantine/core'
 import { CheckCircle2, CircleAlert, XCircle } from 'lucide-react'
+import { BottomSheet, type SheetVerdict } from './BottomSheet'
 import { Kbd } from './ui'
 
-export type SheetVerdict = 'correct' | 'almost' | 'wrong' | 'neutral'
+export type { SheetVerdict }
 
 const ICONS = {
   correct: <CheckCircle2 size={22} aria-hidden />,
@@ -10,6 +12,7 @@ const ICONS = {
   wrong: <XCircle size={22} aria-hidden />,
   neutral: null,
 }
+const COLOR = { correct: 'green', almost: 'orange', wrong: 'red', neutral: undefined } as const
 
 /**
  * Bottom sheet with the result of an answer. The primary button is focused
@@ -36,27 +39,31 @@ export function FeedbackSheet({
     const t = setTimeout(() => btn.current?.focus({ preventScroll: true }), 30)
     return () => clearTimeout(t)
   }, [])
-  const btnClass =
-    verdict === 'correct' ? 'btn--success' : verdict === 'wrong' ? 'btn--danger' : 'btn--primary'
   return (
-    <div className={`sheet sheet--${verdict} sheet--animate`} role="region" aria-label="Result">
-      <div className="sheet__inner">
-        <div className="sheet__body" aria-live="assertive">
-          {title && (
-            <div className="sheet__title">
-              {ICONS[verdict]}
-              {title}
-            </div>
-          )}
-          {children}
-        </div>
-        <div className="sheet__actions">
-          <button ref={btn} type="button" className={`btn btn--lg ${btnClass}`} onClick={onContinue}>
-            {continueLabel} <Kbd>↵</Kbd>
-          </button>
+    <BottomSheet
+      verdict={verdict}
+      animate
+      label="Result"
+      actions={
+        <>
+          <Button ref={btn} size="lg" color={COLOR[verdict]} onClick={onContinue} rightSection={<Kbd>↵</Kbd>}>
+            {continueLabel}
+          </Button>
           {secondary}
-        </div>
+        </>
+      }
+    >
+      <div aria-live="assertive">
+        {title && (
+          <Group gap={8} c={COLOR[verdict] ? `${COLOR[verdict]}.8` : undefined} mb={4}>
+            {ICONS[verdict]}
+            <Text fw={700} fz="lg" c="inherit">
+              {title}
+            </Text>
+          </Group>
+        )}
+        {children}
       </div>
-    </div>
+    </BottomSheet>
   )
 }

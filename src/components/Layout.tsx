@@ -1,4 +1,5 @@
-import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
 import {
   AudioLines,
   BookOpen,
@@ -19,7 +20,6 @@ import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
-import { Toaster } from './Toast'
 import { SyncBadge } from './SyncAccount'
 
 function useBadges() {
@@ -61,107 +61,120 @@ const PRACTISE: NavItem[] = [
 ]
 const PRACTICE_PATHS = ['/practice', ...PRACTISE.map((p) => p.to)]
 
+const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Text size="xs" fw={700} c="dimmed" tt="uppercase" px="sm" mt="md" mb={4} style={{ letterSpacing: '0.06em' }}>
+      {children}
+    </Text>
+  )
+}
+
 export function Layout() {
   const { due, grammar, weak } = useBadges()
   const { pathname } = useLocation()
-  const inPractice = PRACTICE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  const inPractice = PRACTICE_PATHS.some((p) => isActive(pathname, p))
   const badge = (to: string) => (to === '/vocab' ? due : to === '/grammar' ? grammar : to === '/weak' ? weak : 0)
 
   const link = ({ to, label, icon: Icon, end }: NavItem) => (
-    <NavLink key={to} to={to} end={end} className="nav-link">
-      <Icon size={19} aria-hidden />
-      {label}
-      {badge(to) > 0 && (
-        <span className={`nav-link__count${to === '/weak' ? ' nav-link__count--soft' : ''}`} aria-label={`${badge(to)} ${to === '/weak' ? 'weak spots' : 'due'}`}>
-          {badge(to) > 999 ? '999+' : badge(to)}
-        </span>
-      )}
-    </NavLink>
+    <NavLink
+      key={to}
+      component={Link}
+      to={to}
+      label={label}
+      active={isActive(pathname, to, end)}
+      leftSection={<Icon size={19} aria-hidden />}
+      rightSection={
+        badge(to) > 0 && (
+          <Badge size="sm" variant={to === '/weak' ? 'light' : 'filled'} color={to === '/weak' ? 'gray' : undefined} aria-label={`${badge(to)} ${to === '/weak' ? 'weak spots' : 'due'}`}>
+            {badge(to) > 999 ? '999+' : badge(to)}
+          </Badge>
+        )
+      }
+      fw={550}
+      style={{ borderRadius: 'var(--mantine-radius-md)' }}
+    />
   )
 
+  const bottom: NavItem[] = [TODAY, LEARN[0], LEARN[1], LEARN[2], { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell }]
+
   return (
-    <div className="app-shell">
+    <AppShell navbar={{ width: 248, breakpoint: 'sm', collapsed: { mobile: true } }} footer={{ height: { base: 64, sm: 0 } }} padding={0}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <aside className="sidebar" aria-label="Main navigation">
-        <NavLink to="/" className="brand" aria-label="Petit à petit — home">
-          <span className="brand__mark" aria-hidden>
-            é
-          </span>
-          <span className="brand__name">Petit à petit</span>
-        </NavLink>
-        <nav className="sidebar__nav">
-          <div className="stack" style={{ gap: 2 }}>
-            {link(TODAY)}
-          </div>
-          <div className="nav-group">
-            <div className="nav-group__label">Learn</div>
-            <div className="stack" style={{ gap: 2 }}>
-              {LEARN.map(link)}
-            </div>
-          </div>
-          <div className="nav-group">
-            <NavLink to="/practice" className="nav-group__label nav-group__label--link">
+      <AppShell.Navbar p="sm" aria-label="Main navigation">
+        <AppShell.Section>
+          <UnstyledButton component={Link} to="/" aria-label="Petit à petit — home" p="xs" mb="xs">
+            <Group gap="sm">
+              <ThemeIcon size={32} radius="md" fz={20} className="fr">
+                é
+              </ThemeIcon>
+              <Text fz={19} fw={600} className="fr">
+                Petit à petit
+              </Text>
+            </Group>
+          </UnstyledButton>
+        </AppShell.Section>
+        <AppShell.Section grow component={ScrollArea}>
+          <Stack gap={2}>{link(TODAY)}</Stack>
+          <GroupLabel>Learn</GroupLabel>
+          <Stack gap={2}>{LEARN.map(link)}</Stack>
+          <GroupLabel>
+            <Text component={Link} to="/practice" inherit c="dimmed" td="none">
               Practice
-            </NavLink>
-            <div className="stack" style={{ gap: 2 }}>
-              {PRACTISE.map(link)}
-            </div>
-          </div>
-        </nav>
-        <div className="sidebar__footer">
+            </Text>
+          </GroupLabel>
+          <Stack gap={2}>{PRACTISE.map(link)}</Stack>
+        </AppShell.Section>
+        <AppShell.Section>
           <SyncBadge />
-          <NavLink to="/settings" className="nav-link">
-            <Settings size={19} aria-hidden />
-            Settings
-          </NavLink>
-        </div>
-      </aside>
+          {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
+        </AppShell.Section>
+      </AppShell.Navbar>
 
-      <main id="main" className="main">
+      <AppShell.Main id="main" bg="var(--bg)">
         <Outlet />
-      </main>
+      </AppShell.Main>
 
-      <nav className="bottom-nav" aria-label="Main navigation">
-        {[TODAY, LEARN[0], LEARN[1], LEARN[2]].map(({ to, short, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end}>
-            <Icon size={22} aria-hidden />
-            {short}
-            {badge(to) > 0 && (
-              <span className="dot" aria-label={`${badge(to)} due`}>
-                {badge(to) > 99 ? '99+' : badge(to)}
-              </span>
-            )}
-          </NavLink>
-        ))}
-        <NavLink
-          to="/practice"
-          className={({ isActive }) => (isActive || inPractice ? 'active' : '')}
-          aria-current={inPractice ? 'page' : undefined}
-        >
-          <Dumbbell size={22} aria-hidden />
-          Practice
-          {weak > 0 && (
-            <span className="dot dot--soft" aria-label={`${weak} weak spots`}>
-              {weak > 99 ? '99+' : weak}
-            </span>
-          )}
-        </NavLink>
-      </nav>
-      <Toaster />
+      <AppShell.Footer aria-label="Main navigation" component="nav" hiddenFrom="sm">
+        <Group grow h="100%" gap={0} px={4}>
+          {bottom.map(({ to, short, icon: Icon, end }) => {
+            const active = to === '/practice' ? inPractice : isActive(pathname, to, end)
+            const n = to === '/practice' ? weak : badge(to)
+            return (
+              <UnstyledButton
+                key={to}
+                component={Link}
+                to={to}
+                aria-current={active ? 'page' : undefined}
+                c={active ? 'var(--mantine-primary-color-filled)' : 'dimmed'}
+              >
+                <Stack align="center" gap={2}>
+                  <Indicator disabled={n === 0} label={n > 99 ? '99+' : n} size={16} color={to === '/practice' ? 'gray' : undefined} offset={2}>
+                    <Icon size={22} aria-hidden />
+                  </Indicator>
+                  <Text size="xs" fw={600} inherit={false} c="inherit">
+                    {short}
+                  </Text>
+                </Stack>
+              </UnstyledButton>
+            )
+          })}
+        </Group>
+      </AppShell.Footer>
       <ScrollRestoration />
-    </div>
+    </AppShell>
   )
 }
 
 /** Wrapper for full-screen study sessions (no navigation chrome). */
 export function FocusLayout() {
   return (
-    <>
+    <Box bg="var(--bg)" mih="100dvh">
       <Outlet />
-      <Toaster />
       <ScrollRestoration />
-    </>
+    </Box>
   )
 }

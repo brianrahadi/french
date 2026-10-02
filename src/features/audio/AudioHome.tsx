@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router'
+import { Badge, Button, Container, Group, Text } from '@mantine/core'
 import { AudioLines, Check, Headphones, Mic, Play, Repeat } from 'lucide-react'
 import { AUDIO_LESSONS } from '../../data/audio'
 import type { AudioLessonDef } from '../../data/types'
 import { Callout, LevelBadge } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
+import { Tile } from '../../components/Tile'
 import { useStore, type AudioProgress } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { speechSupported } from '../../lib/speech'
@@ -24,35 +27,33 @@ export default function AudioHome() {
   const next = todo[0]
 
   return (
-    <div className="page">
-      <header className="page-header page-header--compact">
-        <div>
-          <div className="page-eyebrow">Cours audio</div>
-          <h1 className="page-title">Audio lessons</h1>
-          <p className="page-subtitle">Hands-free, like Pimsleur: listen, answer out loud, and every phrase comes back until it sticks.</p>
-        </div>
-        {next && (
-          <div className="page-header__actions">
-            <Link to={`/audio/${next.l.id}`} className="btn btn--primary">
-              <Play size={16} aria-hidden /> {audio[next.l.id]?.pos ? 'Continue' : 'Start'} lesson {next.n}
-            </Link>
-          </div>
-        )}
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Cours audio"
+        title="Audio lessons"
+        subtitle="Hands-free, like Pimsleur: listen, answer out loud, and every phrase comes back until it sticks."
+        actions={
+          next && (
+            <Button component={Link} to={`/audio/${next.l.id}`} leftSection={<Play size={16} aria-hidden />}>
+              {audio[next.l.id]?.pos ? 'Continue' : 'Start'} lesson {next.n}
+            </Button>
+          )
+        }
+      >
+        <Group gap="lg" mt="sm" c="dimmed" fz="sm">
+          <Group gap={6}>
+            <Headphones size={16} aria-hidden /> Listen to a short conversation
+          </Group>
+          <Group gap={6}>
+            <Mic size={16} aria-hidden /> Answer out loud in the pause
+          </Group>
+          <Group gap={6}>
+            <Repeat size={16} aria-hidden /> Phrases return at growing intervals
+          </Group>
+        </Group>
+      </PageHeader>
 
       {!speechSupported && <Callout kind="warn">This browser can’t read text aloud, so audio lessons don’t work here. Try Chrome, Edge or Safari.</Callout>}
-
-      <div className="audio-how">
-        <span>
-          <Headphones size={16} aria-hidden /> Listen to a short conversation
-        </span>
-        <span>
-          <Mic size={16} aria-hidden /> Answer out loud in the pause
-        </span>
-        <span>
-          <Repeat size={16} aria-hidden /> Phrases return at growing intervals
-        </span>
-      </div>
 
       {todo.length > 0 && (
         <Shelf title="Up next" count={todo.length} hint="One lesson a day, in order — each builds on the ones before.">
@@ -69,36 +70,47 @@ export default function AudioHome() {
           ))}
         </Shelf>
       )}
-    </div>
+    </Container>
   )
 }
 
 function AudioTile({ l, n, min, p, next }: { l: AudioLessonDef; n: number; min: number; p?: AudioProgress; next?: boolean }) {
   const started = p && !p.done && p.pos > 0
   return (
-    <div className={`stile${p?.done ? ' stile--done' : ''}${next ? ' stile--next' : ''}`}>
-      <div className="stile__top">
-        <LevelBadge level={l.level} />
-        <span className="small subtle">Lesson {n}</span>
-        {p?.done && (
-          <span className="badge badge--success stile__corner">
-            <Check size={12} aria-hidden /> done
-          </span>
-        )}
-        {next && !p?.done && <span className="badge stile__corner">next</span>}
-      </div>
-      <Link to={`/audio/${l.id}`} className="stile__title stile__stretch fr" lang="fr">
-        {frTypo(l.title)}
-      </Link>
-      <div className="stile__sub">{l.titleEn}</div>
-      <div className="stile__foot">
-        <AudioLines size={13} aria-hidden /> {min} min · {l.phrases.length} phrases
-      </div>
-      {started && (
-        <div className="stile__progress">
-          <span style={{ width: `${Math.round((p.pos / p.total) * 100)}%` }} />
-        </div>
-      )}
-    </div>
+    <Tile
+      to={`/audio/${l.id}`}
+      done={!!p?.done}
+      highlight={next}
+      top={
+        <>
+          <LevelBadge level={l.level} />
+          <Text size="sm" c="dimmed">
+            Lesson {n}
+          </Text>
+        </>
+      }
+      corner={
+        p?.done ? (
+          <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
+            done
+          </Badge>
+        ) : (
+          next && (
+            <Badge size="sm" variant="filled">
+              next
+            </Badge>
+          )
+        )
+      }
+      title={frTypo(l.title)}
+      fr
+      sub={l.titleEn}
+      foot={
+        <>
+          <AudioLines size={13} aria-hidden /> {min} min · {l.phrases.length} phrases
+        </>
+      }
+      progress={started ? p.pos / p.total : undefined}
+    />
   )
 }

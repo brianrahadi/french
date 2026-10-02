@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, ArrowRight, AudioLines, Check, Eye, EyeOff, Headphones, Mic, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react'
+import { ActionIcon, Anchor, Badge, Button, Card, Container, Group, Progress, SegmentedControl, Stack, Text, ThemeIcon, Title } from '@mantine/core'
+import { ArrowRight, AudioLines, Check, Eye, EyeOff, Headphones, Mic, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react'
 import { AUDIO_BY_ID, AUDIO_LESSONS } from '../../data/audio'
 import type { AudioLessonDef } from '../../data/types'
 import { Callout, Empty, LevelBadge, ProgressBar } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { say, speechSupported, stopSpeaking } from '../../lib/speech'
@@ -32,14 +34,14 @@ export default function AudioLessonPage() {
   useDocumentTitle(lesson ? lesson.title : 'Audio lessons')
   if (!lesson)
     return (
-      <div className="page">
-        <Link to="/audio" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Audio lessons
-        </Link>
+      <Container size={720} py="xl">
+        <PageHeader back={{ to: '/audio', label: 'Audio lessons' }} title="Audio lessons" />
         <Empty icon={<AudioLines size={30} />} title="This lesson isn’t here">
-          <Link to="/audio">Back to the lessons</Link>
+          <Anchor component={Link} to="/audio">
+            Back to the lessons
+          </Anchor>
         </Empty>
-      </div>
+      </Container>
     )
   return <Player key={lesson.id} lesson={lesson} />
 }
@@ -166,154 +168,178 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
   const left = useMemo(() => scriptSeconds(steps.slice(i), pause), [steps, i, pause])
   const progress = finished ? 1 : i / steps.length
 
+  const savePause = (v: number) => {
+    setPause(v)
+    try {
+      localStorage.setItem(PAUSE_KEY, String(v))
+    } catch {
+      /* private mode */
+    }
+  }
+
   return (
-    <div className="page page--narrow">
-      <Link to="/audio" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Audio lessons
-      </Link>
-      <header className="reader-head">
-        <div className="row" style={{ gap: 8, marginBottom: 6 }}>
+    <Container size={720} py="xl">
+      <PageHeader back={{ to: '/audio', label: 'Audio lessons' }} title={frTypo(lesson.title)} fr subtitle={lesson.titleEn}>
+        <Group gap={8} mt="sm">
           <LevelBadge level={lesson.level} />
-          <span className="small subtle">
+          <Text size="sm" c="dimmed">
             Lesson {index + 1} · about {minutesOf(total)} min
-          </span>
+          </Text>
           {saved?.done && (
-            <span className="badge badge--success">
-              <Check size={12} aria-hidden /> done
-            </span>
+            <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
+              done
+            </Badge>
           )}
-        </div>
-        <h1 className="page-title fr" lang="fr">
-          {frTypo(lesson.title)}
-        </h1>
-        <p className="muted">{lesson.titleEn}</p>
-      </header>
+        </Group>
+      </PageHeader>
 
       {!speechSupported && <Callout kind="warn">This browser can’t read text aloud, so audio lessons don’t work here. Try Chrome, Edge or Safari.</Callout>}
 
-      <section className="card audio-now" aria-live="polite">
-        {finished ? (
-          <div className="audio-now__done">
-            <span className="audio-now__icon audio-now__icon--done">
-              <Check size={22} aria-hidden />
-            </span>
-            <div>
-              <div className="audio-now__label">Lesson complete — bravo !</div>
-              <p className="muted small" style={{ margin: '2px 0 0' }}>
-                Do one lesson a day. If you got fewer than about 80% right, repeat this one tomorrow before moving on.
-              </p>
-            </div>
-          </div>
-        ) : step.kind === 'turn' ? (
-          <>
-            <div className="audio-now__head">
-              <span className="audio-now__icon audio-now__icon--turn">
-                <Mic size={20} aria-hidden />
-              </span>
-              <span className="audio-now__label">{step.repeat ? 'Repeat out loud' : 'Your turn — say it out loud'}</span>
-            </div>
-            {!step.repeat && <p className="audio-now__cue">{step.cue}</p>}
-            {showFr && (
-              <p className="audio-now__fr fr" lang="fr">
-                {frTypo(step.answer)}
-              </p>
-            )}
-            {playing && (
-              <div key={i} className="audio-countdown" style={{ animationDuration: `${turnSeconds(step.answer, pause, step.repeat)}s` }} aria-hidden />
-            )}
-          </>
-        ) : (
-          <>
-            <div className="audio-now__head">
-              <span className="audio-now__icon">
-                <Headphones size={20} aria-hidden />
-              </span>
-              <span className="audio-now__label">{step.kind === 'fr' ? (step.slow ? 'Listen carefully' : 'Listen') : playing ? 'Listen' : 'Ready'}</span>
-            </div>
-            {step.kind === 'en' && <p className="audio-now__cue">{step.text}</p>}
-            {step.kind === 'fr' && (
-              <p className="audio-now__fr fr" lang="fr">
-                {showFr ? frTypo(step.text) : '• • •'}
-              </p>
-            )}
-          </>
-        )}
+      <Card mih={230} aria-live="polite">
+        <Stack gap="sm" style={{ flex: 1 }}>
+          {finished ? (
+            <Group align="flex-start" wrap="nowrap">
+              <ThemeIcon color="green" variant="light" size={40} radius="xl">
+                <Check size={22} aria-hidden />
+              </ThemeIcon>
+              <div>
+                <Text fw={650}>Lesson complete — bravo !</Text>
+                <Text size="sm" c="dimmed">
+                  Do one lesson a day. If you got fewer than about 80% right, repeat this one tomorrow before moving on.
+                </Text>
+              </div>
+            </Group>
+          ) : step.kind === 'turn' ? (
+            <>
+              <Group gap="sm">
+                <ThemeIcon color="green" variant="light" size={40} radius="xl">
+                  <Mic size={20} aria-hidden />
+                </ThemeIcon>
+                <Text fw={650}>{step.repeat ? 'Repeat out loud' : 'Your turn — say it out loud'}</Text>
+              </Group>
+              {!step.repeat && <Text fz={19}>{step.cue}</Text>}
+              {showFr && (
+                <Text fz={22} className="fr" lang="fr">
+                  {frTypo(step.answer)}
+                </Text>
+              )}
+              {playing && <Countdown key={i} seconds={turnSeconds(step.answer, pause, step.repeat)} />}
+            </>
+          ) : (
+            <>
+              <Group gap="sm">
+                <ThemeIcon variant="light" size={40} radius="xl">
+                  <Headphones size={20} aria-hidden />
+                </ThemeIcon>
+                <Text fw={650}>{step.kind === 'fr' ? (step.slow ? 'Listen carefully' : 'Listen') : playing ? 'Listen' : 'Ready'}</Text>
+              </Group>
+              {step.kind === 'en' && <Text fz={19}>{step.text}</Text>}
+              {step.kind === 'fr' && (
+                <Text fz={22} className="fr" lang="fr">
+                  {showFr ? frTypo(step.text) : '• • •'}
+                </Text>
+              )}
+            </>
+          )}
+        </Stack>
 
-        <div className="story-player__controls" style={{ marginTop: 18 }}>
-          <button type="button" className="icon-btn" onClick={back} aria-label="Back" title="Back" disabled={finished}>
+        <Group gap="xs" mt="lg">
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={back} aria-label="Back" title="Back" disabled={finished}>
             <SkipBack size={18} aria-hidden />
-          </button>
-          <button type="button" className="btn btn--primary story-player__main" onClick={toggle} disabled={!speechSupported}>
-            {playing ? <Pause size={20} aria-hidden /> : finished ? <RotateCcw size={18} aria-hidden /> : <Play size={20} aria-hidden />}
+          </ActionIcon>
+          <Button
+            miw={150}
+            onClick={toggle}
+            disabled={!speechSupported}
+            leftSection={playing ? <Pause size={18} aria-hidden /> : finished ? <RotateCcw size={18} aria-hidden /> : <Play size={18} aria-hidden />}
+          >
             {playing ? 'Pause' : finished ? 'Play again' : i > 0 ? 'Resume' : 'Start'}
-          </button>
-          <button type="button" className="icon-btn" onClick={forward} aria-label="Skip" title="Skip" disabled={finished}>
+          </Button>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={forward} aria-label="Skip" title="Skip" disabled={finished}>
             <SkipForward size={18} aria-hidden />
-          </button>
-          <div className="spacer" />
-          <button type="button" className="btn btn--ghost btn--sm" aria-pressed={showFr} onClick={() => setShowFr((v) => !v)}>
-            {showFr ? <EyeOff size={15} aria-hidden /> : <Eye size={15} aria-hidden />} French text
-          </button>
-        </div>
-        <div className="story-player__progress">
-          <ProgressBar value={progress} label="Lesson progress" thin />
-          <span className="subtle small tnum">{finished ? 'done' : `${minutesOf(left)} min left`}</span>
-        </div>
-      </section>
+          </ActionIcon>
+          <Button
+            variant="subtle"
+            size="xs"
+            ml="auto"
+            aria-pressed={showFr}
+            onClick={() => setShowFr((v) => !v)}
+            leftSection={showFr ? <EyeOff size={15} aria-hidden /> : <Eye size={15} aria-hidden />}
+          >
+            French text
+          </Button>
+        </Group>
+        <Group gap="sm" mt="md" wrap="nowrap">
+          <div style={{ flex: 1 }}>
+            <ProgressBar value={progress} label="Lesson progress" thin />
+          </div>
+          <Text size="sm" c="dimmed" className="tnum">
+            {finished ? 'done' : `${minutesOf(left)} min left`}
+          </Text>
+        </Group>
+      </Card>
 
-      {finished && next && (
-        <Link to={`/audio/${next.id}`} className="btn btn--primary" style={{ marginTop: 14 }}>
-          Next: {frTypo(next.title)} <ArrowRight size={16} aria-hidden />
-        </Link>
-      )}
+      <Group justify="space-between" mt="md">
+        {finished && next ? (
+          <Button component={Link} to={`/audio/${next.id}`} rightSection={<ArrowRight size={16} aria-hidden />}>
+            Next: {frTypo(next.title)}
+          </Button>
+        ) : (
+          <span />
+        )}
+        <Group gap="xs">
+          <Text size="sm" c="dimmed">
+            Time to answer
+          </Text>
+          <SegmentedControl
+            size="xs"
+            value={String(pause)}
+            onChange={(v) => savePause(Number(v))}
+            data={PAUSES.map((p) => ({ value: String(p.factor), label: p.label }))}
+            aria-label="Time to answer"
+          />
+        </Group>
+      </Group>
 
-      <div className="audio-settings">
-        <span className="small muted">Time to answer</span>
-        <div className="segmented" role="group" aria-label="Time to answer">
-          {PAUSES.map((p) => (
-            <button
-              key={p.label}
-              type="button"
-              aria-pressed={pause === p.factor}
-              onClick={() => {
-                setPause(p.factor)
-                try {
-                  localStorage.setItem(PAUSE_KEY, String(p.factor))
-                } catch {
-                  /* private mode */
-                }
-              }}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <h2 className="section-title" style={{ marginTop: 24 }}>
+      <Title order={2} size="h5" mt="xl" mb="xs" c="dimmed" tt="uppercase">
         In this lesson
-      </h2>
-      <ol className="audio-parts">
+      </Title>
+      <Group gap={6} component="ol" p={0} m={0} style={{ listStyle: 'none' }}>
         {parts.map((title, p) => {
           const first = steps.findIndex((s) => s.part === p)
           const state = finished || step.part > p ? 'done' : step.part === p ? 'now' : ''
           return (
             <li key={p}>
-              <button type="button" className={`audio-part${state ? ` audio-part--${state}` : ''}`} onClick={() => go(first)}>
-                <span className="audio-part__mark" aria-hidden>
-                  {state === 'done' ? <Check size={13} /> : p + 1}
-                </span>
-                <span>{title}</span>
-              </button>
+              <Button
+                size="compact-sm"
+                radius="xl"
+                variant={state === 'now' ? 'light' : 'default'}
+                color={state === 'done' ? 'green' : undefined}
+                leftSection={state === 'done' ? <Check size={13} aria-hidden /> : <Text span size="xs" fw={700}>{p + 1}</Text>}
+                onClick={() => go(first)}
+                fw={500}
+              >
+                {title}
+              </Button>
             </li>
           )
         })}
-      </ol>
+      </Group>
 
-      <p className="small subtle" style={{ marginTop: 18 }}>
-        How it works: listen, and when you’re asked something, answer <strong>out loud</strong> before the answer comes — even if
-        you’re not sure. That effort is what makes it stick. No need to look at the screen.
-      </p>
-    </div>
+      <Text size="sm" c="dimmed" mt="lg">
+        How it works: listen, and when you’re asked something, answer <strong>out loud</strong> before the answer comes — even if you’re not sure.
+        That effort is what makes it stick. No need to look at the screen.
+      </Text>
+    </Container>
   )
+}
+
+/** A bar that empties over `seconds`: the learner's time to answer. */
+function Countdown({ seconds }: { seconds: number }) {
+  const [v, setV] = useState(100)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setV(0))
+    return () => cancelAnimationFrame(id)
+  }, [])
+  return <Progress value={v} color="green" size="sm" radius="xl" transitionDuration={seconds * 1000} aria-hidden styles={{ section: { transitionTimingFunction: 'linear' } }} />
 }

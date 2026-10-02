@@ -1,129 +1,100 @@
 import type { ReactNode } from 'react'
+import {
+  Alert,
+  Badge,
+  EmptyState,
+  Kbd as MKbd,
+  Paper,
+  Progress,
+  RingProgress,
+  Switch as MSwitch,
+  Text,
+  type MantineColor,
+} from '@mantine/core'
 import { AlertTriangle, Lightbulb } from 'lucide-react'
 import type { Level } from '../data/types'
 
+/*
+ * Small app-level wrappers over Mantine, so features share one vocabulary
+ * (a level badge, a progress bar…) without repeating props everywhere.
+ */
+
 export function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="kbd kbd-hint">{children}</kbd>
+  return <MKbd size="xs">{children}</MKbd>
 }
 
-export function ProgressBar({
-  value,
-  label,
-  variant,
-  thin,
-}: {
-  value: number
-  label: string
-  variant?: 'success'
-  thin?: boolean
-}) {
+export function ProgressBar({ value, label, variant, thin }: { value: number; label: string; variant?: 'success'; thin?: boolean }) {
   const pct = Math.max(0, Math.min(1, value)) * 100
-  return (
-    <div
-      className={`progress${variant ? ` progress--${variant}` : ''}${thin ? ' progress--thin' : ''}`}
-      role="progressbar"
-      aria-label={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={Math.round(pct)}
-    >
-      <div className="progress__fill" style={{ width: `${pct}%` }} />
-    </div>
-  )
+  return <Progress value={pct} size={thin ? 'xs' : 'sm'} color={variant === 'success' ? 'green' : undefined} aria-label={label} radius="xl" />
 }
 
-export function Ring({
-  value,
-  size = 64,
-  stroke = 7,
-  label,
-  children,
-}: {
-  value: number
-  size?: number
-  stroke?: number
-  label: string
-  children?: ReactNode
-}) {
-  const r = (size - stroke) / 2
-  const c = 2 * Math.PI * r
+export function Ring({ value, size = 64, stroke = 7, label, children }: { value: number; size?: number; stroke?: number; label: string; children?: ReactNode }) {
   const v = Math.max(0, Math.min(1, value))
   return (
-    <div
-      className={`ring${v >= 1 ? ' ring--done' : ''}`}
-      style={{ ['--size' as string]: `${size}px`, ['--stroke' as string]: `${stroke}px` }}
+    <RingProgress
+      size={size}
+      thickness={stroke}
+      roundCaps={v > 0}
+      sections={[{ value: v * 100, color: v >= 1 ? 'green' : 'indigo' }]}
+      label={
+        <Text ta="center" fw={700} size="sm">
+          {children}
+        </Text>
+      }
       role="img"
       aria-label={label}
-    >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle className="track" cx={size / 2} cy={size / 2} r={r} />
-        <circle
-          className="fill"
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - v)}
-        />
-      </svg>
-      <div className="ring__label">{children}</div>
-    </div>
+    />
   )
 }
 
+export const LEVEL_COLORS: Record<Level, MantineColor> = { A1: 'green', A2: 'blue', B1: 'violet', B2: 'pink' }
+
 export function LevelBadge({ level }: { level: Level }) {
-  return <span className={`badge badge--${level}`}>{level}</span>
+  return (
+    <Badge color={LEVEL_COLORS[level]} size="sm">
+      {level}
+    </Badge>
+  )
 }
 
 export function Stat({ label, value, unit }: { label: string; value: ReactNode; unit?: string }) {
   return (
-    <div className="stat">
-      <div className="stat__label">{label}</div>
-      <div className="stat__value">
+    <Paper p="md">
+      <Text size="xs" c="dimmed" fw={600}>
+        {label}
+      </Text>
+      <Text fz={26} fw={700} lh={1.2} className="tnum">
         {value}
-        {unit && <small>{unit}</small>}
-      </div>
-    </div>
+        {unit && (
+          <Text span c="dimmed" size="sm" fw={500}>
+            {unit}
+          </Text>
+        )}
+      </Text>
+    </Paper>
   )
 }
 
-export function Switch({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean
-  onChange: (v: boolean) => void
-  label: string
-}) {
-  return (
-    <label className="switch">
-      <input type="checkbox" role="switch" checked={checked} aria-label={label} onChange={(e) => onChange(e.target.checked)} />
-      <span aria-hidden />
-    </label>
-  )
+export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return <MSwitch checked={checked} onChange={(e) => onChange(e.currentTarget.checked)} aria-label={label} />
 }
 
 export function Callout({ kind, children }: { kind: 'tip' | 'warn'; children: ReactNode }) {
   return (
-    <div className={`callout callout--${kind}`}>
-      {kind === 'tip' ? <Lightbulb size={18} aria-hidden /> : <AlertTriangle size={18} aria-hidden />}
-      <div>
-        <span className="sr-only">{kind === 'tip' ? 'Tip: ' : 'Watch out: '}</span>
-        {children}
-      </div>
-    </div>
+    <Alert
+      variant="light"
+      color={kind === 'tip' ? 'indigo' : 'orange'}
+      icon={kind === 'tip' ? <Lightbulb size={18} aria-hidden /> : <AlertTriangle size={18} aria-hidden />}
+      my="md"
+    >
+      <span className="sr-only">{kind === 'tip' ? 'Tip: ' : 'Watch out: '}</span>
+      {children}
+    </Alert>
   )
 }
 
 export function Empty({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
-  return (
-    <div className="empty">
-      {icon}
-      <div style={{ fontWeight: 650, color: 'var(--text)' }}>{title}</div>
-      {children}
-    </div>
-  )
+  return <EmptyState icon={icon} title={title} description={children} py="xl" />
 }
 
 export function GenderTag({ g }: { g?: 'm' | 'f' }) {

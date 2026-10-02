@@ -1,22 +1,25 @@
 import { useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { BookOpenText, Check, ClipboardPaste, LoaderCircle, Trash2, WandSparkles } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { ActionIcon, Badge, Button, Chip, Container, Group, SegmentedControl, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core'
+import { BookOpenText, Check, ClipboardPaste, Trash2, WandSparkles } from 'lucide-react'
 import { BUILTIN_TEXTS, type ReaderTextDef } from '../../data/texts'
 import { LEVELS, type Level } from '../../data/types'
 import { findWord } from '../../data/vocab'
 import { ConnectAiCard } from '../../components/AiSetup'
 import { Dialog } from '../../components/Dialog'
-import { Callout, LevelBadge, Switch } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
+import { Callout, LevelBadge } from '../../components/ui'
 import { Shelf } from '../../components/Shelf'
+import { ActionTile, Tile } from '../../components/Tile'
 import type { ReaderText } from './types'
 import { newId, useStore } from '../../lib/store'
 import { useAiConfig } from '../../lib/ai'
 import { countWords } from '../../lib/ai/writing'
+import { ago } from '../../lib/date'
 import { useDocumentTitle } from '../../lib/hooks'
 import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { parseCardId, State } from '../../lib/srs'
 import { displayFr, frTypo } from '../../lib/words'
-import { ago } from '../weak/WeakPage'
 import { generateText } from './ai'
 
 const TOPICS = ['a day in Paris', 'cooking at home', 'a job interview', 'a mystery in a small village', 'holidays by the sea', 'a new neighbour', 'city vs countryside', 'a family tradition']
@@ -50,22 +53,22 @@ export default function ReadingHome() {
   ].sort((a, b) => b.at.localeCompare(a.at))
 
   return (
-    <div className="page">
-      <header className="page-header page-header--compact">
-        <div>
-          <div className="page-eyebrow">Compréhension écrite</div>
-          <h1 className="page-title">Reading</h1>
-          <p className="page-subtitle">Tap any word to see what it means in its sentence and add it to your flashcards.</p>
-        </div>
-        <div className="page-header__actions">
-          <button type="button" className="btn btn--secondary" onClick={() => setPaste(true)}>
-            <ClipboardPaste size={16} aria-hidden /> Paste a text
-          </button>
-          <button type="button" className="btn btn--primary" onClick={() => setGenerate(level)}>
-            <WandSparkles size={16} aria-hidden /> Write me a story
-          </button>
-        </div>
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Compréhension écrite"
+        title="Reading"
+        subtitle="Tap any word to see what it means in its sentence and add it to your flashcards."
+        actions={
+          <>
+            <Button variant="default" leftSection={<ClipboardPaste size={16} aria-hidden />} onClick={() => setPaste(true)}>
+              Paste a text
+            </Button>
+            <Button leftSection={<WandSparkles size={16} aria-hidden />} onClick={() => setGenerate(level)}>
+              Write me a story
+            </Button>
+          </>
+        }
+      />
 
       {opened.length > 0 && (
         <Shelf title="Continue reading" count={opened.length}>
@@ -86,31 +89,24 @@ export default function ReadingHome() {
       <Shelf
         title="Graded texts"
         count={graded.length}
-        hint={
-          <>
-            For your level ({level}) and below{showHarder && harder.length > 0 ? <>, plus harder ones</> : null}.
-          </>
-        }
+        hint={<>For your level ({level}) and below{showHarder && harder.length > 0 ? ', plus harder ones' : ''}.</>}
         action={
           harder.length > 0 && (
-            <button type="button" className="btn btn--ghost btn--sm" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
+            <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
               {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
-            </button>
+            </Button>
           )
         }
       >
         {graded.map((t) => (
           <GradedTile key={t.id} t={t} />
         ))}
-        <button type="button" className="stile stile--action" onClick={() => setGenerate(level)}>
-          <span className="stile__icon">
-            <WandSparkles size={18} aria-hidden />
-          </span>
-          <span className="stile__title" style={{ fontSize: 15 }}>
-            {graded.length ? 'Want more?' : 'All read!'} Write a new {level} story
-          </span>
-          <span className="stile__sub">On any topic, with your words</span>
-        </button>
+        <ActionTile
+          icon={<WandSparkles size={18} aria-hidden />}
+          title={`${graded.length ? 'Want more?' : 'All read!'} Write a new ${level} story`}
+          sub="On any topic, with your words"
+          onClick={() => setGenerate(level)}
+        />
       </Shelf>
 
       {done.length > 0 && (
@@ -133,69 +129,87 @@ export default function ReadingHome() {
         title="Delete this text?"
         actions={
           <>
-            <button className="btn btn--ghost" onClick={() => setConfirm(null)} autoFocus>
+            <Button variant="default" onClick={() => setConfirm(null)} data-autofocus>
               Cancel
-            </button>
-            <button
-              className="btn btn--danger"
+            </Button>
+            <Button
+              color="red"
               onClick={() => {
                 if (confirm) deleteText(confirm)
                 setConfirm(null)
               }}
             >
               Delete
-            </button>
+            </Button>
           </>
         }
       >
-        <p className="muted">Words you added from it stay in your flashcards.</p>
+        <Text c="dimmed">Words you added from it stay in your flashcards.</Text>
       </Dialog>
-    </div>
+    </Container>
   )
 }
+
+const doneBadge = (
+  <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
+    read
+  </Badge>
+)
 
 function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
   const words = countWords(t.paragraphs.map((p) => p.fr).join(' '))
   return (
-    <div className={`stile${done ? ' stile--done' : ''}`}>
-      <div className="stile__top">
-        <LevelBadge level={t.level} />
-        <span className="small subtle">{t.topic}</span>
-        {done && (
-          <span className="badge badge--success stile__corner">
-            <Check size={12} aria-hidden /> read
-          </span>
-        )}
-      </div>
-      <Link to={`/reading/${t.id}`} className="stile__title stile__stretch fr" lang="fr">
-        {frTypo(t.title)}
-      </Link>
-      <div className="stile__sub">{t.titleEn}</div>
-      <div className="stile__foot">
-        <BookOpenText size={13} aria-hidden /> {words} words · {Math.max(1, Math.round(words / 120))} min
-      </div>
-    </div>
+    <Tile
+      to={`/reading/${t.id}`}
+      done={done}
+      top={
+        <>
+          <LevelBadge level={t.level} />
+          <Text size="sm" c="dimmed">
+            {t.topic}
+          </Text>
+        </>
+      }
+      corner={done && doneBadge}
+      title={frTypo(t.title)}
+      fr
+      sub={t.titleEn}
+      foot={
+        <>
+          <BookOpenText size={13} aria-hidden /> {words} words · {Math.max(1, Math.round(words / 120))} min
+        </>
+      }
+    />
   )
 }
 
 function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; onDelete: () => void }) {
   return (
-    <div className={`stile${done ? ' stile--done' : ''}`}>
-      <div className="stile__top">
-        {t.level && <LevelBadge level={t.level} />}
-        <span className="small subtle">{t.source === 'ai' ? 'Generated' : 'Pasted'}</span>
-        <button type="button" className="icon-btn icon-btn--sm stile__corner" onClick={onDelete} aria-label={`Delete ${t.title}`}>
+    <Tile
+      to={`/reading/${t.id}`}
+      done={done}
+      top={
+        <>
+          {t.level && <LevelBadge level={t.level} />}
+          <Text size="sm" c="dimmed">
+            {t.source === 'ai' ? 'Generated' : 'Pasted'}
+          </Text>
+        </>
+      }
+      corner={
+        <ActionIcon variant="subtle" color="gray" size="sm" onClick={onDelete} aria-label={`Delete ${t.title}`}>
           <Trash2 size={14} aria-hidden />
-        </button>
-      </div>
-      <Link to={`/reading/${t.id}`} className="stile__title stile__stretch fr" lang="fr">
-        {frTypo(t.title)}
-      </Link>
-      <div className="stile__sub">{t.topic ?? `${countWords(t.content)} words`}</div>
-      <div className="stile__foot">
-        {done ? <Check size={13} aria-hidden /> : <BookOpenText size={13} aria-hidden />} {countWords(t.content)} words · {ago(t.openedAt ?? t.createdAt)}
-      </div>
-    </div>
+        </ActionIcon>
+      }
+      title={frTypo(t.title)}
+      fr
+      sub={t.topic ?? `${countWords(t.content)} words`}
+      foot={
+        <>
+          {done ? <Check size={13} aria-hidden /> : <BookOpenText size={13} aria-hidden />} {countWords(t.content)} words · {ago(t.openedAt ?? t.createdAt)}
+        </>
+      }
+    />
   )
 }
 
@@ -230,47 +244,46 @@ function PasteDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
       wide
       actions={
         <>
-          <button className="btn btn--ghost" onClick={onClose}>
+          <Button variant="default" onClick={onClose}>
             Cancel
-          </button>
-          <button className="btn btn--primary" onClick={save} disabled={words < 3}>
+          </Button>
+          <Button onClick={save} disabled={words < 3}>
             Read it
-          </button>
+          </Button>
         </>
       }
     >
-      <div className="stack" style={{ gap: 12 }}>
-        <div className="field" style={{ margin: 0 }}>
-          <label className="label" htmlFor="paste-title">
-            Title <span className="subtle">(optional)</span>
-          </label>
-          <input id="paste-title" className="input" value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
-        <div className="field" style={{ margin: 0 }}>
-          <label className="label" htmlFor="paste-text">
-            Text
-          </label>
-          <textarea
-            id="paste-text"
-            className="textarea fr"
-            lang="fr"
-            rows={10}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Collez votre texte ici…"
-            autoFocus
-          />
-          <p className="hint">{words} words. Separate paragraphs with a blank line. The text stays in this browser.</p>
-        </div>
-        <div className="row-wrap" style={{ gap: 6 }} role="group" aria-label="Level">
-          <span className="small muted">Level:</span>
-          {(['', ...LEVELS] as const).map((l) => (
-            <button key={l || 'none'} type="button" className="chip chip--sm" aria-pressed={level === l} onClick={() => setLevel(l)}>
-              {l || 'Not sure'}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Stack gap="md">
+        <TextInput label="Title" description="Optional" value={title} onChange={(e) => setTitle(e.currentTarget.value)} />
+        <Textarea
+          label="Text"
+          classNames={{ input: 'fr' }}
+          lang="fr"
+          autosize
+          minRows={8}
+          maxRows={16}
+          value={content}
+          onChange={(e) => setContent(e.currentTarget.value)}
+          placeholder="Collez votre texte ici…"
+          description={`${words} words. Separate paragraphs with a blank line. The text stays in this browser.`}
+          inputWrapperOrder={['label', 'input', 'description']}
+          data-autofocus
+        />
+        <Group gap="xs">
+          <Text size="sm" c="dimmed">
+            Level:
+          </Text>
+          <Chip.Group value={level} onChange={(v) => setLevel(v as Level | '')}>
+            <Group gap={6}>
+              {(['', ...LEVELS] as const).map((l) => (
+                <Chip key={l || 'none'} value={l} size="xs">
+                  {l || 'Not sure'}
+                </Chip>
+              ))}
+            </Group>
+          </Chip.Group>
+        </Group>
+      </Stack>
     </Dialog>
   )
 }
@@ -347,13 +360,12 @@ function GenerateDialog({ open, onClose, defaultLevel }: { open: boolean; onClos
       actions={
         ai ? (
           <>
-            <button className="btn btn--ghost" onClick={onClose}>
+            <Button variant="default" onClick={onClose}>
               Cancel
-            </button>
-            <button className="btn btn--primary" onClick={generate} disabled={loading}>
-              {loading ? <LoaderCircle size={16} className="spin" aria-hidden /> : <WandSparkles size={16} aria-hidden />}
-              {loading ? 'Writing…' : 'Write it'}
-            </button>
+            </Button>
+            <Button onClick={generate} loading={loading} leftSection={<WandSparkles size={16} aria-hidden />}>
+              Write it
+            </Button>
           </>
         ) : undefined
       }
@@ -361,57 +373,43 @@ function GenerateDialog({ open, onClose, defaultLevel }: { open: boolean; onClos
       {!ai ? (
         <ConnectAiCard title="Connect an AI to write texts" />
       ) : (
-        <div className="stack" style={{ gap: 14 }}>
-          <div className="practice-setup__row">
-            <span className="setup-label">Level</span>
-            <div className="segmented" role="group" aria-label="Level">
-              {LEVELS.map((l) => (
-                <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)}>
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="field" style={{ margin: 0 }}>
-            <label className="label" htmlFor="gen-topic">
-              Topic
-            </label>
-            <input
-              id="gen-topic"
-              className="input"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Anything — e.g. a cat who runs a bakery"
-            />
-            <div className="row-wrap" style={{ gap: 6, marginTop: 8 }}>
+        <Stack gap="md">
+          <Stack gap={4}>
+            <Text size="sm" fw={500}>
+              Level
+            </Text>
+            <SegmentedControl value={level} onChange={(v) => setLevel(v as Level)} data={LEVELS} aria-label="Level" />
+          </Stack>
+          <div>
+            <TextInput label="Topic" value={topic} onChange={(e) => setTopic(e.currentTarget.value)} placeholder="Anything — e.g. a cat who runs a bakery" />
+            <Group gap={6} mt="xs">
               {TOPICS.map((t) => (
-                <button key={t} type="button" className="chip chip--sm" aria-pressed={topic === t} onClick={() => setTopic(t)}>
+                <Chip key={t} size="xs" checked={topic === t} onChange={() => setTopic(t)}>
                   {t}
-                </button>
+                </Chip>
               ))}
-            </div>
+            </Group>
           </div>
-          <div className="practice-setup__row">
-            <span className="setup-label">Length</span>
-            <div className="segmented" role="group" aria-label="Length">
-              {LENGTHS.map((l, i) => (
-                <button key={l.label} type="button" aria-pressed={length === i} onClick={() => setLength(i)}>
-                  {l.label} · ~{l.words}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="setting-row" style={{ padding: 0 }}>
-            <div className="setting-row__text">
-              <div className="setting-row__title">Use words I’m learning</div>
-              <div className="setting-row__desc">
-                {learning.length ? learning.slice(0, 6).join(', ') + (learning.length > 6 ? '…' : '') : 'Start some flashcards first.'}
-              </div>
-            </div>
-            <Switch checked={useMine && learning.length > 0} onChange={setUseMine} label="Use words I’m learning" />
-          </div>
+          <Stack gap={4}>
+            <Text size="sm" fw={500}>
+              Length
+            </Text>
+            <SegmentedControl
+              value={String(length)}
+              onChange={(v) => setLength(Number(v))}
+              data={LENGTHS.map((l, i) => ({ value: String(i), label: `${l.label} · ~${l.words}` }))}
+              aria-label="Length"
+            />
+          </Stack>
+          <Switch
+            checked={useMine && learning.length > 0}
+            onChange={(e) => setUseMine(e.currentTarget.checked)}
+            label="Use words I’m learning"
+            description={learning.length ? learning.slice(0, 6).join(', ') + (learning.length > 6 ? '…' : '') : 'Start some flashcards first.'}
+            labelPosition="left"
+          />
           {error && <Callout kind="warn">{error}</Callout>}
-        </div>
+        </Stack>
       )}
     </Dialog>
   )

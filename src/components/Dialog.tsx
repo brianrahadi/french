@@ -1,6 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { Group, Modal } from '@mantine/core'
 
-/** Accessible modal built on the native <dialog> element (focus trap + Esc for free). */
+/** A modal with a title, content and a row of actions (Mantine Modal). */
 export function Dialog({
   open,
   onClose,
@@ -16,37 +17,14 @@ export function Dialog({
   actions?: ReactNode
   wide?: boolean
 }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const d = ref.current
-    if (!d) return
-    if (open && !d.open) d.showModal()
-    if (!open && d.open) d.close()
-  }, [open])
   return (
-    <dialog
-      ref={ref}
-      className="native-dialog"
-      style={wide ? { maxWidth: 680 } : undefined}
-      onClose={onClose}
-      onCancel={(e) => {
-        e.preventDefault()
-        onClose()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose()
-      }}
-      aria-labelledby="dialog-title"
-    >
-      {open && (
-        <div className="native-dialog__inner">
-          <h2 id="dialog-title" className="dialog__title">
-            {title}
-          </h2>
-          {children}
-          {actions && <div className="dialog__actions">{actions}</div>}
-        </div>
+    <Modal opened={open} onClose={onClose} title={title} size={wide ? 680 : 'md'} styles={{ title: { fontWeight: 650, fontSize: 18 } }}>
+      {children}
+      {actions && (
+        <Group justify="flex-end" gap="sm" mt="lg">
+          {actions}
+        </Group>
       )}
-    </dialog>
+    </Modal>
   )
 }

@@ -19,6 +19,7 @@ import { LESSON_BY_ID } from '../../data/grammar'
 import { Empty, Kbd, LevelBadge } from '../../components/ui'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore, type Mistake, type MistakeSource } from '../../lib/store'
+import { ago } from '../../lib/date'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { speechSupported } from '../../lib/speech'
 import { LISTEN_CATEGORIES } from '../../lib/french'
@@ -34,15 +35,6 @@ export const SOURCE_INFO: Record<MistakeSource, { label: string; icon: React.Com
   talk: { label: 'Conversation', icon: MessagesSquare },
   listening: { label: 'Listening', icon: Headphones },
   speaking: { label: 'Speaking', icon: Mic },
-}
-
-export function ago(iso: string, now = Date.now()): string {
-  const days = Math.floor((new Date(new Date(now).toDateString()).getTime() - new Date(new Date(iso).toDateString()).getTime()) / 86_400_000)
-  if (days <= 0) return 'today'
-  if (days === 1) return 'yesterday'
-  if (days < 7) return `${days} days ago`
-  if (days < 14) return 'last week'
-  return new Date(iso).toLocaleDateString('en', { month: 'short', day: 'numeric' })
 }
 
 export default function WeakPage() {

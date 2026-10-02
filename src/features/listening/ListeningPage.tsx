@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { Anchor, Badge, Button, Card, Container, Group, SegmentedControl, Text } from '@mantine/core'
 import { ArrowRight, BookAudio, Check, Headphones, PenLine } from 'lucide-react'
 import { LEVELS, type Level, type StoryDef } from '../../data/types'
 import { STORIES, storyMinutes } from '../../data/stories'
 import { Callout, LevelBadge } from '../../components/ui'
+import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
+import { ActionTile, Tile } from '../../components/Tile'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore, type SentenceStat } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
@@ -34,9 +37,9 @@ export default function ListeningPage() {
   const levelOrder = [...LEVELS].filter(shown).sort((a, b) => rank(a) - rank(b))
   const todo = STORIES.filter((s) => !results[s.id] && shown(s.level)).sort((a, b) => rank(a.level) - rank(b.level))
   const harderToggle = harder.length > 0 && (
-    <button type="button" className="btn btn--ghost btn--sm" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
+    <Button variant="subtle" size="xs" aria-pressed={showHarder} onClick={() => setShowHarder((v) => !v)}>
       {showHarder ? 'Hide harder levels' : `Show ${harder.join(', ')}`}
-    </button>
+    </Button>
   )
   const done = STORIES.filter((s) => results[s.id]).sort((a, b) => results[b.id].at.localeCompare(results[a.id].at))
 
@@ -62,28 +65,38 @@ export default function ListeningPage() {
   const topCats = [...cats.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
 
   return (
-    <div className="page">
-      <header className="page-header page-header--compact">
-        <div>
-          <div className="page-eyebrow">Compréhension orale</div>
-          <h1 className="page-title">Listening</h1>
-          <p className="page-subtitle">Follow a short story and answer questions, or write down what you hear.</p>
-        </div>
-        {(done.length > 0 || stats.length > 0) && (
-          <div className="inline-stats" aria-label="Your listening">
-            {done.length > 0 && (
-              <span>
-                <strong>{done.length}</strong>/{STORIES.length} stories
-              </span>
-            )}
-            {stats.length > 0 && (
-              <span>
-                <strong>{stats.length}</strong> sentences written · <strong>{avg}%</strong> average
-              </span>
-            )}
-          </div>
-        )}
-      </header>
+    <Container size={960} py="xl">
+      <PageHeader
+        eyebrow="Compréhension orale"
+        title="Listening"
+        subtitle="Follow a short story and answer questions, or write down what you hear."
+        actions={
+          (done.length > 0 || stats.length > 0) && (
+            <Group gap="lg" aria-label="Your listening">
+              {done.length > 0 && (
+                <Text size="sm" c="dimmed">
+                  <Text span fw={700} c="var(--mantine-color-text)">
+                    {done.length}
+                  </Text>
+                  /{STORIES.length} stories
+                </Text>
+              )}
+              {stats.length > 0 && (
+                <Text size="sm" c="dimmed">
+                  <Text span fw={700} c="var(--mantine-color-text)">
+                    {stats.length}
+                  </Text>{' '}
+                  sentences ·{' '}
+                  <Text span fw={700} c="var(--mantine-color-text)">
+                    {avg}%
+                  </Text>{' '}
+                  average
+                </Text>
+              )}
+            </Group>
+          )
+        }
+      />
 
       {!speechSupported ? (
         <Callout kind="warn">This browser can’t read text aloud, so listening isn’t available here. Try Chrome, Edge or Safari.</Callout>
@@ -99,7 +112,7 @@ export default function ListeningPage() {
       <Shelf
         title={
           <>
-            <BookAudio size={17} aria-hidden style={{ verticalAlign: '-3px' }} /> Short stories
+            <BookAudio size={18} aria-hidden /> Short stories
           </>
         }
         count={todo.length}
@@ -110,35 +123,25 @@ export default function ListeningPage() {
           <StoryTile key={s.id} s={s} />
         ))}
         {todo.length === 0 && (
-          <div className="stile stile--action">
-            <span className="stile__icon">
-              <Check size={18} aria-hidden />
-            </span>
-            <span className="stile__title" style={{ fontSize: 15 }}>
-              All {level} stories done!
-            </span>
-            <span className="stile__sub">{harder.length ? `Try ${harder[0]}, or replay them below.` : 'Replay them below to beat your score.'}</span>
-          </div>
+          <ActionTile
+            icon={<Check size={18} aria-hidden />}
+            title={`All ${level} stories done!`}
+            sub={harder.length ? `Try ${harder[0]}, or replay them below.` : 'Replay them below to beat your score.'}
+          />
         )}
       </Shelf>
 
       <Shelf
         title={
           <>
-            <PenLine size={17} aria-hidden style={{ verticalAlign: '-3px' }} /> Dictation
+            <PenLine size={18} aria-hidden /> Dictation
           </>
         }
         hint="Hear a sentence, type it, and see which sounds you missed."
         action={
           <>
             {harderToggle}
-            <div className="segmented" role="group" aria-label="Sentences per session">
-              {LENGTHS.map((x) => (
-                <button key={x} type="button" aria-pressed={n === x} onClick={() => setN(x)}>
-                  {x}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl size="xs" value={String(n)} onChange={(v) => setN(Number(v))} data={LENGTHS.map(String)} aria-label="Sentences per session" />
           </>
         }
       >
@@ -152,21 +155,23 @@ export default function ListeningPage() {
           title="What trips you up"
           count={topCats.length}
           action={
-            <Link to="/weak" className="small">
+            <Anchor component={Link} to="/weak" size="sm">
               Weak spots <ArrowRight size={14} aria-hidden style={{ verticalAlign: '-2px' }} />
-            </Link>
+            </Anchor>
           }
         >
           {topCats.map(([c, count]) => (
-            <div key={c} className="stile">
-              <div className="stile__top">
-                <strong>{LISTEN_CATEGORIES[c].label}</strong>
-                <span className="badge badge--warning tnum stile__corner">{count}</span>
-              </div>
-              <p className="small muted" style={{ margin: 0 }}>
+            <Card key={c} w={{ base: '72vw', xs: 232 }} padding="md" style={{ flexShrink: 0 }}>
+              <Group justify="space-between" wrap="nowrap" mb={6}>
+                <Text fw={650}>{LISTEN_CATEGORIES[c].label}</Text>
+                <Badge color="orange" className="tnum">
+                  {count}
+                </Badge>
+              </Group>
+              <Text size="sm" c="dimmed">
                 {LISTEN_CATEGORIES[c].tip}
-              </p>
-            </div>
+              </Text>
+            </Card>
           ))}
         </Shelf>
       )}
@@ -182,47 +187,45 @@ export default function ListeningPage() {
       {recent.length > 0 && (
         <Shelf title="Recent dictation" count={recent.length}>
           {recent.map(({ s, st }) => (
-            <div key={s!.id} className="stile stile--done">
-              <div className="stile__top">
-                <SpeakButton text={s!.fr} size="sm" />
-                <ScoreBadge score={st.last} />
-              </div>
-              <div className="stile__title fr" lang="fr" style={{ fontSize: 15, WebkitLineClamp: 3 }}>
-                {frTypo(s!.fr)}
-              </div>
-              <div className="stile__sub">{s!.en}</div>
-            </div>
+            <Tile key={s!.id} done small top={<SpeakButton text={s!.fr} size="sm" />} corner={<ScoreBadge score={st.last} />} title={frTypo(s!.fr)} fr sub={s!.en} />
           ))}
         </Shelf>
       )}
-    </div>
+    </Container>
   )
 }
 
 function ScoreBadge({ score }: { score: number }) {
   return (
-    <span className={`badge tnum stile__corner ${score === 100 ? 'badge--success' : score >= 60 ? 'badge--warning' : 'badge--danger'}`}>
-      {score === 100 && <Check size={12} aria-hidden />} {score}%
-    </span>
+    <Badge color={score === 100 ? 'green' : score >= 60 ? 'orange' : 'red'} className="tnum" leftSection={score === 100 ? <Check size={12} aria-hidden /> : undefined}>
+      {score}%
+    </Badge>
   )
 }
 
 function StoryTile({ s, result }: { s: StoryDef; result?: SentenceStat }) {
   return (
-    <div className={`stile${result ? ' stile--done' : ''}`}>
-      <div className="stile__top">
-        <LevelBadge level={s.level} />
-        <span className="small subtle">{s.topic}</span>
-        {result && <ScoreBadge score={result.best} />}
-      </div>
-      <Link to={`/listening/story/${s.id}`} className="stile__title stile__stretch fr" lang="fr">
-        {frTypo(s.title)}
-      </Link>
-      <div className="stile__sub">{s.titleEn}</div>
-      <div className="stile__foot">
-        <Headphones size={13} aria-hidden /> {storyMinutes(s)} min · {s.questions.length} questions
-      </div>
-    </div>
+    <Tile
+      to={`/listening/story/${s.id}`}
+      done={!!result}
+      top={
+        <>
+          <LevelBadge level={s.level} />
+          <Text size="sm" c="dimmed">
+            {s.topic}
+          </Text>
+        </>
+      }
+      corner={result && <ScoreBadge score={result.best} />}
+      title={frTypo(s.title)}
+      fr
+      sub={s.titleEn}
+      foot={
+        <>
+          <Headphones size={13} aria-hidden /> {storyMinutes(s)} min · {s.questions.length} questions
+        </>
+      }
+    />
   )
 }
 
@@ -230,20 +233,19 @@ function DictationTile({ src, n, onStart }: { src: SentenceSource; n: number; on
   const state = useStore()
   const pool = useMemo(() => poolFor(src, state), [src, state])
   const doneIn = pool.filter((x) => state.listening[x.id]).length
-  const label = src === 'mine' ? 'My words' : `${src} sentences`
   return (
-    <button type="button" className="stile" onClick={onStart} disabled={!speechSupported || !pool.length}>
-      <div className="stile__top">
-        {src === 'mine' ? <span className="badge badge--primary">mine</span> : <LevelBadge level={src as Level} />}
-      </div>
-      <div className="stile__title">{label}</div>
-      <div className="stile__sub">{src === 'mine' ? 'Sentences with the words you’re learning' : `${pool.length} sentences`}</div>
-      <div className="stile__foot">
-        {doneIn}/{pool.length} done · start {n}
-      </div>
-      <div className="stile__progress" aria-hidden>
-        <span style={{ width: `${pool.length ? (doneIn / pool.length) * 100 : 0}%` }} />
-      </div>
-    </button>
+    <Tile
+      onClick={onStart}
+      disabled={!speechSupported || !pool.length}
+      top={src === 'mine' ? <Badge>mine</Badge> : <LevelBadge level={src as Level} />}
+      title={src === 'mine' ? 'My words' : `${src} sentences`}
+      sub={src === 'mine' ? 'Sentences with the words you’re learning' : `${pool.length} sentences`}
+      foot={
+        <>
+          {doneIn}/{pool.length} done · start {n}
+        </>
+      }
+      progress={pool.length ? doneIn / pool.length : 0}
+    />
   )
 }

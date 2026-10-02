@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Box, Group, Scroller, Text, Title } from '@mantine/core'
 
 /**
  * A titled row of cards that scrolls sideways (like a library shelf), so a page
- * can show many collections without growing tall. Arrows appear when there's
- * more to see; touch and trackpads scroll natively.
+ * can show many collections without growing tall.
  */
 export function Shelf({
   title,
@@ -21,50 +20,31 @@ export function Shelf({
   hint?: ReactNode
   children: ReactNode
 }) {
-  const track = useRef<HTMLDivElement>(null)
-  const [edges, setEdges] = useState({ start: true, end: true })
-
-  useEffect(() => {
-    const el = track.current
-    if (!el) return
-    const update = () => setEdges({ start: el.scrollLeft <= 2, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 })
-    update()
-    el.addEventListener('scroll', update, { passive: true })
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => {
-      el.removeEventListener('scroll', update)
-      ro.disconnect()
-    }
-  }, [children])
-
-  const scroll = (dir: 1 | -1) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.85, behavior: 'smooth' })
-
   return (
-    <section className="shelf">
-      <div className="shelf__head">
-        <h2 className="shelf__title">
-          {title}
-          {count !== undefined && <span className="shelf__count tnum">{count}</span>}
-        </h2>
-        <div className="shelf__actions">
-          {action}
-          {!(edges.start && edges.end) && (
-            <span className="shelf__arrows">
-              <button type="button" className="icon-btn icon-btn--sm" onClick={() => scroll(-1)} disabled={edges.start} aria-label="Scroll left">
-                <ChevronLeft size={16} aria-hidden />
-              </button>
-              <button type="button" className="icon-btn icon-btn--sm" onClick={() => scroll(1)} disabled={edges.end} aria-label="Scroll right">
-                <ChevronRight size={16} aria-hidden />
-              </button>
-            </span>
-          )}
-        </div>
-      </div>
-      {hint && <p className="shelf__hint">{hint}</p>}
-      <div className="shelf__track" ref={track}>
-        {children}
-      </div>
-    </section>
+    <Box component="section" mt="xl">
+      <Group justify="space-between" gap="sm" mb={hint ? 2 : 'xs'}>
+        <Title order={2} size="h4">
+          <Group component="span" gap={8} wrap="nowrap">
+            {title}
+            {count !== undefined && (
+              <Text span c="dimmed" size="sm" fw={500} className="tnum">
+                {count}
+              </Text>
+            )}
+          </Group>
+        </Title>
+        {action && <Group gap="xs">{action}</Group>}
+      </Group>
+      {hint && (
+        <Text size="sm" c="dimmed" mb="xs">
+          {hint}
+        </Text>
+      )}
+      <Scroller draggable={false} edgeGradientColor="var(--bg)" controlSize={36}>
+        <Group gap="md" wrap="nowrap" align="stretch" py={4} px={2} style={{ whiteSpace: 'normal' }}>
+          {children}
+        </Group>
+      </Scroller>
+    </Box>
   )
 }

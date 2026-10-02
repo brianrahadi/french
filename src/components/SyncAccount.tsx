@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NavLink } from '@mantine/core'
 import { Link } from 'react-router'
 import { AlertTriangle, Cloud, CloudCog, CloudOff, LoaderCircle, LogIn, LogOut, RefreshCw, X } from 'lucide-react'
 import { signInWithGoogle, signOut, syncConfigured, syncNow, useSync, type SyncState } from '../lib/sync/engine'
@@ -165,20 +166,19 @@ export function SyncBadge() {
   if (!syncConfigured) return null
   if (!user)
     return (
-      <Link to="/settings#account" className="nav-link sync-badge">
-        <Cloud size={19} aria-hidden />
-        Sign in to sync
-      </Link>
+      <NavLink component={Link} to="/settings#account" label="Sign in to sync" leftSection={<Cloud size={19} aria-hidden />} fw={550} style={{ borderRadius: 'var(--mantine-radius-md)' }} />
     )
   return (
-    <Link
+    <NavLink
+      component={Link}
       to="/settings#account"
-      className={`nav-link sync-badge sync-badge--${state}`}
       title={state === 'synced' && lastSyncAt ? `Synced ${since(lastSyncAt)}` : LABEL[state]}
-    >
-      <SyncGlyph state={state} size={19} />
-      {state === 'synced' ? 'Synced' : LABEL[state]}
-    </Link>
+      label={state === 'synced' ? 'Synced' : LABEL[state]}
+      leftSection={<SyncGlyph state={state} size={19} />}
+      c={state === 'error' ? 'red' : undefined}
+      fw={550}
+      style={{ borderRadius: 'var(--mantine-radius-md)' }}
+    />
   )
 }
 

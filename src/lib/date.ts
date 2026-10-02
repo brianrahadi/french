@@ -60,3 +60,13 @@ export function relativeDay(target: Date, now: Date = new Date()): string {
   if (d < 30) return `in ${Math.round(d / 7)} wk`
   return `in ${Math.round(d / 30)} mo`
 }
+
+/** “today”, “yesterday”, “3 days ago”, “last week”, or a short date. */
+export function ago(iso: string, now = Date.now()): string {
+  const days = Math.floor((new Date(new Date(now).toDateString()).getTime() - new Date(new Date(iso).toDateString()).getTime()) / 86_400_000)
+  if (days <= 0) return 'today'
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days} days ago`
+  if (days < 14) return 'last week'
+  return new Date(iso).toLocaleDateString('en', { month: 'short', day: 'numeric' })
+}

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { CloseButton, Container, Group, Text } from '@mantine/core'
 import { useNavigate } from 'react-router'
 import { ProgressBar } from './ui'
 import { useHotkeys } from '../lib/hooks'
@@ -21,17 +21,17 @@ export function FocusShell({
   const navigate = useNavigate()
   useHotkeys({ Escape: () => navigate(exitTo) }, { allowInInputs: ['Escape'] })
   return (
-    <div className="focus">
-      <header className="focus-top">
-        <button type="button" className="icon-btn" onClick={() => navigate(exitTo)} aria-label="End session (Esc)" title="End session (Esc)">
-          <X size={22} aria-hidden />
-        </button>
-        <ProgressBar value={progress} label={`${label} progress`} />
-        <div className="focus-top__count" aria-live="polite">
-          {count}
+    <Container size={760} px="md" pb={120}>
+      <Group gap="md" py="md" wrap="nowrap" pos="sticky" top={0} bg="var(--bg)" style={{ zIndex: 5 }}>
+        <CloseButton size="lg" onClick={() => navigate(exitTo)} aria-label="End session (Esc)" title="End session (Esc)" />
+        <div style={{ flex: 1 }}>
+          <ProgressBar value={progress} label={`${label} progress`} />
         </div>
-      </header>
-      <div className="focus-main">{children}</div>
-    </div>
+        <Text size="sm" c="dimmed" fw={600} className="tnum" miw={40} ta="right" aria-live="polite">
+          {count}
+        </Text>
+      </Group>
+      {children}
+    </Container>
   )
 }

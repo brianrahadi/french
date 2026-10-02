@@ -38,22 +38,6 @@ code {
   color: var(--warning);
   font-weight: 650;
 }
-.today-grid {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.8fr) 1.4fr;
-  gap: 16px;
-  align-items: stretch;
-}
-@media (max-width: 760px) {
-  .today-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.goal-card {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
 .action-card {
   padding: 16px 18px;
 }
@@ -332,9 +316,6 @@ code {
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--primary-text);
-}
-.study-card__num--new {
-  color: var(--success);
 }
 .forecast {
   display: grid;
@@ -980,9 +961,6 @@ code {
   gap: 12px;
   flex-wrap: wrap;
   padding: 0 14px 14px;
-}
-.writing-editor__bar .accent-bar {
-  margin-top: 0;
 }
 .writing-submit {
   position: sticky;

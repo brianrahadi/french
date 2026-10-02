@@ -5,49 +5,6 @@
   flex-direction: column;
   background: var(--bg);
 }
-.focus-top {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 14px;
-  max-width: 760px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 14px 20px;
-  background: var(--bg);
-}
-.focus-top .progress {
-  height: 10px;
-}
-.focus-top__count {
-  min-width: 48px;
-  color: var(--text-3);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.focus-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: min(6vh, 56px) 20px 200px;
-}
-@media (max-width: 560px) {
-  .focus-top {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-  .focus-main {
-    padding: 8px 16px 200px;
-  }
-}
 
 .q-kicker {
   display: flex;
@@ -107,23 +64,6 @@
 .blank[readonly] {
   background: transparent;
 }
-.blank--correct {
-  border-bottom-color: var(--success);
-  color: var(--success);
-  background: var(--success-soft) !important;
-}
-.blank--almost {
-  border-bottom-color: var(--warning);
-  color: var(--warning);
-  background: var(--warning-soft) !important;
-}
-.blank--wrong {
-  border-bottom-color: var(--danger);
-  color: var(--danger);
-  background: var(--danger-soft) !important;
-  text-decoration: line-through;
-  text-decoration-thickness: 1.5px;
-}
 
 .answer-input {
   width: 100%;
@@ -155,31 +95,6 @@
 }
 .shake {
   animation: shake 0.4s both;
-}
-
-.accent-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-.accent-bar button {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 6px;
-  border: 1px solid var(--border-strong);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--text);
-  font-family: var(--font-fr);
-  font-size: 17px;
-  transition: background 0.12s;
-}
-.accent-bar button:hover {
-  background: var(--surface-2);
-}
-.accent-bar button:active {
-  transform: scale(0.95);
 }
 
 /* Multiple choice */
@@ -290,12 +205,6 @@
 }
 .tile--used {
   visibility: hidden;
-}
-.tile-slot {
-  display: inline-block;
-  min-height: 44px;
-  border-radius: 11px;
-  background: var(--surface-3);
 }
 
 /* Feedback sheet */

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ActionIcon } from '@mantine/core'
 import { Volume2 } from 'lucide-react'
 import { speak, speechSupported } from '../lib/speech'
 import { useStore } from '../lib/store'
@@ -34,9 +35,11 @@ export function SpeakButton({
 
   if (!speechSupported) return null
   return (
-    <button
-      type="button"
-      className={`icon-btn${size === 'sm' ? ' icon-btn--sm' : ''}${speaking ? ' speaking' : ''} ${className}`}
+    <ActionIcon
+      variant={speaking ? 'filled' : 'light'}
+      size={size === 'sm' ? 'md' : 'lg'}
+      radius="xl"
+      className={className}
       onClick={(e) => {
         e.stopPropagation()
         play()
@@ -45,6 +48,6 @@ export function SpeakButton({
       title="Listen"
     >
       <Volume2 size={size === 'sm' ? 16 : 19} aria-hidden />
-    </button>
+    </ActionIcon>
   )
 }

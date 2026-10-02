@@ -1,3 +1,4 @@
+import { Button, Group } from '@mantine/core'
 import type { RefObject } from 'react'
 
 const CHARS = ['é', 'è', 'ê', 'ë', 'à', 'â', 'ç', 'î', 'ï', 'ô', 'û', 'ù', 'œ']
@@ -29,11 +30,14 @@ export function AccentBar({
     })
   }
   return (
-    <div className="accent-bar" role="group" aria-label="Insert accented letter (shift-click for capitals)">
+    <Group gap={4} mt="xs" role="group" aria-label="Insert accented letter (shift-click for capitals)">
       {CHARS.map((ch) => (
-        <button
+        <Button
           key={ch}
-          type="button"
+          variant="default"
+          size="compact-md"
+          miw={34}
+          className="fr"
           tabIndex={-1}
           disabled={disabled}
           onMouseDown={(e) => e.preventDefault()}
@@ -41,8 +45,8 @@ export function AccentBar({
           aria-label={`Insert ${ch}`}
         >
           {ch}
-        </button>
+        </Button>
       ))}
-    </div>
+    </Group>
   )
 }

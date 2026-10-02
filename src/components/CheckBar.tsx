@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Button } from '@mantine/core'
+import { BottomSheet } from './BottomSheet'
 import { Kbd } from './ui'
 
 /** Bottom bar shown while answering; replaced by the FeedbackSheet once checked. */
@@ -18,30 +20,22 @@ export function CheckBar({
   children?: ReactNode
 }) {
   return (
-    <div className="sheet sheet--neutral">
-      <div className="sheet__inner" style={{ alignItems: 'center' }}>
-        <div className="sheet__body">
-          {children ??
-            (onSkip && (
-              <button type="button" className="btn btn--ghost" onClick={onSkip}>
-                {skipLabel}
-              </button>
-            ))}
-        </div>
-        {onCheck && (
-          <div className="sheet__actions">
-            <button
-              type="button"
-              className="btn btn--lg btn--primary"
-              disabled={disabled}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onCheck}
-            >
-              {checkLabel} <Kbd>↵</Kbd>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    <BottomSheet
+      verdict="neutral"
+      actions={
+        onCheck && (
+          <Button size="lg" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={onCheck} rightSection={<Kbd>↵</Kbd>}>
+            {checkLabel}
+          </Button>
+        )
+      }
+    >
+      {children ??
+        (onSkip && (
+          <Button variant="subtle" color="gray" onClick={onSkip}>
+            {skipLabel}
+          </Button>
+        ))}
+    </BottomSheet>
   )
 }

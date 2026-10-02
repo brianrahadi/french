@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, Check, Eye, EyeOff, Headphones, Pause, Play, RotateCcw, SkipBack, SkipForward, X } from 'lucide-react'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, SegmentedControl, Stack, Stepper, Text, ThemeIcon, Title } from '@mantine/core'
+import { Check, Eye, EyeOff, Headphones, Pause, Play, RotateCcw, SkipBack, SkipForward, X } from 'lucide-react'
 import { STORY_BY_ID, storyMinutes } from '../../data/stories'
 import type { StoryDef } from '../../data/types'
 import { Callout, Empty, LevelBadge, ProgressBar, Rich } from '../../components/ui'
+import { Choices } from '../../components/Choices'
+import { PageHeader } from '../../components/PageHeader'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
@@ -24,19 +27,20 @@ export default function StoryPage() {
   useDocumentTitle(story ? story.title : 'Listening')
   if (!story)
     return (
-      <div className="page">
-        <Link to="/listening" className="back-link">
-          <ArrowLeft size={16} aria-hidden /> Listening
-        </Link>
+      <Container size={760} py="xl">
+        <PageHeader back={{ to: '/listening', label: 'Listening' }} title="Listening" />
         <Empty icon={<Headphones size={30} />} title="This story isn’t here">
-          <Link to="/listening">Back to the stories</Link>
+          <Anchor component={Link} to="/listening">
+            Back to the stories
+          </Anchor>
         </Empty>
-      </div>
+      </Container>
     )
   return <Story key={story.id} story={story} />
 }
 
 type Step = 'listen' | 'questions' | 'results'
+const STEPS: Step[] = ['listen', 'questions', 'results']
 
 function Story({ story }: { story: StoryDef }) {
   const voiceURI = useStore((s) => s.settings.voiceURI)
@@ -146,198 +150,188 @@ function Story({ story }: { story: StoryDef }) {
   const progress = playing || current > 0 ? (current + (playing ? 0.5 : 0)) / sentences.length : 0
 
   return (
-    <div className="page page--reader">
-      <Link to="/listening" className="back-link">
-        <ArrowLeft size={16} aria-hidden /> Listening
-      </Link>
-      <header className="reader-head">
-        <div className="row" style={{ gap: 8, marginBottom: 6 }}>
+    <Container size={760} py="xl">
+      <PageHeader back={{ to: '/listening', label: 'Listening' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
+        <Group gap={8} mt="sm">
           <LevelBadge level={story.level} />
-          <span className="small subtle">
+          <Text size="sm" c="dimmed">
             {story.topic} · {storyMinutes(story)} min · {story.questions.length} questions
-          </span>
-          {best !== undefined && <span className="badge tnum">best {best}%</span>}
-        </div>
-        <h1 className="page-title fr" lang="fr">
-          {frTypo(story.title)}
-        </h1>
-        <p className="muted">{story.titleEn}</p>
-      </header>
+          </Text>
+          {best !== undefined && (
+            <Badge color="gray" className="tnum">
+              best {best}%
+            </Badge>
+          )}
+        </Group>
+      </PageHeader>
 
-      <div className="story-steps" aria-label="Steps">
-        {(['listen', 'questions', 'results'] as Step[]).map((s, i) => (
-          <span key={s} className={`story-steps__item${step === s ? ' is-current' : ''}`}>
-            {i + 1}. {s === 'listen' ? 'Listen' : s === 'questions' ? 'Answer' : 'Check'}
-          </span>
-        ))}
-      </div>
+      <Stepper active={STEPS.indexOf(step)} size="xs" mb="lg" allowNextStepsSelect={false}>
+        <Stepper.Step label="Listen" />
+        <Stepper.Step label="Answer" />
+        <Stepper.Step label="Check" />
+      </Stepper>
 
       {!speechSupported && <Callout kind="warn">This browser can’t read text aloud. Try Chrome, Edge or Safari, or read the text instead.</Callout>}
 
-      {/* ── Player (always available, smaller after the listening step) */}
-      <section className={`card story-player${step !== 'listen' ? ' story-player--compact' : ''}`} aria-label="Audio player">
-        <div className="story-player__controls">
-          <button type="button" className="icon-btn" onClick={() => jump(current - 1)} aria-label="Previous sentence" title="Previous sentence">
+      {/* ── Player (always available) */}
+      <Card aria-label="Audio player" padding={step === 'listen' ? 'lg' : 'md'}>
+        <Group gap="xs">
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current - 1)} aria-label="Previous sentence" title="Previous sentence">
             <SkipBack size={18} aria-hidden />
-          </button>
+          </ActionIcon>
           {playing === 'playing' ? (
-            <button type="button" className="btn btn--primary story-player__main" onClick={pause}>
-              <Pause size={20} aria-hidden /> Pause
-            </button>
+            <Button miw={140} onClick={pause} leftSection={<Pause size={18} aria-hidden />}>
+              Pause
+            </Button>
           ) : (
-            <button type="button" className="btn btn--primary story-player__main" onClick={() => play()} disabled={!speechSupported}>
-              <Play size={20} aria-hidden /> {playing === 'paused' ? 'Resume' : listens ? 'Listen again' : 'Listen'}
-            </button>
+            <Button miw={140} onClick={() => play()} disabled={!speechSupported} leftSection={<Play size={18} aria-hidden />}>
+              {playing === 'paused' ? 'Resume' : listens ? 'Listen again' : 'Listen'}
+            </Button>
           )}
-          <button type="button" className="icon-btn" onClick={() => jump(current + 1)} aria-label="Next sentence" title="Next sentence">
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current + 1)} aria-label="Next sentence" title="Next sentence">
             <SkipForward size={18} aria-hidden />
-          </button>
-          <button type="button" className="icon-btn" onClick={restart} aria-label="From the start" title="From the start" disabled={!speechSupported}>
+          </ActionIcon>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={restart} aria-label="From the start" title="From the start" disabled={!speechSupported}>
             <RotateCcw size={17} aria-hidden />
-          </button>
-          <div className="spacer" />
-          <div className="segmented" role="group" aria-label="Speed">
-            {SPEEDS.map((s) => (
-              <button key={s.label} type="button" aria-pressed={speed === s.factor} onClick={() => setSpeed(s.factor)}>
-                {s.label}
-              </button>
-            ))}
+          </ActionIcon>
+          <SegmentedControl
+            ml="auto"
+            size="xs"
+            value={String(speed)}
+            onChange={(v) => setSpeed(Number(v))}
+            data={SPEEDS.map((s) => ({ value: String(s.factor), label: s.label }))}
+            aria-label="Speed"
+          />
+        </Group>
+        <Group gap="sm" mt="md" wrap="nowrap">
+          <div style={{ flex: 1 }}>
+            <ProgressBar value={progress} label={`Sentence ${current + 1} of ${sentences.length}`} thin />
           </div>
-        </div>
-        <div className="story-player__progress">
-          <ProgressBar value={progress} label={`Sentence ${current + 1} of ${sentences.length}`} thin />
-          <span className="subtle small tnum">
+          <Text size="sm" c="dimmed" className="tnum">
             {current + 1}/{sentences.length}
             {listens > 0 && ` · heard ${listens}×`}
-          </span>
-        </div>
+          </Text>
+        </Group>
         {step === 'listen' && (
-          <p className="small muted" style={{ margin: '10px 0 0' }}>
-            Listen without the text first — as many times as you like. Get the gist, then the details. When you’re ready,
-            answer the questions.
-          </p>
+          <Text size="sm" c="dimmed" mt="sm">
+            Listen without the text first — as many times as you like. Get the gist, then the details. When you’re ready, answer the questions.
+          </Text>
         )}
-      </section>
+      </Card>
 
       {/* ── Step 1: listening */}
       {step === 'listen' && (
-        <div className="row-wrap" style={{ justifyContent: 'space-between', marginTop: 16 }}>
-          <button type="button" className="btn btn--ghost" onClick={() => setShowText((v) => !v)}>
-            {showText ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />} {showText ? 'Hide the text' : 'Peek at the text'}
-          </button>
-          <button type="button" className="btn btn--primary" onClick={goQuestions}>
-            Answer the questions
-          </button>
-        </div>
+        <Group justify="space-between" mt="md">
+          <Button variant="subtle" color="gray" onClick={() => setShowText((v) => !v)} leftSection={showText ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}>
+            {showText ? 'Hide the text' : 'Peek at the text'}
+          </Button>
+          <Button onClick={goQuestions}>Answer the questions</Button>
+        </Group>
       )}
 
       {/* ── Step 2: questions */}
       {step === 'questions' && (
-        <section className="stack-lg" style={{ marginTop: 20 }} aria-label="Questions">
+        <Stack gap="lg" mt="lg" component="section" aria-label="Questions">
           {story.questions.map((q, qi) => (
-            <div key={qi} className="card story-q">
-              <div className="story-q__prompt">
-                <span className="subtle small">Question {qi + 1}</span>
-                <div>
-                  <Rich text={q.prompt} />
-                </div>
-              </div>
-              <div className="options" role="radiogroup" aria-label={`Question ${qi + 1}`}>
-                {q.options.map((o, oi) => (
-                  <button
-                    key={oi}
-                    type="button"
-                    role="radio"
-                    aria-checked={answers[qi] === oi}
-                    className={`option${answers[qi] === oi ? ' option--selected' : ''}`}
-                    onClick={() => setAnswers((a) => ({ ...a, [qi]: oi }))}
-                  >
-                    <span className="option__key" aria-hidden>
-                      {String.fromCharCode(65 + oi)}
-                    </span>
-                    <span>{frTypo(o)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Card key={qi}>
+              <Text size="xs" c="dimmed" fw={600}>
+                Question {qi + 1}
+              </Text>
+              <Text fz={18} fw={600} mt={2} mb="md">
+                <Rich text={q.prompt} />
+              </Text>
+              <Choices
+                options={q.options.map((o) => frTypo(o))}
+                value={answers[qi]}
+                onChange={(oi) => setAnswers((a) => ({ ...a, [qi]: oi }))}
+                label={`Question ${qi + 1}`}
+                fr
+              />
+            </Card>
           ))}
-          <div className="row-wrap" style={{ justifyContent: 'space-between' }}>
-            <span className="small muted">
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
               {answered}/{story.questions.length} answered
-            </span>
-            <button type="button" className="btn btn--primary btn--lg" onClick={submit} disabled={answered < story.questions.length}>
-              <Check size={18} aria-hidden /> Check my answers
-            </button>
-          </div>
-        </section>
+            </Text>
+            <Button size="lg" onClick={submit} disabled={answered < story.questions.length} leftSection={<Check size={18} aria-hidden />}>
+              Check my answers
+            </Button>
+          </Group>
+        </Stack>
       )}
 
       {/* ── Step 3: results */}
       {step === 'results' && (
-        <section className="stack-lg" style={{ marginTop: 20 }} aria-label="Results">
-          <div className="card story-score">
-            <div className={`story-score__num tnum ${pct === 100 ? 'text-success' : pct >= 60 ? '' : 'text-danger'}`}>{pct}%</div>
-            <div>
-              <div className="card__title">
-                {correct} of {story.questions.length} right
+        <Stack gap="md" mt="lg" component="section" aria-label="Results">
+          <Card>
+            <Group wrap="nowrap" align="center" gap="lg">
+              <Text fz={44} fw={700} lh={1} className="tnum" c={pct === 100 ? 'green' : pct >= 60 ? undefined : 'red'}>
+                {pct}%
+              </Text>
+              <div style={{ flex: 1 }}>
+                <Text fw={650}>
+                  {correct} of {story.questions.length} right
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {pct === 100
+                    ? 'Perfect comprehension. Now listen once more with the text to catch every word.'
+                    : 'Read the text below, then listen again while following it — the bits you missed usually become clear.'}
+                </Text>
               </div>
-              <p className="small muted" style={{ margin: 0 }}>
-                {pct === 100
-                  ? 'Perfect comprehension. Now listen once more with the text to catch every word.'
-                  : 'Read the text below, then listen again while following it — the bits you missed usually become clear.'}
-              </p>
-            </div>
-            <button type="button" className="btn btn--secondary" onClick={retry}>
-              <RotateCcw size={16} aria-hidden /> Try again
-            </button>
-          </div>
-          <div className="card card--flush">
+              <Button variant="default" onClick={retry} leftSection={<RotateCcw size={16} aria-hidden />}>
+                Try again
+              </Button>
+            </Group>
+          </Card>
+          <Card padding={0}>
             {story.questions.map((q, qi) => {
               const ok = answers[qi] === q.answer
               return (
-                <div key={qi} className="list-row story-result">
-                  <span className={`story-result__mark ${ok ? 'is-ok' : 'is-wrong'}`} aria-label={ok ? 'Right' : 'Wrong'}>
+                <Group key={qi} align="flex-start" wrap="nowrap" gap="sm" p="md" style={qi ? { borderTop: '1px solid var(--mantine-color-default-border)' } : undefined}>
+                  <ThemeIcon color={ok ? 'green' : 'red'} variant="light" radius="xl" size={24} aria-label={ok ? 'Right' : 'Wrong'}>
                     {ok ? <Check size={14} aria-hidden /> : <X size={14} aria-hidden />}
-                  </span>
-                  <div className="story-result__body">
-                    <div className="story-result__q">
+                  </ThemeIcon>
+                  <Stack gap={2} style={{ minWidth: 0 }}>
+                    <Text fw={600}>
                       <Rich text={q.prompt} />
-                    </div>
-                    <div className="small">
+                    </Text>
+                    <Group gap={8}>
                       {!ok && (
-                        <span className="story-result__wrong fr" lang="fr">
+                        <Text size="sm" c="red" td="line-through" className="fr" lang="fr">
                           {frTypo(q.options[answers[qi]])}
-                        </span>
+                        </Text>
                       )}
-                      <span className="story-result__right fr" lang="fr">
+                      <Text size="sm" c="green.8" fw={600} className="fr" lang="fr">
                         {frTypo(q.options[q.answer])}
-                      </span>
-                    </div>
+                      </Text>
+                    </Group>
                     {q.explain && (
-                      <div className="small subtle">
+                      <Text size="sm" c="dimmed">
                         <Rich text={q.explain} />
-                      </div>
+                      </Text>
                     )}
-                  </div>
-                </div>
+                  </Stack>
+                </Group>
               )
             })}
-          </div>
-        </section>
+          </Card>
+        </Stack>
       )}
 
       {/* ── Transcript */}
       {showText && (
-        <section style={{ marginTop: 24 }} aria-label="Transcript">
-          <div className="row-wrap" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
-            <h2 className="section-title" style={{ margin: 0 }}>
-              <span>Transcript</span>
-            </h2>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
+        <Box component="section" mt="xl" aria-label="Transcript">
+          <Group justify="space-between" mb={4}>
+            <Title order={2} size="h5" c="dimmed" tt="uppercase">
+              Transcript
+            </Title>
+            <Button variant="subtle" size="xs" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
               {showEn ? 'Hide translation' : 'Show translation'}
-            </button>
-          </div>
-          <p className="hint">Tap any word to see what it means and add it to your flashcards.</p>
+            </Button>
+          </Group>
+          <Text size="sm" c="dimmed" mb="sm">
+            Tap any word to see what it means and add it to your flashcards.
+          </Text>
           <article className="reader-body fr" lang="fr">
             {story.paragraphs.map((p, i) => (
               <div key={i} className="reader-para">
@@ -352,8 +346,8 @@ function Story({ story }: { story: StoryDef }) {
               </div>
             ))}
           </article>
-        </section>
+        </Box>
       )}
-    </div>
+    </Container>
   )
 }

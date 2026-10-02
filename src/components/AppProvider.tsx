@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import { useColorScheme } from '@mantine/hooks'
 import { useStore } from '../lib/store'
 import { theme } from '../theme'
@@ -10,6 +11,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme()
   return (
     <MantineProvider theme={theme} forceColorScheme={setting === 'system' ? system : setting}>
+      <Notifications position="bottom-center" limit={2} />
       {children}
     </MantineProvider>
   )

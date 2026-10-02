@@ -32,7 +32,7 @@ import { newId, useStore } from '../../lib/store'
 import { describeConfig, useAiConfig } from '../../lib/ai'
 import { useDocumentTitle } from '../../lib/hooks'
 import { scoreClass } from '../writing/WritingHome'
-import { ago } from '../weak/WeakPage'
+import { ago } from '../../lib/date'
 import { frTypo } from '../../lib/words'
 import type { Conversation } from './types'
 
