@@ -7,7 +7,8 @@ import { Callout, Kbd, LevelBadge, Rich } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { SpeakButton } from '../../components/SpeakButton'
 import { useStore } from '../../lib/store'
-import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
+import { useDocumentTitle, useHideOnScroll, useHotkeys } from '../../lib/hooks'
+import { useMediaQuery } from '@mantine/hooks'
 import { lessonStatus } from './status'
 import { frTypo } from '../../lib/words'
 import { relativeDay, parseDayKey } from '../../lib/date'
@@ -104,6 +105,10 @@ export default function LessonPage() {
   const p = useStore((s) => s.lessons[id])
   useDocumentTitle(lesson?.title ?? 'Lesson')
   useHotkeys({ p: () => lesson && navigate(`/grammar/${lesson.id}/practice`) })
+  // Same breakpoint as the app shell's bottom nav. On phones the practice bar is compact and
+  // gets out of the way while reading; it comes back on scroll up and at the end of the lesson.
+  const withBottomNav = useMediaQuery('(max-width: 860px)') ?? false
+  const barHidden = useHideOnScroll({ enabled: withBottomNav })
 
   if (!lesson) {
     return (
@@ -181,23 +186,41 @@ export default function LessonPage() {
         </Card>
       )}
 
-      <Box pos="sticky" bottom={{ base: 'calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px)', sm: 16 }} mt={32} style={{ zIndex: 5 }}>
+      <Box
+        className="practice-bar"
+        data-hidden={barHidden || undefined}
+        pos="sticky"
+        bottom={withBottomNav ? 'calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 8px)' : 16}
+        mt={32}
+        style={{ zIndex: 5 }}
+      >
         <Paper
           withBorder
           shadow="lg"
           radius="lg"
-          p="sm"
-          pl="lg"
+          p={withBottomNav ? 6 : 'sm'}
+          pl={withBottomNav ? 'md' : 'lg'}
           style={{ background: 'color-mix(in srgb, var(--mantine-color-body) 92%, transparent)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
         >
           <Group justify="space-between" wrap="nowrap" gap="md">
-            <div>
-              <Text fw={700}>{status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}</Text>
-              <Text size="sm" c="dimmed" visibleFrom="xs">
-                {lesson.exercises.length} exercises · instant feedback
+            <div style={{ minWidth: 0 }}>
+              <Text fw={700} size={withBottomNav ? 'sm' : undefined} truncate>
+                {status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}
               </Text>
+              {!withBottomNav && (
+                <Text size="sm" c="dimmed">
+                  {lesson.exercises.length} exercises · instant feedback
+                </Text>
+              )}
             </div>
-            <Button component={Link} to={`/grammar/${lesson.id}/practice`} size="lg" leftSection={<Dumbbell size={18} aria-hidden />} rightSection={<Kbd>P</Kbd>}>
+            <Button
+              component={Link}
+              to={`/grammar/${lesson.id}/practice`}
+              size={withBottomNav ? 'sm' : 'lg'}
+              leftSection={<Dumbbell size={withBottomNav ? 16 : 18} aria-hidden />}
+              rightSection={withBottomNav ? undefined : <Kbd>P</Kbd>}
+              style={{ flexShrink: 0 }}
+            >
               Practice
             </Button>
           </Group>

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type Handler = (e: KeyboardEvent) => void
 
@@ -47,4 +47,47 @@ export function useDocumentTitle(title: string) {
   useEffect(() => {
     document.title = title ? `${title} · Petit à petit` : 'Petit à petit — French study'
   }, [title])
+}
+
+/**
+ * "Hide on scroll down, reveal on scroll up" for floating bars on small screens.
+ * Returns `true` while the bar should be tucked away. It always shows near the top
+ * of the page and near the end (where the reader has finished and the action is due).
+ */
+export function useHideOnScroll({ enabled = true, threshold = 12, edge = 160 }: { enabled?: boolean; threshold?: number; edge?: number } = {}) {
+  const [hidden, setHidden] = useState(false)
+  useEffect(() => {
+    if (!enabled) {
+      setHidden(false)
+      return
+    }
+    let lastY = window.scrollY
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const y = window.scrollY
+      const nearEnd = window.innerHeight + y >= document.documentElement.scrollHeight - edge
+      if (y < edge || nearEnd) {
+        setHidden(false)
+        lastY = y
+        return
+      }
+      const dy = y - lastY
+      // Ignore jitter (and iOS rubber-banding) until the movement is deliberate.
+      if (Math.abs(dy) < threshold) return
+      setHidden(dy > 0)
+      lastY = y
+    }
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [enabled, threshold, edge])
+  return hidden
 }

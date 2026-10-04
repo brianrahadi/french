@@ -404,3 +404,21 @@ input[type='range'] {
 .shelf {
   margin-top: 26px;
 }
+
+/* ───────────── Floating action bar that tucks away while reading (phones) ───────────── */
+.practice-bar {
+  transition:
+    transform 0.25s var(--ease),
+    opacity 0.2s var(--ease);
+}
+.practice-bar[data-hidden] {
+  /* Slide down behind the bottom nav; keyboard focus brings it back. */
+  transform: translateY(calc(100% + 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+.practice-bar[data-hidden]:focus-within {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
