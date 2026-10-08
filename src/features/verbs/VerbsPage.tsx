@@ -84,7 +84,7 @@ export default function VerbsPage() {
                 </Text>
                 <Group gap={6} mt="xs">
                   {v.group === 'irr' ? <Badge color="orange">irregular</Badge> : <Badge color="gray">-{v.group}</Badge>}
-                  {v.aux === 'etre' && <Badge color="indigo">être</Badge>}
+                  {v.aux === 'etre' && <Badge color="blue">être</Badge>}
                   {pct !== null && (
                     <Badge color={pct >= 0.8 ? 'green' : 'gray'} className="tnum" ml="auto" title="Drill accuracy">
                       {Math.round(pct * 100)}%

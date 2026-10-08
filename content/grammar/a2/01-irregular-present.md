@@ -2,15 +2,13 @@
 id: irregular-present
 title: Key irregular verbs
 titleFr: Les verbes irréguliers essentiels
-summary: aller, faire, venir, prendre, pouvoir, vouloir, devoir — the verbs you’ll use every day.
+summary: aller, faire, venir, prendre, pouvoir, vouloir, devoir and other everyday irregular verbs.
 minutes: 16
 ---
 
-## Why these verbs
-
-The most frequent French verbs are also the most irregular — and you’ll use them in almost every sentence. They don’t follow the -er pattern, so learn them as whole tables, out loud. The good news: many other verbs copy them (*revenir, devenir* like *venir*; *apprendre, comprendre* like *prendre*).
-
 ## aller, faire, venir
+
+The most frequent verbs are the most irregular. Learn them as whole tables. Many other verbs copy them: *revenir, devenir* go like *venir*; *apprendre, comprendre* like *prendre*.
 
 |             | aller (go) | faire (do, make) | venir (come) |
 | ----------- | ---------- | ---------------- | ------------ |
@@ -86,7 +84,7 @@ Both mean “to know”, but they are not interchangeable:
 - Je connais un bon restaurant. | I know a good restaurant.
 - Je ne sais pas. | I don’t know.
 
-## More essential irregulars
+## More common irregulars
 
 | Infinitive        | je / nous / ils                 |
 | ----------------- | ------------------------------- |
@@ -103,7 +101,7 @@ Both mean “to know”, but they are not interchangeable:
 
 ## Patterns that help
 
-- Singular endings are usually **-s, -s, -t** (je fais, tu fais, il fait) — except pouvoir/vouloir with **-x** (je peux, je veux) and verbs in -dre with **-ds, -ds, -d** (je prends, il prend).
+- Singular endings are usually **-s, -s, -t** (je fais, tu fais, il fait). Exceptions: pouvoir/vouloir with **-x** (je peux, je veux) and verbs in -dre with **-ds, -ds, -d** (je prends, il prend).
 - The **ils** form often looks like a “boot” verb: the stem of je/tu/il/ils changes, nous/vous keep the infinitive stem: *je bois, nous buvons, ils boivent*; *je viens, nous venons, ils viennent*.
 - Four verbs have **ils … -ont**: ils **vont, font, sont, ont**.
 
@@ -112,7 +110,15 @@ Both mean “to know”, but they are not interchangeable:
 - aller, faire, venir, prendre, mettre, pouvoir, vouloir, devoir: learn the full tables.
 - Modals + infinitive: je peux venir, je veux partir, je dois travailler.
 - savoir = facts and skills; connaître = people, places, things.
-- vous faites, vous dites, vous êtes — no -ez.
+- vous faites, vous dites, vous êtes (no -ez).
+
+## Goals
+
+- aller-faire-venir: Conjugate aller, faire and venir § aller, faire, venir
+- prendre-mettre: Conjugate prendre and mettre § prendre, mettre
+- modals: Use pouvoir, vouloir, devoir + infinitive § The modal verbs: pouvoir, vouloir, devoir
+- savoir-connaitre: Choose savoir or connaître § savoir or connaître?
+- more: Conjugate boire, dire and other common irregulars § More common irregulars
 
 ## Exercises
 
@@ -122,6 +128,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: vont
 - en: They’re going to the cinema tonight.
 - explain: aller: ils vont.
+- goal: aller-faire-venir
 
 ### cloze
 - sentence: Qu’est-ce que vous ___ ?
@@ -129,6 +136,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: faites
 - en: What are you doing?
 - explain: faire: vous faites (not ~~faisez~~).
+- goal: aller-faire-venir
 
 ### cloze
 - sentence: Elles ___ de Belgique.
@@ -136,6 +144,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: viennent
 - en: They come from Belgium.
 - explain: venir: ils/elles viennent (double n).
+- goal: aller-faire-venir
 
 ### cloze
 - sentence: Nous ___ le train.
@@ -143,6 +152,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: prenons
 - en: We’re taking the train.
 - explain: prendre: nous prenons (one n).
+- goal: prendre-mettre
 
 ### cloze
 - sentence: Tu ___ m’aider ?
@@ -150,6 +160,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: peux
 - en: Can you help me?
 - explain: pouvoir: tu peux.
+- goal: modals
 
 ### cloze
 - sentence: Ils ___ partir tôt.
@@ -157,6 +168,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: veulent
 - en: They want to leave early.
 - explain: vouloir: ils veulent.
+- goal: modals
 
 ### cloze
 - sentence: Vous ___ remplir ce formulaire.
@@ -164,6 +176,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: devez
 - en: You must fill in this form.
 - explain: devoir: vous devez.
+- goal: modals
 
 ### mcq
 - prompt: I know how to swim.
@@ -171,12 +184,14 @@ Both mean “to know”, but they are not interchangeable:
 - [x] Je sais nager.
 - [ ] Je peux nager.
 - explain: savoir + infinitive = know how to.
+- goal: savoir-connaitre
 
 ### mcq
 - prompt: Do you know Marie?
 - [ ] Tu sais Marie ?
 - [x] Tu connais Marie ?
 - explain: connaître for people and places.
+- goal: savoir-connaitre
 
 ### cloze
 - sentence: Aujourd’hui, il ___ très beau.
@@ -184,12 +199,14 @@ Both mean “to know”, but they are not interchangeable:
 - answer: fait
 - en: The weather is lovely today.
 - explain: Weather: il fait…
+- goal: aller-faire-venir
 
 ### translate
 - en: I would like a coffee, please.
 - answer: Je voudrais un café, s’il vous plaît
 - answer: Je voudrais un café s’il vous plaît
 - answer: Je voudrais un café, s’il te plaît
+- goal: modals
 
 ### cloze
 - sentence: Je ___ un pull, il fait froid.
@@ -197,6 +214,7 @@ Both mean “to know”, but they are not interchangeable:
 - answer: mets
 - en: I’m putting on a jumper, it’s cold.
 - explain: mettre: je mets, tu mets, il met.
+- goal: prendre-mettre
 
 ### cloze
 - sentence: Nous ___ de l’eau.
@@ -204,13 +222,15 @@ Both mean “to know”, but they are not interchangeable:
 - answer: buvons
 - en: We drink water.
 - explain: boire: je bois, nous buvons, ils boivent.
+- goal: more
 
 ### cloze
 - sentence: Vous ___ la vérité ?
 - hint: dire
 - answer: dites
 - en: Are you telling the truth?
-- explain: vous dites — like vous faites, vous êtes, no -ez.
+- explain: vous dites, with no -ez, like vous faites and vous êtes.
+- goal: more
 
 ### cloze
 - sentence: Tu ___ où est la gare ?
@@ -218,12 +238,14 @@ Both mean “to know”, but they are not interchangeable:
 - answer: sais
 - en: Do you know where the station is?
 - explain: A fact / question word → savoir.
+- goal: savoir-connaitre
 
 ### mcq
 - prompt: “I know a good restaurant.”
 - [ ] Je sais un bon restaurant.
 - [x] Je connais un bon restaurant.
 - explain: Being familiar with a place or thing → connaître.
+- goal: savoir-connaitre
 
 ### mcq
 - prompt: “You must be tired.” (a guess)
@@ -231,12 +253,14 @@ Both mean “to know”, but they are not interchangeable:
 - [ ] Tu as être fatigué.
 - [ ] Tu es devoir fatigué.
 - explain: devoir + infinitive can express probability.
+- goal: modals
 
 ### transform
 - instruction: Change the subject to ils.
 - source: Il prend le métro.
 - answer: Ils prennent le métro
 - explain: prendre: ils prennent (double n).
+- goal: prendre-mettre
 
 ### translate
 - en: Can you help me? (vous)
@@ -245,3 +269,4 @@ Both mean “to know”, but they are not interchangeable:
 - answer: Pourriez-vous m’aider ?
 - answer: Est-ce que vous pouvez m’aider ?
 - explain: pouvoir + infinitive; pourriez-vous is even more polite.
+- goal: modals

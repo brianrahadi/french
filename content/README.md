@@ -119,6 +119,25 @@ Table: An optional caption goes right under a table.
 - explain: de la becomes de after a negative.
 ```
 
+**Goals.** Right before `## Exercises`, a `## Goals` section lists what the learner will be able to do after the lesson — 3 to 8 can-do points — one per line as `- id: what they can do § Section heading`. The heading after `§` must match one of the lesson’s `##` headings exactly; the app links the goal to that section. Every exercise then names the goal it tests with a `- goal: id` line, and each goal needs at least two exercises (`npm test` checks this).
+
+```markdown
+## Goals
+
+- formation: Form the passé composé with avoir § How it’s built
+- agreement: Agree the participle with a direct object placed before § Agreement
+
+## Exercises
+
+### cloze
+- sentence: Hier, j’___ un film.
+- answer: ai regardé
+- explain: regarder takes avoir → j’ai regardé.
+- goal: formation
+```
+
+The app uses goals to order a first practice session goal by goal, to aim spaced reviews at the goals you got wrong last time, to build the short “Already know this?” check (one or two questions per goal), the level test-out, and to show results per goal with a link back to the section to re-read.
+
 ---
 
 ## Vocabulary decks — `vocab/<level>/NN-name.md`
@@ -219,7 +238,7 @@ Write the questions in French at every level — simple wording at A1–A2 (Où�
 
 Hands-free lessons in the style of Pimsleur. You write the conversation and the phrases it uses; the app turns them into a ~12-minute spoken script: the dialogue first, then each phrase modelled, repeated, built up from the end, and asked for again at growing intervals ("How do you say…?" → pause to answer out loud → answer). Then the Practice prompts, a role play where the learner takes `role`'s lines, and the dialogue once more. The first lessons of the course are reviewed at the start of the next one.
 
-Lessons form one course: number files across levels (a1/01… a1/06, a2/07…) so each builds on the earlier ones.
+Lessons form one course: number files across levels (a1/01… a1/12, a2/13… a2/24, b1/25…, b2/37…) so each builds on the earlier ones.
 
 ```markdown
 ---

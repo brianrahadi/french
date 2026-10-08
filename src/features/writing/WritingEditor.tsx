@@ -39,6 +39,16 @@ export default function WritingEditor() {
   const [params] = useSearchParams()
   const promptId = params.get('prompt') ?? 'free'
   const rewriteId = params.get('rewrite')
+  // Exam practice: /writing/new?prompt=…&timed=60 shows a countdown (minutes).
+  const timed = Math.min(180, Math.max(0, Number(params.get('timed')) || 0))
+  const [startedAt] = useState(() => Date.now())
+  const [now, setNow] = useState(startedAt)
+  useEffect(() => {
+    if (!timed) return
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [timed])
+  const leftMs = timed * 60_000 - (now - startedAt)
   const navigate = useNavigate()
 
   const writings = useStore((s) => s.writings)
@@ -111,6 +121,7 @@ export default function WritingEditor() {
         model: ai ? describeConfig(ai) : '',
         feedback,
         revisionOf: original?.id,
+        ...(timed ? { timed, minutes: Math.max(1, Math.round((Date.now() - startedAt) / 60_000)) } : {}),
       })
       noteCorrections('writing', feedback.errors, text.trim(), id)
       // Count writing toward the daily goal: roughly one "answer" per ten words.
@@ -159,7 +170,7 @@ export default function WritingEditor() {
 
       <Card component="section" aria-labelledby="task-title">
         {original && (
-          <Text size="sm" fw={600} c="indigo" mb={10}>
+          <Text size="sm" fw={600} c="accent" mb={10}>
             Rewrite — use your corrections, but try not to copy them
           </Text>
         )}
@@ -280,6 +291,11 @@ export default function WritingEditor() {
         />
         <Group justify="space-between" align="flex-end" gap={12} px={14} pb={14}>
           <AccentBar inputRef={area} onInsert={setText} disabled={loading} />
+          {timed > 0 && (
+            <Text span size="sm" className="tnum" role="timer" fw={650} c={leftMs <= 0 ? 'red' : leftMs < 5 * 60_000 ? 'orange' : 'dimmed'} ml="auto">
+              {leftMs <= 0 ? 'Time’s up' : `${Math.floor(leftMs / 60_000)}:${String(Math.floor((leftMs % 60_000) / 1000)).padStart(2, '0')} left`}
+            </Text>
+          )}
           <Text span size="sm" className="tnum" c={counterColor} aria-live="polite">
             {words} word{words === 1 ? '' : 's'}
             {kind === 'prompt' && (

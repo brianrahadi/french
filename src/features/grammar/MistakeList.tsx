@@ -25,8 +25,8 @@ export function ResultRow({ first, children }: { first?: boolean; children: Reac
   )
 }
 
-/** "To review" list after a session: the question, what you wrote (struck) and the right answer. */
-export function MistakeList({ items }: { items: { what: string; given: string; expected: string }[] }) {
+/** "To review" list after a session: the question, what you wrote (struck), the right answer and the goal it tests. */
+export function MistakeList({ items }: { items: { what: string; given: string; expected: string; goal?: string }[] }) {
   return (
     <ResultList title="To review">
       {items.map((m, i) => (
@@ -42,6 +42,11 @@ export function MistakeList({ items }: { items: { what: string; given: string; e
             )}
             <strong>{frTypo(m.expected)}</strong>
           </Text>
+          {m.goal && (
+            <Text fz={12.5} c="dimmed" mt={4}>
+              Goal: {m.goal}
+            </Text>
+          )}
         </ResultRow>
       ))}
     </ResultList>

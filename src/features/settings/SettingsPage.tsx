@@ -14,6 +14,7 @@ import {
   Input,
   NativeSelect,
   NumberInput,
+  Radio,
   SegmentedControl,
   SimpleGrid,
   Slider,
@@ -34,6 +35,7 @@ import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
 import { AiSetup } from '../../components/AiSetup'
 import { useSync } from '../../lib/sync/engine'
+import { PALETTES, paletteOf, type Palette, type PaletteId } from '../../theme'
 
 /** A titled settings group: an h2 and the controls in a Card (or bare, for cards that bring their own). */
 function Section({ id, anchor, title, bare, children }: { id: string; anchor?: string; title: ReactNode; bare?: boolean; children: ReactNode }) {
@@ -71,7 +73,7 @@ function ActionRow({ title, desc, children }: { title: string; desc: ReactNode; 
 }
 
 /** Labelled SegmentedControl (Mantine's doesn't take a label itself). */
-function Segmented<T extends string>({ label, desc, value, onChange, data }: { label: string; desc?: ReactNode; value: T; onChange: (v: T) => void; data: [T, string][] }) {
+function Segmented<T extends string>({ label, desc, value, onChange, data, disabled }: { label: string; desc?: ReactNode; value: T; onChange: (v: T) => void; data: [T, string][]; disabled?: boolean }) {
   return (
     <Input.Wrapper label={label} description={desc} labelElement="div">
       <SegmentedControl
@@ -80,8 +82,51 @@ function Segmented<T extends string>({ label, desc, value, onChange, data }: { l
         onChange={(v) => onChange(v as T)}
         data={data.map(([v, l]) => ({ value: v, label: l }))}
         aria-label={label}
+        disabled={disabled}
       />
     </Input.Wrapper>
+  )
+}
+
+/** A tiny mock-up of a colour theme: page, a card and an accent button, light half and dark half. */
+function ThemePreview({ p }: { p: Palette }) {
+  const modes = p.darkOnly ? [true] : [false, true]
+  return (
+    <Group gap={0} wrap="nowrap" h={60} className="theme-card__preview" aria-hidden>
+      {modes.map((dark) => (
+        <Stack key={String(dark)} flex={1} h="100%" gap={5} justify="center" px={8} bg={dark ? p.dark[8] : p.gray[0]}>
+          <Box h={6} w="55%" bg={dark ? p.dark[0] : p.black} style={{ borderRadius: 3, opacity: 0.8 }} />
+          <Group h={24} px={5} justify="flex-end" bg={dark ? p.dark[7] : '#ffffff'} style={{ borderRadius: 5, border: `1px solid ${dark ? p.dark[4] : p.gray[3]}` }}>
+            <Box h={11} w={24} bg={p.accent[dark ? p.primaryShade.dark : p.primaryShade.light]} style={{ borderRadius: 3 }} />
+          </Group>
+        </Stack>
+      ))}
+    </Group>
+  )
+}
+
+function ThemePicker({ value, onChange }: { value: PaletteId; onChange: (p: PaletteId) => void }) {
+  return (
+    <Radio.Group label="Theme" value={value} onChange={(v) => onChange(v as PaletteId)}>
+      <SimpleGrid cols={{ base: 2, xs: 4 }} spacing="sm" mt={6}>
+        {PALETTES.map((p) => (
+          <Radio.Card key={p.id} value={p.id} radius="md" p={6} className="theme-card">
+            <ThemePreview p={p} />
+            <Group gap={8} wrap="nowrap" px={4} pt={8} pb={2} align="flex-start">
+              <Radio.Indicator size="xs" mt={3} />
+              <div>
+                <Text size="sm" fw={600} lh={1.3}>
+                  {p.name}
+                </Text>
+                <Text size="xs" c="dimmed" lh={1.3}>
+                  {p.desc}
+                </Text>
+              </div>
+            </Group>
+          </Radio.Card>
+        ))}
+      </SimpleGrid>
+    </Radio.Group>
   )
 }
 
@@ -99,6 +144,7 @@ export default function SettingsPage() {
   }, [hash])
   const settings = useStore((s) => s.settings)
   const update = useStore((s) => s.updateSettings)
+  const palette = paletteOf(settings.palette)
   const importData = useStore((s) => s.importData)
   const resetAll = useStore((s) => s.resetAll)
   const signedIn = !!useSync((s) => s.user)
@@ -281,10 +327,13 @@ export default function SettingsPage() {
       </Section>
 
       <Section id="set-look" title="Appearance">
+        <ThemePicker value={palette.id} onChange={(id) => update({ palette: id })} />
         <Segmented<Theme>
-          label="Theme"
-          value={settings.theme}
+          label="Mode"
+          desc={palette.darkOnly ? `${palette.name} is always dark.` : undefined}
+          value={palette.darkOnly ? 'dark' : settings.theme}
           onChange={(t) => update({ theme: t })}
+          disabled={palette.darkOnly}
           data={[
             ['system', 'System'],
             ['light', 'Light'],

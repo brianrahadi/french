@@ -1,11 +1,12 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
-import { Dumbbell, House, Layers, LibraryBig, Settings } from 'lucide-react'
+import { Dumbbell, House, Layers, LibraryBig, Map as MapIcon, Settings } from 'lucide-react'
 import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
+import { useStudyTimer } from '../lib/useStudyTimer'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -28,9 +29,10 @@ function useBadges() {
 
 type NavItem = { to: string; label: string; short: string; icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>; end?: boolean }
 
-// Four places: what to do today, content to study, your words, and drills.
+// Five places: what to do today, the plan behind it, content to study, your words, and drills.
 const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/', label: 'Today', short: 'Today', icon: House, end: true },
+  { to: '/roadmap', label: 'Roadmap', short: 'Plan', icon: MapIcon },
   { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/listening/story', '/audio', '/talk', '/writing'] },
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
   { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
@@ -39,6 +41,7 @@ const NAV: (NavItem & { also?: string[] })[] = [
 const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
 
 export function Layout() {
+  useStudyTimer()
   const { due, grammar, weak } = useBadges()
   const { pathname } = useLocation()
   const active = (item: (typeof NAV)[number]) => isActive(pathname, item.to, item.end) || (item.also ?? []).some((p) => isActive(pathname, p))
@@ -75,7 +78,7 @@ export function Layout() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <AppShell.Navbar p="sm" aria-label="Main navigation">
+      <AppShell.Navbar p="sm" bg="var(--nav-bg)" aria-label="Main navigation">
         <AppShell.Section>
           <UnstyledButton component={Link} to="/" aria-label="Petit à petit — home" p="xs" mb="sm">
             <Group gap="sm">
@@ -101,7 +104,7 @@ export function Layout() {
         <Outlet />
       </AppShell.Main>
 
-      <AppShell.Footer aria-label="Main navigation" component="nav" hiddenFrom="sm">
+      <AppShell.Footer bg="var(--nav-bg)" aria-label="Main navigation" component="nav" hiddenFrom="sm">
         <Group grow h="100%" gap={0} px={4}>
           {NAV.map((item) => {
             const { to, short, icon: Icon } = item
@@ -129,6 +132,7 @@ export function Layout() {
 
 /** Wrapper for full-screen study sessions (no navigation chrome). */
 export function FocusLayout() {
+  useStudyTimer()
   return (
     <Box bg="var(--bg)" mih="100dvh">
       <Outlet />

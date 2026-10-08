@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { noteSound } from './attention'
 
 export const speechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
@@ -57,8 +58,12 @@ export function speak(text: string, opts: SpeakOptions = {}): void {
   u.lang = voice?.lang ?? 'fr-FR'
   u.rate = opts.rate ?? 0.95
   u.onstart = () => opts.onStart?.()
-  u.onend = () => opts.onEnd?.()
+  u.onend = () => {
+    noteSound()
+    opts.onEnd?.()
+  }
   u.onerror = () => opts.onEnd?.()
+  noteSound()
   synth.speak(u)
 }
 
@@ -131,8 +136,12 @@ export function say(text: string, o: SayOptions): Promise<void> {
       resolve()
     }
     const timer = setTimeout(finish, (text.length / 10 / rate) * 1000 + 5000)
-    u.onend = finish
+    u.onend = () => {
+      noteSound()
+      finish()
+    }
     u.onerror = finish
+    noteSound()
     synth.speak(u)
   })
 }

@@ -35,7 +35,7 @@ export function Ring({ value, size = 64, stroke = 7, label, children }: { value:
       size={size}
       thickness={stroke}
       roundCaps={v > 0}
-      sections={[{ value: v * 100, color: v >= 1 ? 'green' : 'indigo' }]}
+      sections={[{ value: v * 100, color: v >= 1 ? 'green' : 'accent' }]}
       label={
         <Text ta="center" fw={700} size="sm">
           {children}
@@ -83,7 +83,7 @@ export function Callout({ kind, children }: { kind: 'tip' | 'warn'; children: Re
   return (
     <Alert
       variant="light"
-      color={kind === 'tip' ? 'indigo' : 'orange'}
+      color={kind === 'tip' ? 'blue' : 'orange'}
       icon={kind === 'tip' ? <Lightbulb size={18} aria-hidden /> : <AlertTriangle size={18} aria-hidden />}
       my="md"
     >

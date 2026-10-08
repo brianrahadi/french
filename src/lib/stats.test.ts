@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { initialState } from './store'
-import { answersHistory, periodDays, periodLabel, periodOf, recap, shiftPeriod } from './stats'
+import { answersHistory, levelSections, percent, periodDays, periodLabel, periodOf, recap, shiftPeriod } from './stats'
+import { LESSONS } from '../data/grammar'
+import { SCENARIOS } from '../data/scenarios'
+import { STORIES } from '../data/stories'
+import { THEMED_DECKS } from '../data/vocab'
+import { WRITING_PROMPTS } from '../data/writing'
+import type { Conversation } from '../features/talk/types'
+import type { WritingEntry } from './store'
 
 const base = { ...initialState, activity: {}, cards: {}, lessons: {}, read: {}, stories: {}, writings: [], conversations: [], audio: {}, listening: {}, speaking: {} }
 const activity = {
@@ -45,5 +52,39 @@ describe('recap', () => {
     expect(rows).toHaveLength(12)
     expect(rows[11].answers).toBe(13)
     expect(rows[10].answers).toBe(5)
+  })
+})
+
+describe('level sections', () => {
+  it('counts what is done in each skill at one level', () => {
+    const lesson = LESSONS.find((l) => l.level === 'A2')!
+    const deck = THEMED_DECKS.find((d) => d.level === 'A2')!
+    const prompt = WRITING_PROMPTS.find((p) => p.level === 'A2')!
+    const [talked, unfinished] = SCENARIOS.filter((x) => x.level === 'A2')
+    const story = STORIES.find((x) => x.level === 'A2')!
+    const s = {
+      ...base,
+      introduced: { [deck.words[0].id]: '2026-09-01', [deck.words[1].id]: '2026-09-02k' },
+      lessons: { [lesson.id]: { attempts: 1, best: 0.7, last: 0.7, lastAt: '', step: 0 } },
+      writings: [{ promptId: prompt.id }, { promptId: 'free' }] as WritingEntry[],
+      conversations: [{ scenarioId: talked.id, feedback: {} }, { scenarioId: unfinished.id }] as Conversation[],
+      stories: { [story.id]: { n: 1, best: 50, last: 50, at: '' } },
+    }
+    const a2 = levelSections('A2', s)
+    expect(a2.vocabulary.done).toBe(2)
+    expect(a2.grammar).toEqual({ done: 1, total: LESSONS.filter((l) => l.level === 'A2').length })
+    expect(a2.writing.done).toBe(1)
+    expect(a2.speaking.done).toBe(1)
+    expect(a2.listening.done).toBe(0) // 50% on a story isn't a pass
+    expect(a2.reading.done).toBe(0)
+    expect(levelSections('A1', s).grammar.done).toBe(0)
+  })
+
+  it('rounds down, but shows any start', () => {
+    expect(percent({ done: 0, total: 10 })).toBe(0)
+    expect(percent({ done: 0, total: 0 })).toBe(0)
+    expect(percent({ done: 1, total: 300 })).toBe(1)
+    expect(percent({ done: 199, total: 200 })).toBe(99)
+    expect(percent({ done: 3, total: 3 })).toBe(100)
   })
 })

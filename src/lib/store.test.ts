@@ -19,7 +19,7 @@ describe('sync bookkeeping in the store', () => {
     expect(withSyncMeta(old).sync.devices[DEVICE_ID]).toEqual(old.activity)
   })
   it('stamps shared settings key by key, but not device settings', () => {
-    useStore.getState().updateSettings({ voiceURI: 'x', theme: 'dark' })
+    useStore.getState().updateSettings({ voiceURI: 'x', theme: 'dark', palette: 'onyx' })
     expect(useStore.getState().sync.changed).toEqual({})
     useStore.getState().updateSettings({ dailyGoal: 50 })
     expect(Object.keys(useStore.getState().sync.changed)).toEqual(['settings.dailyGoal'])
@@ -44,6 +44,24 @@ describe('sync bookkeeping in the store', () => {
     expect(useStore.getState().sync.deleted['writing:w1']).toBeTruthy()
     useStore.getState().resetAll()
     expect(useStore.getState().sync.epoch).not.toBe('')
+  })
+})
+
+describe('study time and finished conversations', () => {
+  it('adds study time to this device’s day', () => {
+    useStore.getState().addStudyTime('2026-10-12', { grammar: 30 })
+    useStore.getState().addStudyTime('2026-10-12', { grammar: 15, talk: 5 })
+    expect(useStore.getState().studyTime[DEVICE_ID]['2026-10-12']).toEqual({ grammar: 45, talk: 5 })
+  })
+  it('keeps a short record of each finished conversation, and forgets it when the conversation is deleted', () => {
+    const at = new Date().toISOString()
+    const c = { id: 'c1', scenarioId: 'cafe', title: '', level: 'A1' as const, turns: [], goalsMet: [], startedAt: at, updatedAt: at, model: '' }
+    useStore.getState().saveConversation(c)
+    expect(useStore.getState().talkLog).toEqual({})
+    useStore.getState().saveConversation({ ...c, feedback: { summary: '', score: 72, level: 'A1', strengths: [], improvements: [], vocabulary: [], tip: '' } })
+    expect(useStore.getState().talkLog.c1).toEqual({ scenarioId: 'cafe', level: 'A1', score: 72, at })
+    useStore.getState().deleteConversation('c1')
+    expect(useStore.getState().talkLog.c1).toBeUndefined()
   })
 })
 

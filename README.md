@@ -14,11 +14,23 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 
 ## What’s inside
 
+**Roadmap — 52 weeks to DELF B2, one lesson a day**
+- *Roadmap* lays out five phases (A1 → A2 → B1 → B2 → exam block), each with what it uses in the app and its exit test. Pick the Monday you start and your starting level (A2 starts at week 13, B1 at 25, B2 at 39).
+- Every week has one grammar focus linked to the app’s lessons, a theme, a writing task and a role-play. Travel, holiday and deload weeks keep the habit with no new material.
+- **Today** shows the day’s lesson in order: the mixed session first, then the weekday’s job (Mon new grammar · Tue listening · Wed writing · Thu consolidation · Fri conversation · Sat a long session · Sun review). About 75 min on weekdays, 2 h on Saturday, 1 h on Sunday.
+- Everything happens in the app: role-plays twice a week, and from B2 a **DELF B2 oral exam** role-play every Friday; timed writing (`?timed=60`) in the exam block. Blocks tick themselves off when you do them (a lesson, a writing, a conversation, dictation, a story, a text, an audio lesson, words added), and can also be ticked by hand. *Rough day* swaps in a 25-minute minimum.
+- Each phase's **exit test is measured from your progress**, area by area (grammar, listening, reading, writing, speaking, review, study time): everything the app has at that level done (every lesson, story, audio lesson, graded text, writing prompt and role-play), plus the volume the phase's daily lessons add up to (A1: 20 corrected writings, 15 finished conversations, 200 dictation sentences, 8 extra texts, 800 words and 92 hours of study, and so on). Today shows how far along each area is; the Library, Grammar, Dictation, Speaking and Vocabulary pages show their own lines.
+- When the week's writing prompt or role-play is already done, the plan suggests the next one at your level you haven't done, so following it clears everything.
+- **Study time** is counted while a study page is open and in use (input or audio in the last two minutes), per area and per device, and synced. It's compared with what the plan asks for on the Roadmap, Today and each section; the Profile shows it per day and per area. Days before tracking started are estimated from what you did.
+- The plan and ticked blocks sync with the rest of your progress. What's still to build is in [`docs/roadmap-next.md`](docs/roadmap-next.md).
+
 **Today’s session — one mixed daily session**
 - Press **Start** (or `Enter`) on Today to get everything that’s due in one queue: vocabulary reviews, a few new words, spaced reviews of grammar lessons, practice from lessons you’ve studied, a short adaptive conjugation drill, two dictation sentences and a couple of your own past mistakes to fix.
-- The kinds of practice are interleaved rather than done in blocks, which tends to improve retention. Missed grammar, verb and fix-it items come back a few questions later.
+- The kinds of practice are interleaved rather than done in blocks, which tends to improve retention. Missed words, grammar, verb and fix-it items come back a few questions later; anything you get right isn’t asked again in the same session.
+- Each topic runs in course order, A1 → B2. New words go level by level across your decks (a level’s themed decks, then its frequency decks); grammar practice starts with the lowest lesson you haven’t mastered; a new tense joins the drill only once every verb has met the tenses below it; new dictation sentences come from the lowest level you haven’t heard. Reviews still come up when due, A1 first, and each question shows its level.
 - Grammar points you keep getting wrong (in drills, writing or conversation) get extra questions.
 - Grammar lessons that are due for review are scored inside the session, and their review schedule moves on (or resets) accordingly.
+- Leaving part-way loses nothing: every answer is saved as you go, and **Continue** on Today picks the session up where you stopped (same day, same device). A lesson review left half-done is finished when you continue, or scored with the answers you gave if you don’t that day.
 - Capped at about 25 reviews + 5 new words + 5 grammar + 5 verbs + 2 dictation + 2 fixes (≈15 min). Dictation and read-aloud items can be switched on or off in Settings.
 
 **Weak spots — every mistake in one place**
@@ -27,10 +39,13 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - **Practice** builds a targeted session: exercises from your weakest lessons, the verb forms you miss, your slippery words, “fix your own sentence” items made from your writing and conversation corrections, and sentences you misheard.
 
 **Listening — short stories and dictation**
-- 12 short stories (A1 → B2, 1–2 minutes each) to listen to without the text: play, pause, skip back a sentence, slow / normal / fast. Then answer comprehension questions, check your score with explanations, and read the transcript (tap any word to look it up) with its translation. Your best score is kept for each story.
+- 16 short stories (A1 → B2, 1–2 minutes each) to listen to without the text: play, pause, skip back a sentence, slow / normal / fast. Then answer comprehension questions, check your score with explanations, and read the transcript (tap any word to look it up) with its translation. Your best score is kept for each story.
 - Hear a sentence (normal or slow, as often as you like), type it, and see each word marked: right, accent slip, wrong, missed or extra.
 - Mistakes are classified — silent endings (*parle / parlent*, *aimé / aimer*), sound-alikes (*a / à*, *et / est*, *ces / ses*), accents, missed little words, spelling — with a short tip for each.
 - Sentences come from the words you’re learning or from any level (≈700 sentences from the decks and lessons). Sentences that went badly come back.
+
+**Audio course — hands-free, Pimsleur-style**
+- 44 audio lessons in one course from A1 to B2 (12 at A1, 12 at A2, 12 at B1, 8 at B2): a short dialogue, then each phrase modelled, built up from the end and asked for again at growing intervals, a role play where you take one part, and the dialogue once more. About 12–15 minutes each; earlier lessons are reviewed at the start of the next.
 
 **Speaking — read aloud, listen & repeat**
 - Say a sentence; speech recognition shows which words came across clearly, and you can play your recording next to the native model. Missed words get a pronunciation tip (u vs ou, nasal vowels, the French r…).
@@ -38,31 +53,31 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Uses the browser’s speech recognition (Chrome, Edge, Safari). In browsers without it (Firefox, Brave) recordings can be transcribed by OpenAI or Gemini if you’ve connected them — otherwise you record and compare by ear.
 
 **Reading — graded texts and your own**
-- 10 original graded texts (A1 → B2) with translations, anything you paste in, or a new story written for you at your level on any topic, using the words you’re currently learning.
+- 18 original graded texts (A1 → B2) with translations, anything you paste in, or a new story written for you at your level on any topic, using the words you’re currently learning.
 - Tap any word: the dictionary entry, which verb and tense a form comes from (*allée* → past participle of *aller*), and — with an AI connected — what it means in *this* sentence. Extend the selection with ‹ › to look up whole expressions.
 - Add words to your flashcards with the sentence as the example. Words you’re learning are underlined as you read.
 - Listen to the text with sentence-by-sentence highlighting; show the translation paragraph by paragraph.
 - **After reading**, every word from the text that's in your vocabulary bank is listed (rarest first) and you say whether you recognised it: known words get a recognition card scheduled days ahead, the rest start learning today (and don't use up your daily new words if you knew them). Words already in your reviews count as a review when they're due; hide any word you never want asked about.
 
 **Conversation — role-play with an AI partner**
-- 16 real situations from A1 to B2 (café, bakery, directions, hotel, doctor, job interview, flat visit, returning a product, negotiating, a debate on remote work…), each with goals to reach and useful phrases, plus free conversation on any topic.
+- 40 real situations from A1 to B2, ten per level (café, market, train tickets, hotel, lost luggage, post office, job interview, a noisy neighbour, cancelling a contract, negotiating, a radio interview, announcing bad news to a client…), each with goals to reach and useful phrases, plus free conversation on any topic.
 - Replies stream in and stay in character; each of your messages is quietly checked, with corrections, the rule and the lesson that covers it.
 - Stuck? Tap the lightbulb for ideas of what to say (or write in English), show translations, hear every reply aloud, tap words to look them up, dictate your answer with the microphone.
 - **Finish** for feedback on the whole conversation: a score, strengths, what to work on with better phrasings, words to keep and a tip for next time.
 
 **Writing — corrections with explanations**
-- 20 writing prompts from A1 to B2, each aimed at specific grammar (e.g. *Mon week-end dernier* → passé composé), plus free writing and your own topic.
+- 46 writing prompts from A1 to B2, each aimed at specific grammar (e.g. *Mon week-end dernier* → passé composé), plus free writing and your own topic.
 - Editor with accent keys, a word-count target, clickable “useful phrases”, and drafts saved automatically.
 - Every mistake is marked inline, explained in English and linked to the lesson that teaches it. You also get a minimally corrected version, a more natural version, what you did well, and words worth keeping — added to your flashcards in one click.
 - “Rewrite it yourself” lets you fix the text using the feedback and compares the two scores.
 
-**Grammar — 30 lessons, A1 → B2, 562 exercises**
+**Grammar — 53 lessons, A1 → B2**
 - Full lessons, not just rules: when and why to use each structure, formation tables, irregular forms, word order, contrasts with English, dozens of audio examples per lesson, “watch out” boxes for classic mistakes and a quick summary at the end.
 - Five exercise types: fill-in-the-blank, multiple choice, sentence building, translation, transformation.
 - Instant feedback with a character-level diff and an explanation on every item. Wrong answers come back once at the end of the session.
 - Score 80% to master a lesson; mastered lessons return for spaced review (1 → 3 → 7 → 16 → 35 → 90 days).
 
-**Vocabulary — 5,000+ words: 25 themed decks plus the 5,000 most frequent French words**
+**Vocabulary — 5,000+ words: 29 themed decks plus the 5,000 most frequent French words**
 - **Top 5000** is one switch: the most frequent French words, introduced strictly in frequency order (most common first), without themes or levels. Words that are also in a themed deck are shared, so you never learn one twice.
 - Scheduled with **FSRS** (the modern algorithm Anki now uses) via [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs).
 - Every word is learned both ways: *recognition* (FR → EN, self-graded) and *production* (EN → FR, typed and auto-graded, then you confirm the rating).
@@ -160,12 +175,13 @@ It’s a static site — any static host works.
 
 ```
 content/          everything learners study, as Markdown — see content/README.md
-  grammar/        30 lessons: explanations + exercises (a1/ … b2/)
-  vocab/          25 themed decks (a1/ … b2/) + 50 frequency decks (top5000/)
-  reading/        10 graded texts with translations
-  stories/        12 listening stories with comprehension questions
-  conversations/  16 AI role-plays (goals, phrases, character brief)
-  writing/        20 writing prompts linked to lessons
+  grammar/        53 lessons: explanations + exercises (a1/ … b2/)
+  vocab/          29 themed decks (a1/ … b2/) + 50 frequency decks (top5000/)
+  reading/        18 graded texts with translations
+  stories/        16 listening stories with comprehension questions
+  audio/          44 audio lessons, one course from A1 to B2
+  conversations/  40 AI role-plays (goals, phrases, character brief)
+  writing/        46 writing prompts linked to lessons
   pronunciation/  8 sound practice sets
 src/
   content/        reads content/*.md at build time (parser + Vite plugin)
@@ -179,10 +195,11 @@ src/
     sync/         Supabase sign-in and sync (engine) and item-by-item merging (merge)
     mistakes.ts   records mistakes from every kind of practice
     speech.ts     French text-to-speech
+    studyTime.ts  study time per area, day and device; useStudyTimer.ts counts it while you study
     recognition.ts microphone: speech recognition, recording, level meter
     ai/           providers (Claude, OpenAI, Gemini, OpenRouter, OpenAI-compatible),
                   client (streaming, JSON, fallbacks), writing feedback
-  features/       today, session (daily + weak-spot sessions), vocab, grammar,
+  features/       today, roadmap (52-week plan, daily lesson, exit tests by area), session (daily + weak-spot sessions), vocab, grammar,
                   conjugation, verbs, listening, speaking, reading, talk,
                   writing, weak, practice, privacy, settings
   components/     shared UI (feedback sheet, accent bar, dialogs, AI setup…)

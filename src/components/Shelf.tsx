@@ -11,6 +11,7 @@ export function Shelf({
   count,
   action,
   hint,
+  above,
   children,
 }: {
   /** Anchor for links like /library#stories. */
@@ -21,6 +22,8 @@ export function Shelf({
   action?: ReactNode
   /** One short line under the title. */
   hint?: ReactNode
+  /** A block between the title and the row, e.g. roadmap progress for this kind of content. */
+  above?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -43,6 +46,7 @@ export function Shelf({
           {hint}
         </Text>
       )}
+      {above}
       <Scroller draggable={false} edgeGradientColor="var(--bg)" controlSize={36}>
         <Group gap="md" wrap="nowrap" align="stretch" py={4} px={2} style={{ whiteSpace: 'normal' }}>
           {children}

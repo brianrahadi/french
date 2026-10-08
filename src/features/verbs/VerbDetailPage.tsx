@@ -45,7 +45,7 @@ export default function VerbDetailPage() {
         <Group gap="xs" mt="sm">
           <SpeakButton text={v.inf} />
           {v.group === 'irr' ? <Badge color="orange">irregular</Badge> : <Badge color="gray">regular -{v.group}</Badge>}
-          <Badge color={v.aux === 'etre' ? 'indigo' : 'gray'}>auxiliary: {v.aux === 'etre' ? 'être' : 'avoir'}</Badge>
+          <Badge color={v.aux === 'etre' ? 'blue' : 'gray'}>auxiliary: {v.aux === 'etre' ? 'être' : 'avoir'}</Badge>
           <Badge color="gray" tt="none">
             past participle:{' '}
             <span lang="fr">{pastParticiple(v)}</span>

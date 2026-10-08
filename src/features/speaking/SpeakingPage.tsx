@@ -16,6 +16,7 @@ import { useAiConfig } from '../../lib/ai'
 import { frTypo } from '../../lib/words'
 import { poolFor, type SentenceSource } from '../listening/sentences'
 import type { SpeakMode } from './SpeakQuestion'
+import { RoadmapStrip } from '../roadmap/progress'
 
 export default function SpeakingPage() {
   useDocumentTitle('Speaking')
@@ -45,6 +46,8 @@ export default function SpeakingPage() {
         eyebrow="Expression orale"
         title="Speaking"
       />
+
+      <RoadmapStrip area="speaking" only={['sounds', 'read-aloud']} />
 
       {!micSupported ? (
         <Callout kind="warn">This page can’t use a microphone here. Open the app over https (or on localhost) in a recent browser.</Callout>
@@ -120,7 +123,7 @@ export default function SpeakingPage() {
             onClick={() => start(`sound:${set.id}`, set.sentences.length)}
             disabled={!micSupported}
             top={
-              <Text className="fr" fz={22} fw={600} c="indigo" lh={1}>
+              <Text className="fr" fz={22} fw={600} c="accent" lh={1}>
                 {set.sound}
               </Text>
             }

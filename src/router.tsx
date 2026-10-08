@@ -27,6 +27,7 @@ export const router = createBrowserRouter(
       HydrateFallback: Fallback,
       children: [
         { index: true, lazy: page(() => import('./features/today/TodayPage')) },
+        { path: 'roadmap', lazy: page(() => import('./features/roadmap/RoadmapPage')) },
         { path: 'vocab', lazy: page(() => import('./features/vocab/VocabPage')) },
         { path: 'grammar', lazy: page(() => import('./features/grammar/GrammarPage')) },
         { path: 'grammar/:id', lazy: page(() => import('./features/grammar/LessonPage')) },
@@ -62,6 +63,7 @@ export const router = createBrowserRouter(
         { path: 'session', lazy: page(() => import('./features/session/MixedSession')) },
         { path: 'vocab/study', lazy: page(() => import('./features/vocab/StudySession')) },
         { path: 'grammar/:id/practice', lazy: page(() => import('./features/grammar/PracticeSession')) },
+        { path: 'grammar/check/:level', lazy: page(() => import('./features/grammar/LevelCheck')) },
         { path: 'conjugation/drill', lazy: page(() => import('./features/conjugation/DrillSession')) },
         { path: 'listening/session', lazy: page(() => import('./features/listening/DictationSession')) },
         { path: 'speaking/session', lazy: page(() => import('./features/speaking/SpeakingSession')) },

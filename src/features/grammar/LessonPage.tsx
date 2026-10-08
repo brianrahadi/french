@@ -1,6 +1,7 @@
-import { Link, useNavigate, useParams } from 'react-router'
+import { useEffect } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { Blockquote, Box, Button, Card, Container, Group, List, Paper, Stack, Table, Text, Title } from '@mantine/core'
-import { ArrowRight, Clock, Dumbbell } from 'lucide-react'
+import { ArrowRight, Clock, Dumbbell, ShieldCheck } from 'lucide-react'
 import { LESSON_BY_ID, LESSONS, nextLesson } from '../../data/grammar'
 import type { Block } from '../../data/types'
 import { Callout, Kbd, LevelBadge, Rich } from '../../components/ui'
@@ -12,6 +13,8 @@ import { useMediaQuery } from '@mantine/hooks'
 import { lessonStatus } from './status'
 import { frTypo } from '../../lib/words'
 import { relativeDay, parseDayKey } from '../../lib/date'
+import { GoalChecklist } from './GoalResults'
+import { checkSize, defaultMode, REVIEW_SIZE } from './goals'
 
 function BlockView({ block }: { block: Block }) {
   switch (block.type) {
@@ -65,7 +68,7 @@ function BlockView({ block }: { block: Block }) {
       )
     case 'examples':
       return (
-        <Blockquote color="indigo" p="xs" pl="sm" radius="md">
+        <Blockquote color="accent" p="xs" pl="sm" radius="md">
           <Stack component="ul" gap={10} m={0} p={0} style={{ listStyle: 'none' }}>
             {block.items.map((e, i) => (
               <Group component="li" key={i} gap={6} align="flex-start" wrap="nowrap">
@@ -100,6 +103,7 @@ function BlockView({ block }: { block: Block }) {
 
 export default function LessonPage() {
   const { id = '' } = useParams()
+  const { hash } = useLocation()
   const lesson = LESSON_BY_ID[id]
   const navigate = useNavigate()
   const p = useStore((s) => s.lessons[id])
@@ -110,6 +114,13 @@ export default function LessonPage() {
   const withBottomNav = useMediaQuery('(max-width: 860px)') ?? false
   const barHidden = useHideOnScroll({ enabled: withBottomNav })
 
+  // “Re-read” links from practice results point at a section (#s2).
+  useEffect(() => {
+    if (!hash) return
+    const el = document.getElementById(hash.slice(1))
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }))
+  }, [hash, id])
+
   if (!lesson) {
     return (
       <Container size={960} py="xl">
@@ -119,8 +130,16 @@ export default function LessonPage() {
   }
 
   const status = lessonStatus(p)
+  const mode = defaultMode(p)
   const nl = nextLesson(lesson.id)
   const index = LESSONS.findIndex((l) => l.id === lesson.id)
+  const canTestOut = status === 'new' || status === 'started'
+  const practiceHint =
+    mode === 'review'
+      ? `${Math.min(REVIEW_SIZE, lesson.exercises.length)} questions · weakest goals first`
+      : mode === 'learn'
+        ? `${lesson.exercises.length} exercises · goal by goal`
+        : `${lesson.exercises.length} exercises · instant feedback`
 
   return (
     <Container size={780} py="xl">
@@ -136,14 +155,27 @@ export default function LessonPage() {
           <Group gap={4} c="dimmed" fz="sm">
             <Clock size={14} aria-hidden /> {lesson.minutes} min
           </Group>
-          {p && (
+          {p?.attempts ? (
             <Text size="sm" c="dimmed">
               Best score <strong className="tnum">{Math.round(p.best * 100)}%</strong>
               {p.nextReview && status !== 'started' && <> · next review {relativeDay(parseDayKey(p.nextReview))}</>}
             </Text>
-          )}
+          ) : null}
         </Group>
+        {canTestOut && lesson.goals.length > 0 && (
+          <Button
+            component={Link}
+            to={`/grammar/${lesson.id}/practice?mode=check`}
+            variant="light"
+            mt="md"
+            leftSection={<ShieldCheck size={17} aria-hidden />}
+          >
+            Already know this? Take the {checkSize(lesson)}-question check
+          </Button>
+        )}
       </PageHeader>
+
+      {lesson.goals.length > 0 && <GoalChecklist lesson={lesson} progress={p} />}
 
       {lesson.sections.length > 2 && (
         <Group component="nav" aria-label="On this page" gap={8} mb={26} visibleFrom="xs">
@@ -205,11 +237,11 @@ export default function LessonPage() {
           <Group justify="space-between" wrap="nowrap" gap="md">
             <div style={{ minWidth: 0 }}>
               <Text fw={700} size={withBottomNav ? 'sm' : undefined} truncate>
-                {status === 'due' ? 'Time for a quick review' : p ? 'Practice again' : 'Ready to practice?'}
+                {mode === 'review' ? 'Time for a quick review' : mode === 'practice' ? 'Practice again' : 'Ready to practice?'}
               </Text>
               {!withBottomNav && (
                 <Text size="sm" c="dimmed">
-                  {lesson.exercises.length} exercises · instant feedback
+                  {practiceHint}
                 </Text>
               )}
             </div>
@@ -221,7 +253,7 @@ export default function LessonPage() {
               rightSection={withBottomNav ? undefined : <Kbd>P</Kbd>}
               style={{ flexShrink: 0 }}
             >
-              Practice
+              {mode === 'review' ? 'Review' : 'Practice'}
             </Button>
           </Group>
         </Paper>

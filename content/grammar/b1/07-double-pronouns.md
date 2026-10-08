@@ -16,7 +16,7 @@ Verbs like *donner, dire, envoyer, montrer, prêter, expliquer, offrir* take two
 | ---------- | ------------ | ---------- | -- | -- |
 | me, te, se, nous, vous | le, la, les | lui, leur | y  | en |
 
-Read it left to right — at most one pronoun from each column:
+Read it left to right, with at most one pronoun from each column:
 
 - Il me donne le livre. → Il me le donne. | He gives it to me.
 - Je donne la lettre à Paul. → Je la lui donne. | I give it to him.
@@ -61,7 +61,7 @@ In **positive** commands, the pronouns go **after** the verb, with hyphens, and 
 **me / te** become **moi / toi** at the end, but **m’ / t’** before en: *Donne-m’en*, *Va-t’en !* (Go away!).
 
 > [!WARNING]
-> Negative commands go back to the normal order: ***Ne me le dis pas*** — not ~~Ne le-moi dis pas~~.
+> Negative commands go back to the normal order: ***Ne me le dis pas***, not ~~Ne le-moi dis pas~~.
 
 ## In everyday speech
 
@@ -74,27 +74,38 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - Positive imperative: verb-le-moi, verb-la-lui, donne-m’en.
 - Negative imperative: normal order before the verb.
 
+## Goals
+
+- order: Put two pronouns in order: me le, le lui § The order before the verb
+- y-en: Add y and en last: il y en a, je vous en prie § With y and en
+- compound: Place them in compound tenses and with infinitives § In compound tenses and with infinitives
+- imperative: Order pronouns in commands: Donne-le-moi § The positive imperative: a different order
+
 ## Exercises
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Il me donne le livre.
 - answer: Il me le donne
+- goal: order
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Je donne la lettre à Paul.
 - answer: Je la lui donne
+- goal: order
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Elle raconte l’histoire aux enfants.
 - answer: Elle la leur raconte
+- goal: order
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Tu nous montres tes photos ?
 - answer: Tu nous les montres ?
+- goal: order
 
 ### mcq
 - prompt: Je vais offrir ce cadeau à ma mère. →
@@ -102,6 +113,7 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - [ ] Je vais lui le offrir.
 - [ ] Je le vais lui offrir.
 - explain: le before lui, both before the infinitive.
+- goal: order
 
 ### mcq
 - prompt: Il m’a donné des conseils. →
@@ -109,6 +121,7 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - [x] Il m’en a donné.
 - [ ] Il en m’a donné.
 - explain: des conseils → en; me → m’ before a vowel.
+- goal: y-en
 
 ### mcq
 - prompt: Give it to me! (the key, tu)
@@ -116,53 +129,62 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - [x] Donne-la-moi !
 - [ ] Me la donne !
 - explain: Imperative: direct (la) before indirect (moi).
+- goal: imperative
 
 ### cloze
 - sentence: Tu as dit la vérité à tes parents ? — Oui, je ___ ai dit.
 - answer: la leur
 - en: Did you tell your parents the truth? — Yes, I told them.
 - explain: la (the truth) + leur (to the parents).
+- goal: compound
 
 ### cloze
 - sentence: Vous avez des questions ? — Oui, j’___ ai deux.
 - answer: en
 - en: Do you have questions? — Yes, I have two.
 - explain: Quantity → en.
+- goal: y-en
 
 ### order
 - en: She sends it to them.
 - words: Elle le leur envoie
 - extra: lui
 - punct: .
+- goal: order
 
 ### translate
 - en: Don’t give it to him! (tu, the book)
 - answer: Ne le lui donne pas !
 - answer: Ne le lui donne pas
+- goal: imperative
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Je prête ma voiture à mon frère.
 - answer: Je la lui prête
 - explain: la (ma voiture) before lui (à mon frère).
+- goal: order
 
 ### transform
 - instruction: Replace both objects with pronouns.
 - source: Il nous a parlé de son voyage.
 - answer: Il nous en a parlé
 - explain: nous before en; both before the auxiliary.
+- goal: y-en
 
 ### cloze
 - sentence: Je vais ___ expliquer. (it, to them)
 - answer: le leur
 - en: I’m going to explain it to them.
 - explain: le before leur, both before the infinitive.
+- goal: compound
 
 ### cloze
 - sentence: Va-t’___ !
 - answer: en
 - en: Go away!
 - explain: s’en aller in the imperative: va-t’en.
+- goal: imperative
 
 ### mcq
 - prompt: “Show them to us!” (vous, the photos)
@@ -170,6 +192,7 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - [x] Montrez-les-nous !
 - [ ] Nous les montrez !
 - explain: Positive imperative: the direct pronoun (les) comes first.
+- goal: imperative
 
 ### mcq
 - prompt: “I’ve already told you (that).” (tu)
@@ -177,14 +200,17 @@ Spoken French often simplifies: *Je lui dis* (dropping *le* when it’s obvious)
 - [ ] Je le t’ai déjà dit.
 - [ ] Je t’ai le déjà dit.
 - explain: te before le, both before the auxiliary.
+- goal: compound
 
 ### order
 - en: He gave him two of them.
 - words: Il lui en a donné deux
 - extra: y
 - punct: .
+- goal: y-en
 
 ### translate
 - en: You’re welcome. (vous, formal)
 - answer: Je vous en prie
 - explain: A fixed polite expression with vous + en.
+- goal: y-en

@@ -2,7 +2,7 @@
 id: conditionnel
 title: The conditional & si clauses
 titleFr: Le conditionnel et les phrases avec si
-summary: would, could, should — and the golden rule of si clauses.
+summary: would, could, should, and the tenses in si clauses.
 minutes: 16
 ---
 
@@ -26,7 +26,7 @@ All the irregular future stems apply: *je ferais, j’irais, je voudrais, je dev
 
 ## Use 1: politeness
 
-The conditional softens requests and wishes — it’s the polite way to ask for things:
+The conditional softens requests and wishes:
 
 - Je voudrais un café, s’il vous plaît. | I’d like a coffee, please.
 - Pourriez-vous m’aider ? | Could you help me?
@@ -46,7 +46,7 @@ The conditional softens requests and wishes — it’s the polite way to ask for
 
 ## Use 3: hypotheses with si
 
-The golden rule of **si** clauses: **si + imparfait → conditional** for imaginary or unlikely situations:
+In **si** clauses: **si + imparfait → conditional** for imaginary or unlikely situations:
 
 | Type          | si clause      | Result clause      | Example                                          |
 | ------------- | -------------- | ------------------ | ------------------------------------------------ |
@@ -60,7 +60,7 @@ The golden rule of **si** clauses: **si + imparfait → conditional** for imagin
 - Je viendrais si je pouvais. | I’d come if I could.
 
 > [!WARNING]
-> **Never put the conditional (or the future) right after si**: ~~Si j’aurais le temps~~ is a famous mistake — even French people make it. It’s always **si j’avais**. The conditional goes in the *other* half of the sentence.
+> **Never put the conditional (or the future) right after si**: ~~Si j’aurais le temps~~ is wrong, though you’ll hear French speakers say it. It’s always **si j’avais**. The conditional goes in the *other* half of the sentence.
 
 The two halves can come in either order: *Je lirais plus **si** j’avais le temps.*
 
@@ -74,10 +74,21 @@ When reporting what someone **said** or **thought** about the future, the future
 
 ## Use 5: unconfirmed information
 
-Journalists use the conditional for facts that are **reported but not confirmed** — English uses “reportedly, allegedly, is said to”:
+Journalists use the conditional for facts that are **reported but not confirmed**, where English uses “reportedly, allegedly, is said to”:
 
 - Le président serait malade. | The president is reportedly ill.
 - L’accident aurait fait trois victimes. | The accident is said to have left three victims.
+
+## “would” and “could” that aren’t conditional
+
+English *would* and *could* don’t always translate as a conditional:
+
+- **would** = a past habit → **imparfait**: *Quand j’avais peur, je **fermais** les yeux* (When I was scared, I would close my eyes).
+- **could** = was able to, in the past → **pouvoir** in the **imparfait** or **passé composé**: *Elle croyait qu’elle **pouvait** le faire* (She thought she could do it). *Il **a pu** finir à temps* (He managed to finish on time).
+- **could have / should have** → **conditionnel passé**: *Tu **aurais pu** m’appeler ! Tu **aurais dû** me le dire.*
+
+> [!WARNING]
+> Ask yourself whether the English means “would, if…”. If it means “used to” or “was able to”, it’s not a conditional: ~~Quand j’étais petit, je jouerais dehors~~ → *je **jouais** dehors*.
 
 ## Quick summary
 
@@ -87,6 +98,16 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - si + imparfait → conditional (never conditional after si).
 - Future in the past and unconfirmed news.
 
+## Goals
+
+- formation: Form the conditional: future stem + imparfait endings § Formation: future stem + imparfait endings
+- politeness: Make polite requests (je voudrais, pourriez-vous) § Use 1: politeness
+- advice: Give advice and express wishes (tu devrais, j’aimerais) § Use 2: advice, wishes and regrets
+- si: Build hypotheses: si + imparfait → conditionnel § Use 3: hypotheses with si
+- future-past: Use the conditional as a future in the past § Use 4: future in the past
+- unconfirmed: Report unconfirmed information § Use 5: unconfirmed information
+- not-conditional: Spot “would” and “could” that need another tense § “would” and “could” that aren’t conditional
+
 ## Exercises
 
 ### cloze
@@ -95,6 +116,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: voudrais
 - en: I would like a tea, please.
 - explain: Polite conditional: je voudrais.
+- goal: politeness
 
 ### cloze
 - sentence: ___-vous m’aider ?
@@ -102,6 +124,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: Pourriez
 - en: Could you help me?
 - explain: vous + pourr- + iez.
+- goal: politeness
 
 ### cloze
 - sentence: Tu ___ dormir plus.
@@ -109,6 +132,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: devrais
 - en: You should sleep more.
 - explain: Advice: devoir in the conditional.
+- goal: advice
 
 ### cloze
 - sentence: Si j’avais le temps, je ___ plus.
@@ -116,6 +140,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: lirais
 - en: If I had time, I would read more.
 - explain: si + imparfait → conditionnel.
+- goal: si
 
 ### cloze
 - sentence: Si nous ___ riches, nous voyagerions.
@@ -123,6 +148,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: étions
 - en: If we were rich, we would travel.
 - explain: After si: imparfait.
+- goal: si
 
 ### cloze
 - sentence: Si tu viens, on ___ au restaurant.
@@ -130,6 +156,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: ira
 - en: If you come, we’ll go to the restaurant.
 - explain: si + présent → futur.
+- goal: si
 
 ### cloze
 - sentence: Ils ___ venir s’ils avaient une voiture.
@@ -137,6 +164,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: pourraient
 - en: They could come if they had a car.
 - explain: Hypothetical → conditionnel.
+- goal: formation
 
 ### mcq
 - prompt: If I were you, I would call her.
@@ -144,6 +172,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - [ ] Si je serais toi, je l’appellerais.
 - [ ] Si j’étais toi, je l’appellerai.
 - explain: si + imparfait, conditionnel in the main clause.
+- goal: si
 
 ### mcq
 - prompt: “Le président serait malade” (in a news report) means…
@@ -151,11 +180,13 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - [x] The president is reportedly sick.
 - [ ] The president will be sick.
 - explain: The journalistic conditional marks unconfirmed information.
+- goal: unconfirmed
 
 ### transform
 - instruction: Make it hypothetical (si + imparfait, conditionnel).
 - source: Si j’ai faim, je mange.
 - answer: Si j’avais faim, je mangerais
+- goal: si
 
 ### translate
 - en: I would like to live in Paris.
@@ -164,6 +195,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: Je voudrais vivre à Paris
 - answer: Je voudrais habiter à Paris
 - answer: J’aimerais habiter Paris
+- goal: advice
 
 ### cloze
 - sentence: À ta place, je ___ la vérité.
@@ -171,6 +203,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: dirais
 - en: If I were you, I’d tell the truth.
 - explain: Advice / hypothesis → conditional: dire → dirais.
+- goal: formation
 
 ### cloze
 - sentence: Il a dit qu’il ___ demain.
@@ -178,6 +211,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: viendrait
 - en: He said he would come tomorrow.
 - explain: Future in the past → conditional: viendr- + -ait.
+- goal: future-past
 
 ### cloze
 - sentence: Qu’est-ce que tu ferais si tu ___ au loto ?
@@ -185,6 +219,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: gagnais
 - en: What would you do if you won the lottery?
 - explain: si + imparfait → conditional in the result.
+- goal: si
 
 ### cloze
 - sentence: Il ___ mieux partir maintenant.
@@ -192,6 +227,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - answer: vaudrait
 - en: It would be better to leave now.
 - explain: il vaudrait mieux = it would be better.
+- goal: formation
 
 ### mcq
 - prompt: Which sentence is correct?
@@ -199,6 +235,7 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - [x] Si j’avais de l’argent, je voyagerais.
 - [ ] Si j’avais de l’argent, je voyagerai.
 - explain: si + imparfait → conditional. Never the conditional after si.
+- goal: si
 
 ### mcq
 - prompt: “L’accident aurait fait trois victimes” suggests the information is…
@@ -206,15 +243,42 @@ Journalists use the conditional for facts that are **reported but not confirmed*
 - [x] reported but not confirmed
 - [ ] a wish
 - explain: Journalistic conditional = unconfirmed information.
+- goal: unconfirmed
 
 ### transform
 - instruction: Make the request more polite (conditional).
 - source: Je veux un verre d’eau.
 - answer: Je voudrais un verre d’eau
 - explain: vouloir → je voudrais for polite requests.
+- goal: politeness
 
 ### translate
 - en: You should rest.
 - answer: Tu devrais te reposer
 - answer: Vous devriez vous reposer
 - explain: devoir in the conditional = should.
+- goal: advice
+
+### mcq
+- prompt: “When I was little, I would play outside every day.”
+- [ ] Quand j’étais petit, je jouerais dehors tous les jours.
+- [x] Quand j’étais petit, je jouais dehors tous les jours.
+- [ ] Quand j’étais petit, j’ai joué dehors tous les jours.
+- explain: “would” here describes a past habit → imparfait, not the conditional.
+- goal: not-conditional
+
+### cloze
+- sentence: Je pensais que tu ___ là.
+- hint: être
+- answer: serais
+- en: I thought you would be there.
+- explain: Future seen from the past → conditional.
+- goal: future-past
+
+### mcq
+- prompt: “When it rained, we would stay inside.”
+- [ ] Quand il pleuvait, nous resterions à l’intérieur.
+- [x] Quand il pleuvait, nous restions à l’intérieur.
+- [ ] Quand il pleuvait, nous sommes restés à l’intérieur.
+- explain: This “would” is a past habit → imparfait.
+- goal: not-conditional

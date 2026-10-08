@@ -13,6 +13,7 @@ import {
   type Deck,
   type Exercise,
   type Lesson,
+  type LessonGoal,
   type LessonSection,
   type Level,
   type ReaderTextDef,
@@ -167,10 +168,17 @@ export function parseLesson(doc: MdDocument, level: Level): Lesson {
 
   const lessonSections: LessonSection[] = []
   const exercises: Exercise[] = []
+  const exerciseLines: number[] = []
   let inExercises = false
+  let inGoals = false
+  let goalItems: ListItem[] | null = null
+  let goalsLine = 1
   let current: { type: string; line: number; items: ListItem[] } | null = null
   const finishExercise = () => {
-    if (current) exercises.push(parseExercise(current.type, current.items, current.line))
+    if (current) {
+      exercises.push(parseExercise(current.type, current.items, current.line))
+      exerciseLines.push(current.line)
+    }
     current = null
   }
 
@@ -178,8 +186,21 @@ export function parseLesson(doc: MdDocument, level: Level): Lesson {
     if (b.kind === 'heading' && b.depth === 1) fail('Use ## for section headings; the title goes in the front matter.', b.line)
     if (b.kind === 'heading' && b.depth === 2) {
       if (inExercises) fail('"## Exercises" must be the last section.', b.line)
+      inGoals = key(b.text) === 'goals'
       if (key(b.text) === 'exercises') inExercises = true
-      else lessonSections.push({ heading: b.text, blocks: [] })
+      else if (inGoals) {
+        if (goalItems) fail('A lesson has only one "## Goals" section.', b.line)
+        goalItems = []
+        goalsLine = b.line
+      } else {
+        if (goalItems) fail('"## Goals" goes right before "## Exercises".', b.line)
+        lessonSections.push({ heading: b.text, blocks: [] })
+      }
+      continue
+    }
+    if (inGoals) {
+      if (b.kind !== 'list') fail('Write each goal as "- id: what the learner can do § Section heading".', b.line)
+      goalItems!.push(...(b as { items: ListItem[] }).items)
       continue
     }
     if (inExercises) {
@@ -201,6 +222,17 @@ export function parseLesson(doc: MdDocument, level: Level): Lesson {
   if (!lessonSections.length) fail('A lesson needs at least one ## section.', 1)
   for (const s of lessonSections) if (!s.blocks.length) fail(`The section "${s.heading}" is empty.`, 1)
   if (!exercises.length) fail('Add a "## Exercises" section with at least one exercise.', 1)
+  const goals = parseGoals(goalItems ?? [], lessonSections)
+  if (goals.length) {
+    exercises.forEach((e, i) => {
+      if (!e.goal) fail('Tag this exercise with "- goal: …", one of the ids under ## Goals.', exerciseLines[i])
+      if (!goals.some((g) => g.id === e.goal)) fail(`Unknown goal "${e.goal}". Use one of: ${goals.map((g) => g.id).join(', ')}.`, exerciseLines[i])
+    })
+    for (const g of goals) if (!exercises.some((e) => e.goal === g.id)) fail(`No exercise tests the goal "${g.id}".`, goalsLine)
+  } else {
+    const i = exercises.findIndex((e) => e.goal)
+    if (i >= 0) fail('This exercise has a goal, but the lesson has no "## Goals" section.', exerciseLines[i])
+  }
 
   return {
     id: readId(m.id),
@@ -210,8 +242,27 @@ export function parseLesson(doc: MdDocument, level: Level): Lesson {
     summary: m.summary.value,
     minutes,
     sections: lessonSections,
+    goals,
     exercises,
   }
+}
+
+/** "- id: what the learner can do § Section heading" */
+function parseGoals(items: ListItem[], sections: LessonSection[]): LessonGoal[] {
+  const goals: LessonGoal[] = []
+  for (const it of items) {
+    const m = /^([a-z0-9]+(?:-[a-z0-9]+)*):\s*(.+?)(?:\s+§\s+(.+))?$/.exec(it.text.trim())
+    if (!m) fail('Write each goal as "- id: what the learner can do § Section heading", with an id like etre-avoir.', it.line)
+    const [, id, text, heading] = m as RegExpExecArray
+    if (goals.some((g) => g.id === id)) fail(`The goal "${id}" is listed twice.`, it.line)
+    let section: number | undefined
+    if (heading) {
+      section = sections.findIndex((s) => s.heading === heading.trim())
+      if (section < 0) fail(`No section is called "${heading.trim()}". Copy its ## heading exactly.`, it.line)
+    }
+    goals.push({ id, text: text.trim(), ...(section !== undefined ? { section } : {}) })
+  }
+  return goals
 }
 
 function lessonBlock(b: MdBlock, previous: Block[]): Block[] {
@@ -238,7 +289,21 @@ function lessonBlock(b: MdBlock, previous: Block[]): Block[] {
   }
 }
 
+/** An exercise, with the optional "- goal: id" line that ties it to a lesson goal. */
 function parseExercise(type: string, items: ListItem[], line: number): Exercise {
+  const goalItem = items.find((i) => i.checked === undefined && /^goal:/i.test(i.text))
+  const ex = parseExerciseBody(
+    type,
+    items.filter((i) => i !== goalItem),
+    line,
+  )
+  if (!goalItem) return ex
+  const goal = goalItem.text.replace(/^goal:\s*/i, '').trim()
+  if (!goal) fail('"goal" is empty.', goalItem.line)
+  return { ...ex, goal }
+}
+
+function parseExerciseBody(type: string, items: ListItem[], line: number): Exercise {
   const fields: Record<string, { value: string; line: number }[]> = {}
   const options: { text: string; checked: boolean; line: number }[] = []
   for (const item of items) {

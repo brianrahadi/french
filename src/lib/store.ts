@@ -10,6 +10,9 @@ import { DEVICE_ID } from './device'
 import { cardId, newCard, Rating, review, type CardDir, type Grade, type StoredCard } from './srs'
 import { BUILTIN_WORDS } from '../data/vocab'
 import { findSameWord } from './words'
+import type { PaletteId } from '../theme'
+import type { Roadmap } from '../features/roadmap/plan'
+import { addTime, type DayTime, type StudyTimeLog } from './studyTime'
 
 export type Theme = 'system' | 'light' | 'dark'
 export type Directions = 'both' | 'recognition' | 'production'
@@ -23,6 +26,8 @@ export interface Settings {
   rate: number
   strictAccents: boolean
   theme: Theme
+  /** Colour theme (see PALETTES in src/theme.ts). */
+  palette: PaletteId
   retention: number
   /** Include a couple of dictation sentences in Today's session. */
   sessionListening: boolean
@@ -37,7 +42,21 @@ export interface LessonProgress {
   lastAt: string
   step: number // index into REVIEW_INTERVALS
   nextReview?: string // dayKey
+  /** Results per lesson goal, from every session that tested it. */
+  goals?: Record<string, GoalStat>
 }
+
+/** How a lesson goal has gone: all-time counts, and the share right the last time it was tested. */
+export interface GoalStat {
+  n: number
+  ok: number
+  /** 0..1 — 1 means every question on it was right last time */
+  last: number
+  at: string
+}
+
+/** One session's first-try results, per goal id. */
+export type GoalTally = Record<string, { n: number; ok: number }>
 
 export interface ConjStat {
   seen: number
@@ -100,8 +119,33 @@ export interface State {
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
   read: Record<string, string>
+  /** The road-to-B2 plan: when it starts and from which week. */
+  roadmap: Roadmap
+  /** Daily-lesson blocks ticked off, per day (dayKey). */
+  planDays: Record<string, PlanDay>
+  /** Active study time: device → day → seconds per kind of page (see lib/studyTime). */
+  studyTime: StudyTimeLog
+  /** Every finished conversation, kept as a short record after old transcripts are pruned. */
+  talkLog: Record<string, TalkRecord>
   /** Bookkeeping that lets progress from several devices be merged. */
   sync: SyncMeta
+}
+
+/** A finished conversation, in brief: enough for progress and the roadmap. */
+export interface TalkRecord {
+  scenarioId: string
+  level: Level
+  score: number
+  /** When it was finished (ISO). */
+  at: string
+}
+
+export interface PlanDay {
+  /** Block ids ticked off by hand. */
+  done: string[]
+  /** A rough day: only the minimum blocks count. */
+  min?: boolean
+  at: string
 }
 
 export interface SyncMeta {
@@ -121,7 +165,7 @@ export interface SyncMeta {
 }
 
 /** Settings that belong to one device (voice, speed, theme) and are never synced. */
-export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme'] as const
+export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme', 'palette'] as const
 
 export interface AudioProgress {
   /** Step to resume from. */
@@ -178,6 +222,9 @@ export interface WritingEntry {
   feedback: WritingFeedback
   /** Id of the entry this is a rewrite of. */
   revisionOf?: string
+  /** Written against the clock: minutes allowed, and minutes actually taken. */
+  timed?: number
+  minutes?: number
 }
 
 interface Actions {
@@ -212,17 +259,36 @@ interface Actions {
   addCustomWords: (words: Word[]) => void
   removeCustomWord: (id: string) => void
   resetWord: (wordId: string) => void
-  recordLesson: (lessonId: string, score: number) => void
+  /** A scored session of a lesson. `startStep` puts a pass further up the review ladder (a test-out). */
+  recordLesson: (lessonId: string, score: number, opts?: { goals?: GoalTally; startStep?: number }) => void
+  /** Goal results from a session that isn't scored as a whole: one goal's drill, or a level check. */
+  recordGoals: (lessonId: string, goals: GoalTally) => void
   recordConj: (inf: string, tense: Tense, correct: boolean) => void
   setConjConfig: (c: Partial<ConjConfig>) => void
   logActivity: (correct: boolean, opts?: { newWord?: boolean; skill?: StudySkill }) => void
   importData: (data: unknown) => void
   ignoreWord: (wordId: string) => void
   resetAll: () => void
+  setRoadmap: (patch: Partial<Roadmap>) => void
+  tickBlock: (day: string, blockId: string, on: boolean) => void
+  setMinimumDay: (day: string, on: boolean) => void
+  /** Adds active study time for this device (seconds per kind of page). */
+  addStudyTime: (day: string, add: DayTime) => void
 }
 
 export const REVIEW_INTERVALS = [1, 3, 7, 16, 35, 90]
 export const PASS_MARK = 0.8
+
+function mergeGoals(old: Record<string, GoalStat> | undefined, t: GoalTally | undefined, at: string): Record<string, GoalStat> | undefined {
+  if (!t || !Object.keys(t).length) return old
+  const out = { ...(old ?? {}) }
+  for (const [g, x] of Object.entries(t)) {
+    if (!x.n) continue
+    const o = out[g]
+    out[g] = { n: (o?.n ?? 0) + x.n, ok: (o?.ok ?? 0) + x.ok, last: x.ok / x.n, at }
+  }
+  return out
+}
 
 export const DEFAULT_SETTINGS: Settings = {
   newPerDay: 10,
@@ -233,6 +299,7 @@ export const DEFAULT_SETTINGS: Settings = {
   rate: 0.95,
   strictAccents: false,
   theme: 'system',
+  palette: 'clay',
   retention: 0.9,
   sessionListening: true,
   sessionSpeaking: false,
@@ -260,6 +327,10 @@ export const initialState: State = {
   conversations: [],
   texts: [],
   read: {},
+  roadmap: { start: null, startWeek: 1 },
+  planDays: {},
+  studyTime: {},
+  talkLog: {},
   sync: { epoch: '', epochAt: '', changed: {}, deleted: {}, devices: {} },
 }
 
@@ -279,6 +350,7 @@ export function stampAll(s: Pick<State, 'settings' | 'skills'>, at = now()): Rec
     'activeDecks',
     'conjConfig',
     'startLevel',
+    'roadmap',
     ...Object.keys(s.skills ?? {}).map((k) => `skill:${k}`),
   ]
   return Object.fromEntries(keys.map((k) => [k, at]))
@@ -371,10 +443,17 @@ export const useStore = create<State & Actions>()(
         }),
 
       saveConversation: (c) =>
-        set((s) => ({ conversations: [c, ...s.conversations.filter((x) => x.id !== c.id)].slice(0, 60) })),
+        set((s) => ({
+          conversations: [c, ...s.conversations.filter((x) => x.id !== c.id)].slice(0, 60),
+          ...(c.feedback ? { talkLog: { ...s.talkLog, [c.id]: { scenarioId: c.scenarioId, level: c.level, score: c.feedback.score, at: c.updatedAt } } } : {}),
+        })),
 
       deleteConversation: (id) =>
-        set((s) => ({ conversations: s.conversations.filter((c) => c.id !== id), ...tombstone(s, [`talk:${id}`]) })),
+        set((s) => {
+          const talkLog = { ...s.talkLog }
+          delete talkLog[id]
+          return { conversations: s.conversations.filter((c) => c.id !== id), talkLog, ...tombstone(s, [`talk:${id}`]) }
+        }),
 
       saveText: (t) => set((s) => ({ texts: [t, ...s.texts.filter((x) => x.id !== t.id)].slice(0, 150) })),
 
@@ -524,15 +603,21 @@ export const useStore = create<State & Actions>()(
           ignoredWords: { ...s.ignoredWords, [wordId]: new Date().toISOString() }
         })),
 
-      recordLesson: (lessonId, score) =>
+      recordLesson: (lessonId, score, opts = {}) =>
         set((s) => {
-          const prev = s.lessons[lessonId]
+          const stored = s.lessons[lessonId]
+          // Goal results alone (no scored session yet) don't count as a previous attempt.
+          const prev = stored?.attempts ? stored : undefined
           const passed = score >= PASS_MARK
           const wasDue = !prev?.nextReview || prev.nextReview <= dayKey()
           // Only advance the review ladder when the review was actually due.
-          const step = passed ? (prev ? (wasDue ? Math.min(prev.step + 1, REVIEW_INTERVALS.length - 1) : prev.step) : 0) : 0
+          const climbed = passed ? (prev ? (wasDue ? Math.min(prev.step + 1, REVIEW_INTERVALS.length - 1) : prev.step) : 0) : 0
+          const step = passed ? Math.max(climbed, Math.min(opts.startStep ?? 0, REVIEW_INTERVALS.length - 1)) : 0
           const days = passed ? REVIEW_INTERVALS[step] : 1
-          const nextReview = passed && prev && !wasDue ? prev.nextReview : dayKey(addDays(new Date(), days))
+          const keepSchedule = passed && prev && !wasDue && prev.best >= PASS_MARK && step === climbed
+          const nextReview = keepSchedule ? prev.nextReview : dayKey(addDays(new Date(), days))
+          const at = new Date().toISOString()
+          const goals = mergeGoals(stored?.goals, opts.goals, at)
           return {
             lessons: {
               ...s.lessons,
@@ -540,10 +625,25 @@ export const useStore = create<State & Actions>()(
                 attempts: (prev?.attempts ?? 0) + 1,
                 best: Math.max(prev?.best ?? 0, score),
                 last: score,
-                lastAt: new Date().toISOString(),
+                lastAt: at,
                 step,
                 nextReview,
+                ...(goals ? { goals } : {}),
               },
+            },
+          }
+        }),
+
+      recordGoals: (lessonId, goals) =>
+        set((s) => {
+          const prev = s.lessons[lessonId]
+          const at = new Date().toISOString()
+          const merged = mergeGoals(prev?.goals, goals, at)
+          if (!merged) return {}
+          return {
+            lessons: {
+              ...s.lessons,
+              [lessonId]: { ...(prev ?? { attempts: 0, best: 0, last: 0, step: 0 }), lastAt: at, goals: merged },
             },
           }
         }),
@@ -585,6 +685,23 @@ export const useStore = create<State & Actions>()(
         const at = now()
         set({ ...restored, sync: { ...restored.sync, epoch: newId('e'), epochAt: at, changed: stampAll(restored, at) } })
       },
+
+      setRoadmap: (patch) => set((s) => ({ roadmap: { ...s.roadmap, ...patch }, ...stamp(s, ['roadmap']) })),
+
+      tickBlock: (day, blockId, on) =>
+        set((s) => {
+          const prev = s.planDays[day] ?? { done: [], at: '' }
+          const done = on ? [...new Set([...prev.done, blockId])] : prev.done.filter((id) => id !== blockId)
+          return { planDays: { ...s.planDays, [day]: { ...prev, done, at: now() } } }
+        }),
+
+      setMinimumDay: (day, on) =>
+        set((s) => {
+          const prev = s.planDays[day] ?? { done: [], at: '' }
+          return { planDays: { ...s.planDays, [day]: { ...prev, min: on || undefined, at: now() } } }
+        }),
+
+      addStudyTime: (day, add) => set((s) => ({ studyTime: addTime(s.studyTime ?? {}, DEVICE_ID, day, add) })),
 
       // Resetting also resets every synced device.
       resetAll: () => {
@@ -639,6 +756,10 @@ export function exportData(): string {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
+    roadmap: s.roadmap,
+    planDays: s.planDays,
+    studyTime: s.studyTime,
+    talkLog: s.talkLog,
     sync: s.sync,
   }
   return JSON.stringify({ app: 'petit-a-petit', version: 1, exportedAt: new Date().toISOString(), state: data }, null, 2)

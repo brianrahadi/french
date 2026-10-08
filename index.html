@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Learn French grammar, vocabulary and verb conjugation with spaced repetition." />
-    <meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f4ee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#262624" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Petit à petit — French study</title>
@@ -13,9 +13,13 @@
       // Apply saved theme before first paint to avoid a flash.
       try {
         var s = JSON.parse(localStorage.getItem('petit-a-petit') || '{}')
-        var t = s && s.state && s.state.settings && s.state.settings.theme
-        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        var st = (s && s.state && s.state.settings) || {}
+        var t = st.theme
+        // Dark-only colour themes (darkOnly in PALETTES, src/theme.ts).
+        if (st.palette === 'onyx') t = 'dark'
+        else if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         document.documentElement.setAttribute('data-mantine-color-scheme', t)
+        document.documentElement.setAttribute('data-palette', st.palette || 'clay')
       } catch (e) {}
     </script>
   </head>

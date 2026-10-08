@@ -2,13 +2,13 @@
 id: near-future
 title: Near future & recent past
 titleFr: Le futur proche et le passé récent
-summary: aller + infinitive and venir de + infinitive — the easiest way to talk about the future and the past.
+summary: aller + infinitive for the near future, venir de + infinitive for the recent past.
 minutes: 11
 ---
 
 ## Two tenses built from verbs you already know
 
-You don’t need a new set of endings to talk about the near future or the recent past. You just need **aller** and **venir** in the present, plus an **infinitive**. That’s why these are the first “other times” French learners master — and why native speakers use them constantly.
+You don’t need a new set of endings to talk about the near future or the recent past. You just need **aller** and **venir** in the present, plus an **infinitive**. Both are very common in speech.
 
 ## Futur proche: aller + infinitive
 
@@ -32,7 +32,7 @@ It corresponds to English “going to”:
 In spoken French the futur proche is used for **almost any future**, near or far, especially plans and intentions: *L’année prochaine, je vais étudier à Paris.* The futur simple (*j’étudierai*) is more common in writing, formal speech, and for promises and predictions.
 
 > [!TIP]
-> *aller aller* is perfectly correct: ***Je vais aller** à la plage* (I’m going to go to the beach). But you can also just say *Je vais à la plage demain* — the present often works for scheduled plans.
+> *aller aller* is perfectly correct: ***Je vais aller** à la plage* (I’m going to go to the beach). For scheduled plans the present also works: *Je vais à la plage demain*.
 
 ## Futur proche: where things go
 
@@ -62,7 +62,7 @@ It means “to have just done” something:
 - Le train vient de partir. | The train has just left.
 - On vient de se rencontrer. | We’ve just met.
 
-**de** becomes **d’** before a vowel: *Elle vient **d’**appeler.* Pronouns again go before the infinitive: *Je viens **de le** voir* (I’ve just seen him) — note that *de* and *le* do **not** contract here.
+**de** becomes **d’** before a vowel: *Elle vient **d’**appeler.* Pronouns again go before the infinitive: *Je viens **de le** voir* (I’ve just seen him). *de* and *le* do **not** contract here.
 
 > [!WARNING]
 > Don’t confuse *venir de + place* (to come from) with *venir de + infinitive* (to have just): *Je viens de Lyon* (I’m from Lyon) vs. *Je viens de manger* (I’ve just eaten).
@@ -83,10 +83,17 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 
 ## Quick summary
 
-- Near future: aller (present) + infinitive — je vais partir.
-- Recent past: venir de (present) + infinitive — je viens de partir.
+- Near future: aller (present) + infinitive: je vais partir.
+- Recent past: venir de (present) + infinitive: je viens de partir.
 - Negative around aller/venir; pronouns before the infinitive.
 - être en train de = be in the middle of doing.
+
+## Goals
+
+- futur-proche: Form the futur proche: aller + infinitive § Futur proche: aller + infinitive
+- placement: Place ne… pas and pronouns in the futur proche § Futur proche: where things go
+- recent-past: Use venir de + infinitive for the recent past § Passé récent: venir de + infinitive
+- en-train: Use être en train de and être sur le point de § Être en train de: right now
 
 ## Exercises
 
@@ -94,17 +101,20 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - instruction: Rewrite in the futur proche.
 - source: Je mange.
 - answer: Je vais manger
+- goal: futur-proche
 
 ### transform
 - instruction: Rewrite in the futur proche.
 - source: Nous partons.
 - answer: Nous allons partir
+- goal: futur-proche
 
 ### cloze
 - sentence: Attention, il ___ pleuvoir !
 - answer: va
 - en: Careful, it’s going to rain!
 - explain: il va + infinitive.
+- goal: futur-proche
 
 ### cloze
 - sentence: Ils ___ arriver.
@@ -113,6 +123,7 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - answer: viennent de
 - en: They’ve just arrived.
 - explain: venir de → d’ before a vowel.
+- goal: recent-past
 
 ### cloze
 - sentence: Je ___ finir mon travail.
@@ -120,6 +131,7 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - answer: viens de
 - en: I’ve just finished my work.
 - explain: venir de + infinitive = to have just done.
+- goal: recent-past
 
 ### mcq
 - prompt: What does “Je viens de voir Paul” mean?
@@ -127,42 +139,42 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - [x] I’ve just seen Paul.
 - [ ] I’m going to see Paul.
 - explain: venir de + infinitive = just did.
+- goal: recent-past
 
 ### transform
 - instruction: Make it negative.
 - source: Je vais sortir ce soir.
 - answer: Je ne vais pas sortir ce soir
 - explain: ne … pas surrounds aller.
+- goal: placement
 
 ### order
 - en: We are going to visit Paris.
 - words: Nous allons visiter Paris
 - extra: venons
 - punct: .
+- goal: futur-proche
 
 ### order
 - en: She has just left.
 - words: Elle vient de partir
 - extra: va
 - punct: .
+- goal: recent-past
 
 ### translate
 - en: What are you going to do tomorrow? (tu)
 - answer: Qu’est-ce que tu vas faire demain ?
 - answer: Tu vas faire quoi demain ?
 - answer: Que vas-tu faire demain ?
-
-### transform
-- instruction: Make the sentence negative.
-- source: Je vais sortir ce soir.
-- answer: Je ne vais pas sortir ce soir
-- explain: ne … pas goes around aller.
+- goal: futur-proche
 
 ### transform
 - instruction: Replace “la lettre” with a pronoun.
 - source: Je vais écrire la lettre.
 - answer: Je vais l’écrire
 - explain: The pronoun goes before the infinitive it belongs to.
+- goal: placement
 
 ### cloze
 - sentence: Le film ___ commencer, dépêche-toi !
@@ -170,12 +182,14 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - answer: va
 - en: The film is going to start, hurry up!
 - explain: aller (va) + infinitive = futur proche.
+- goal: futur-proche
 
 ### cloze
 - sentence: Elle vient ___ appeler.
 - answer: d’
 - en: She has just called.
 - explain: venir de + infinitive; de → d’ before a vowel.
+- goal: recent-past
 
 ### mcq
 - prompt: “Je viens de Lyon” means…
@@ -183,6 +197,7 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - [ ] I’ve just been to Lyon.
 - [ ] I’m going to Lyon.
 - explain: venir de + a place = to come from.
+- goal: recent-past
 
 ### mcq
 - prompt: “I’m busy cooking.”
@@ -190,14 +205,31 @@ You can also say “about to” with **être sur le point de**: *Le film est sur
 - [ ] Je vais cuisiner.
 - [x] Je suis en train de cuisiner.
 - explain: être en train de = in the middle of doing.
+- goal: en-train
 
 ### translate
 - en: We are going to go to the beach.
 - answer: Nous allons aller à la plage
 - answer: On va aller à la plage
 - explain: aller + aller is correct: nous allons aller.
+- goal: futur-proche
 
 ### translate
 - en: I have just seen him.
 - answer: Je viens de le voir
 - explain: The pronoun goes before the infinitive; de + le don’t contract here.
+- goal: recent-past
+
+### cloze
+- sentence: Le film est sur le ___ de commencer.
+- hint: about to
+- answer: point
+- en: The film is about to start.
+- explain: être sur le point de + infinitive = to be about to.
+- goal: en-train
+
+### translate
+- en: I’m (busy) reading.
+- answer: Je suis en train de lire
+- explain: être en train de + infinitive stresses an action in progress.
+- goal: en-train

@@ -32,6 +32,22 @@ describe('mergeDocs', () => {
     expect(sumActivity(m.sync.devices)[day]).toEqual({ items: 15, correct: 13, newWords: 2 })
   })
 
+  it('adds up study time from different devices and never double counts one device', () => {
+    const day = '2026-09-20'
+    const local = doc({ studyTime: { laptop: { [day]: { grammar: 600, talk: 120 } } } })
+    const remote = doc({ studyTime: { laptop: { [day]: { grammar: 300 } }, phone: { [day]: { grammar: 60, audio: 900 } } } })
+    const m = mergeDocs(local, remote)
+    expect(m.studyTime).toEqual({ laptop: { [day]: { grammar: 600, talk: 120 } }, phone: { [day]: { grammar: 60, audio: 900 } } })
+    expect(mergeDocs(remote, local).studyTime).toEqual(m.studyTime)
+  })
+
+  it('keeps finished conversations from both sides unless one was deleted', () => {
+    const rec = (score: number) => ({ scenarioId: 'cafe', level: 'A1' as const, score, at: T(2) })
+    const local = doc({ talkLog: { c1: rec(70), c2: rec(80) } })
+    const remote = doc({ talkLog: { c3: rec(60) }, sync: { ...initialState.sync, deleted: { 'talk:c2': T(3) } } })
+    expect(Object.keys(mergeDocs(local, remote, new Date(T(4))).talkLog).sort()).toEqual(['c1', 'c3'])
+  })
+
   it('respects deletions on either device', () => {
     const w = { id: 'w1', title: 'x', createdAt: T(1) }
     const local = doc({ writings: [w as never], sync: { ...initialState.sync } })
@@ -133,9 +149,10 @@ describe('mergeDocs', () => {
 
 describe('documents', () => {
   it('never syncs device settings and keeps this device’s own when applying', () => {
-    const d = toDoc(state({ settings: { ...initialState.settings, voiceURI: 'Thomas', rate: 1.2, theme: 'dark' } }))
+    const d = toDoc(state({ settings: { ...initialState.settings, voiceURI: 'Thomas', rate: 1.2, theme: 'dark', palette: 'onyx' } }))
     expect(d.settings).not.toHaveProperty('voiceURI')
     expect(d.settings).not.toHaveProperty('theme')
+    expect(d.settings).not.toHaveProperty('palette')
     const here = state({ settings: { ...initialState.settings, voiceURI: 'Amélie', theme: 'light' } })
     const applied = applyDoc(here, { ...d, settings: { ...d.settings, dailyGoal: 77 } })
     expect(applied.settings).toMatchObject({ voiceURI: 'Amélie', theme: 'light', dailyGoal: 77 })

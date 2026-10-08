@@ -9,6 +9,11 @@ export const LEVEL_UP_AT = 0.7
 
 type Progress = Pick<State, 'startLevel' | 'lessons' | 'read' | 'stories'>
 
+/** A grammar lesson counts toward the level once its best score is 70%. */
+export const lessonDone = (s: Pick<State, 'lessons'>, id: string): boolean => (s.lessons[id]?.best ?? 0) >= 0.7
+/** A listening story counts once its comprehension score is 60%. */
+export const storyDone = (s: Pick<State, 'stories'>, id: string): boolean => (s.stories?.[id]?.best ?? 0) >= 60
+
 /** How much of a level is done (0..1): grammar lessons passed, graded texts read, stories answered. */
 export function levelProgress(level: Level, s: Progress): number {
   const lessons = LESSONS.filter((l) => l.level === level)
@@ -17,9 +22,9 @@ export function levelProgress(level: Level, s: Progress): number {
   const total = lessons.length + texts.length + stories.length
   if (!total) return 0
   const done =
-    lessons.filter((l) => (s.lessons[l.id]?.best ?? 0) >= 0.7).length +
+    lessons.filter((l) => lessonDone(s, l.id)).length +
     texts.filter((t) => s.read[t.id]).length +
-    stories.filter((t) => (s.stories?.[t.id]?.best ?? 0) >= 60).length
+    stories.filter((t) => storyDone(s, t.id)).length
   return done / total
 }
 

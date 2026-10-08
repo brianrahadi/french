@@ -1,7 +1,8 @@
 import { VERB_BY_INF, VERBS, hasTense, verbsInSet } from '../../data/verbs'
-import { TENSE_BY_ID, conjugate, elides, isCompound, pronounFor, type Gender, type Tense, type VerbDef } from '../../lib/conjugate'
+import { TENSES, TENSE_BY_ID, conjugate, elides, isCompound, pronounFor, type Gender, type Tense, type VerbDef } from '../../lib/conjugate'
 import { checkAnswer, stripSubjectPronoun, type Verdict } from '../../lib/answer'
 import type { ConjConfig, ConjStat } from '../../lib/store'
+import { levelRank } from '../../data/types'
 
 export interface DrillItem {
   inf: string
@@ -23,6 +24,17 @@ export function accuracy(stat?: ConjStat): number | null {
   return stat.recent.reduce((a, b) => a + b, 0) / stat.recent.length
 }
 
+export interface DrillOptions {
+  /**
+   * Course order: verb/tense pairs never practised come only from the lowest
+   * tense level (A1 → B2) that still has some, and the drill is sorted by tense.
+   * Pairs already practised can come back at any level.
+   */
+  inOrder?: boolean
+}
+
+const tenseRank = (t: Tense) => TENSES.findIndex((x) => x.id === t)
+
 /** Weighted random drill: weaker and unseen verb/tense pairs come up more often. */
 export function makeDrill(
   verbs: VerbDef[],
@@ -30,14 +42,21 @@ export function makeDrill(
   stats: Record<string, ConjStat>,
   n: number,
   rand: () => number = Math.random,
+  opts: DrillOptions = {},
 ): DrillItem[] {
-  const pairs: { v: VerbDef; t: Tense; w: number }[] = []
+  let pairs: { v: VerbDef; t: Tense; w: number; fresh: boolean }[] = []
   for (const v of verbs)
     for (const t of tenses) {
       if (!hasTense(v, t)) continue
       const acc = accuracy(stats[`${v.inf}|${t}`])
-      pairs.push({ v, t, w: acc === null ? 2 : 0.5 + 3 * (1 - acc) })
+      pairs.push({ v, t, w: acc === null ? 2 : 0.5 + 3 * (1 - acc), fresh: acc === null })
     }
+  if (opts.inOrder) {
+    const levelOf = (t: Tense) => levelRank(TENSE_BY_ID[t].level)
+    const fresh = pairs.filter((p) => p.fresh)
+    const frontier = fresh.length ? Math.min(...fresh.map((p) => levelOf(p.t))) : Infinity
+    pairs = pairs.filter((p) => !p.fresh || levelOf(p.t) <= frontier)
+  }
   if (!pairs.length) return []
   const total = pairs.reduce((a, p) => a + p.w, 0)
   const out: DrillItem[] = []
@@ -63,7 +82,7 @@ export function makeDrill(
     seen.add(key)
     out.push({ inf: chosen.v.inf, tense: chosen.t, person, gender })
   }
-  return out
+  return opts.inOrder ? out.sort((a, b) => tenseRank(a.tense) - tenseRank(b.tense)) : out
 }
 
 export function expectedForms(item: DrillItem): string[] {

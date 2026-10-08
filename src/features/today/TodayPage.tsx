@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ActionIcon, Anchor, Avatar, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
 import {
@@ -29,6 +29,8 @@ import { computeStreak, useStore } from '../../lib/store'
 import { dayKey, frenchDate } from '../../lib/date'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { buildMixedPlan } from '../session/plan'
+import { remaining } from '../session/run'
+import { loadSession, settleSession } from '../session/saved'
 import { dueCardIds, newAvailableToday, vocabCounts } from '../vocab/selectors'
 import { dueLessons, lessonStatus, nextUp } from '../grammar/status'
 import { computeWeakSpots } from '../weak/weak'
@@ -36,6 +38,7 @@ import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
 import { useSync } from '../../lib/sync/engine'
+import { TodayPlan } from './TodayPlan'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -56,7 +59,10 @@ export default function TodayPage() {
   const firstRun = !state.startLevel && totalItems === 0
   const tenses = state.conjConfig.tenses.map((t) => TENSE_BY_ID[t]?.label).filter(Boolean)
   const plan = useMemo(() => buildMixedPlan(state, Math.random, { tts: speechSupported, asr: recognitionSupported }), [state])
-  const hasSession = plan.items.length > 0
+  // A session left part-way today is carried on rather than started again.
+  const saved = useMemo(() => loadSession(state), [state])
+  useEffect(() => settleSession(), [])
+  const hasSession = !!saved || plan.items.length > 0
   const weak = useMemo(() => computeWeakSpots(state), [state])
   const weakCount = weak.total + weak.fixables.length
   const syncState = useSync((s) => s.state)
@@ -102,6 +108,8 @@ export default function TodayPage() {
         navigate(`/grammar/${lessonsByLevel(lvl)[0].id}`)
       }} />}
 
+      <TodayPlan />
+
       <Card component="section" aria-labelledby="session-title" padding="xl">
         <Group gap="xl" align="center" wrap="wrap">
           <Stack gap={4} align="center">
@@ -119,7 +127,11 @@ export default function TodayPage() {
             <Title order={2} size="h3" id="session-title">
               {hasSession ? 'Today’s session' : today.items >= goal ? 'Objectif atteint !' : 'All caught up'}
             </Title>
-            {hasSession ? (
+            {saved ? (
+              <Text c="dimmed" className="tnum">
+                {saved.run.done} done · {remaining(saved.run)} to go — picks up where you stopped.
+              </Text>
+            ) : hasSession ? (
               <>
                 <Text c="dimmed">About {plan.minutes} min — everything that’s due, mixed together so it sticks.</Text>
                 <Group gap={6} mt={4}>
@@ -164,7 +176,7 @@ export default function TodayPage() {
           </Stack>
           {hasSession ? (
             <Button component={Link} to="/session" size="lg" leftSection={<Play size={18} aria-hidden />} rightSection={<Kbd>↵</Kbd>}>
-              Start
+              {saved ? 'Continue' : 'Start'}
             </Button>
           ) : up ? (
             <Button component={Link} to={`/grammar/${up.id}`} size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
@@ -273,7 +285,7 @@ const linkCard = { color: 'inherit', textDecoration: 'none' } as const
 
 function PlanBadge({ icon, color, children }: { icon: React.ReactNode; color?: MantineColor; children: React.ReactNode }) {
   return (
-    <Badge size="lg" color={color ?? 'indigo'} radius="xl" tt="none" fw={600} leftSection={icon}>
+    <Badge size="lg" color={color ?? 'accent'} radius="xl" tt="none" fw={600} leftSection={icon}>
       {children}
     </Badge>
   )
@@ -301,7 +313,7 @@ function ActionCard({
   return (
     <Card component={Link} to={to} padding="md" style={linkCard}>
       <Group gap="md" wrap="nowrap" h="100%">
-        <ThemeIcon variant="light" color={tone ? TONE[tone] : 'indigo'} size={44} radius="md">
+        <ThemeIcon variant="light" color={tone ? TONE[tone] : 'accent'} size={44} radius="md">
           {icon}
         </ThemeIcon>
         <Box miw={0} style={{ flex: 1 }}>

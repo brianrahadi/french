@@ -6,7 +6,8 @@ import { PASS_MARK, type LessonProgress } from '../../lib/store'
 export type LessonStatus = 'new' | 'started' | 'mastered' | 'due'
 
 export function lessonStatus(p: LessonProgress | undefined, today = dayKey()): LessonStatus {
-  if (!p) return 'new'
+  // Practising a single goal (or failing a level check) counts as started, not as a score.
+  if (!p || (!p.attempts && !p.goals)) return 'new'
   if (p.best < PASS_MARK) return 'started'
   if (p.nextReview && p.nextReview <= today) return 'due'
   return 'mastered'

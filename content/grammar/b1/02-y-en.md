@@ -8,7 +8,7 @@ minutes: 15
 
 ## Two small pronouns, two big jobs
 
-**y** and **en** replace things introduced by **à** and **de**. They’re used constantly in speech — *J’y vais, Il y en a, Je m’en vais, Ça y est* — so mastering them makes your French sound much more natural.
+**y** and **en** replace things introduced by **à** and **de**. They’re everywhere in speech: *J’y vais, Il y en a, Je m’en vais, Ça y est*.
 
 | Pronoun | Replaces                        | Typical meaning           |
 | ------- | ------------------------------- | ------------------------- |
@@ -17,7 +17,7 @@ minutes: 15
 
 ## y: places
 
-**y** replaces a place introduced by **à, en, dans, sur, chez, sous…** — “there”:
+**y** replaces a place introduced by **à, en, dans, sur, chez, sous…** It means “there”:
 
 - Tu vas à la plage ? — Oui, j’y vais. | Are you going to the beach? — Yes, I’m going (there).
 - Elle habite en Italie ? — Oui, elle y habite depuis deux ans. | Does she live in Italy? — Yes, she’s lived there for two years.
@@ -25,7 +25,7 @@ minutes: 15
 - On y va ! | Let’s go!
 
 > [!TIP]
-> French doesn’t allow *Je vais* on its own — you need **y**: *Tu viens à la fête ? — Oui, j’**y** vais.* Exception: before the future and conditional of aller, y disappears for sound reasons: *J’irai* (not ~~j’y irai~~).
+> French doesn’t allow *Je vais* on its own. You need **y**: *Tu viens à la fête ? — Oui, j’**y** vais.* Exception: before the future and conditional of aller, y disappears for sound reasons: *J’irai* (not ~~j’y irai~~).
 
 ## y: things after à
 
@@ -42,11 +42,11 @@ With verbs followed by **à + a thing or idea**, y replaces “à + thing”:
 | participer à     | Le concours ? J’y participe.                  |
 
 > [!WARNING]
-> For **people** after à, don’t use y. Use **lui / leur** (with most verbs) or **à lui / à elle** (with penser, s’intéresser, s’habituer): *Je pense **à elle*** — not ~~j’y pense~~ when you mean a person.
+> For **people** after à, don’t use y. Use **lui / leur** (with most verbs) or **à lui / à elle** (with penser, s’intéresser, s’habituer): *Je pense **à elle***, not ~~j’y pense~~, when you mean a person.
 
 ## en: some, any, of it
 
-**en** replaces a noun introduced by **du, de la, de l’, des** (partitive or indefinite plural) — “some, any”:
+**en** replaces a noun introduced by **du, de la, de l’, des** (partitive or indefinite plural). It means “some, any”:
 
 - Tu veux du café ? — Oui, j’en veux. | Do you want some coffee? — Yes, I’d like some.
 - Il y a des croissants ? — Non, il n’y en a pas. | Are there any croissants? — No, there aren’t any.
@@ -54,7 +54,7 @@ With verbs followed by **à + a thing or idea**, y replaces “à + thing”:
 
 ## en: quantities
 
-With numbers and quantity expressions, **en** replaces the noun but the **quantity stays at the end** of the sentence — French can’t leave it hanging as English does:
+With numbers and quantity expressions, **en** replaces the noun but the **quantity stays at the end** of the sentence:
 
 - J’ai trois enfants. → J’en ai trois. | I have three (of them).
 - Tu as combien de frères ? — J’en ai deux. | How many brothers do you have? — I have two.
@@ -63,7 +63,7 @@ With numbers and quantity expressions, **en** replaces the noun but the **quanti
 - Tu as une voiture ? — Oui, j’en ai une. | Do you have a car? — Yes, I have one.
 
 > [!WARNING]
-> **J’en ai deux** — never just ~~J’ai deux~~. In English “I have two” is enough; in French, the **en** is required.
+> **J’en ai deux**, never just ~~J’ai deux~~. English “I have two” needs **en** in French.
 
 ## en: things after de, and “from there”
 
@@ -107,53 +107,68 @@ In the positive imperative, -er verbs get back their **-s** before y and en for 
 - en = de + noun, partitives, quantities (keep the number), from there.
 - Before the verb; y before en; Vas-y, Manges-en.
 
+## Goals
+
+- y-place: Replace a place with y § y: places
+- y-things: Replace à + thing with y (penser à, réfléchir à) § y: things after à
+- en-some: Use en for some, any and quantities § en: some, any, of it
+- en-de: Replace de + thing with en (avoir besoin de, se souvenir de) § en: things after de, and “from there”
+
 ## Exercises
 
 ### transform
 - instruction: Replace the place with y.
 - source: Je vais à la plage.
 - answer: J’y vais
+- goal: y-place
 
 ### transform
 - instruction: Replace the object with en.
 - source: Je veux du café.
 - answer: J’en veux
+- goal: en-some
 
 ### transform
 - instruction: Replace the object with en.
 - source: J’ai trois enfants.
 - answer: J’en ai trois
 - explain: Keep the number at the end.
+- goal: en-some
 
 ### transform
 - instruction: Answer in the negative with y.
 - source: Tu habites à Lyon ?
 - answer: Non, je n’y habite pas
 - answer: Je n’y habite pas
+- goal: y-place
 
 ### cloze
 - sentence: Tu penses à tes vacances ? — Oui, j’___ pense souvent.
 - answer: y
 - en: Are you thinking about your holidays? — Yes, I often think about them.
 - explain: penser à + thing → y.
+- goal: y-things
 
 ### cloze
 - sentence: Tu as besoin de ton ordinateur ? — Oui, j’___ ai besoin.
 - answer: en
 - en: Do you need your computer? — Yes, I need it.
 - explain: avoir besoin de → en.
+- goal: en-de
 
 ### cloze
 - sentence: Il reste du gâteau ? — Oui, il ___ reste un peu.
 - answer: en
 - en: Is there any cake left? — Yes, there’s a little.
 - explain: Quantity (un peu) → en.
+- goal: en-some
 
 ### cloze
 - sentence: Tu es déjà allé au Japon ? — Oui, j’___ suis allé l’an dernier.
 - answer: y
 - en: Have you been to Japan? — Yes, I went there last year.
 - explain: Place → y, before the auxiliary.
+- goal: y-place
 
 ### mcq
 - prompt: Il y a des croissants ? — Oui, …
@@ -161,6 +176,7 @@ In the positive imperative, -er verbs get back their **-s** before y and en for 
 - [x] il y en a.
 - [ ] il y a en.
 - explain: y always comes before en: il y en a.
+- goal: en-some
 
 ### mcq
 - prompt: Go on! (tu)
@@ -168,34 +184,40 @@ In the positive imperative, -er verbs get back their **-s** before y and en for 
 - [x] Vas-y !
 - [ ] Y va !
 - explain: The s comes back before y for pronunciation: vas-y.
+- goal: y-place
 
 ### translate
 - en: I have two (of them).
 - answer: J’en ai deux
+- goal: en-some
 
 ### transform
 - instruction: Replace “à cette question” with y or en.
 - source: Je réfléchis à cette question.
 - answer: J’y réfléchis
 - explain: réfléchir à + thing → y.
+- goal: y-things
 
 ### transform
 - instruction: Replace “de pommes” with en.
 - source: J’ai acheté un kilo de pommes.
 - answer: J’en ai acheté un kilo
 - explain: Quantity stays at the end; no agreement with en.
+- goal: en-some
 
 ### cloze
 - sentence: Tu te souviens de ce voyage ? — Oui, je m’___ souviens.
 - answer: en
 - en: Do you remember that trip? — Yes, I remember it.
 - explain: se souvenir de + thing → en.
+- goal: en-de
 
 ### cloze
 - sentence: Tu as une voiture ? — Oui, j’en ai ___.
 - answer: une
 - en: Do you have a car? — Yes, I have one.
 - explain: With en, the number (une) is kept at the end.
+- goal: en-some
 
 ### mcq
 - prompt: “I’m thinking about her.” (a person)
@@ -203,6 +225,7 @@ In the positive imperative, -er verbs get back their **-s** before y and en for 
 - [x] Je pense à elle.
 - [ ] Je lui pense.
 - explain: penser à + person → à elle, not y.
+- goal: y-things
 
 ### mcq
 - prompt: “There’s none left.”
@@ -210,14 +233,17 @@ In the positive imperative, -er verbs get back their **-s** before y and en for 
 - [ ] Il n’en y a plus.
 - [ ] Il y n’en a plus.
 - explain: y comes before en.
+- goal: en-some
 
 ### translate
 - en: Let’s go!
 - answer: On y va !
 - answer: Allons-y !
 - explain: y = there; aller always needs a place or y.
+- goal: y-place
 
 ### translate
 - en: I can’t take it any more.
 - answer: Je n’en peux plus
 - explain: A fixed expression with en.
+- goal: en-de

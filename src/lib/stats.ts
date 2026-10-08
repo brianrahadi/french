@@ -1,10 +1,51 @@
 /**
- * Monthly recap numbers for the profile: what you studied, how much, and how it
- * compares with the month before.
+ * Profile numbers: how far you are through each level, and the weekly/monthly
+ * recap of what you studied and how it compares with the period before.
  */
-import { LESSON_BY_ID } from '../data/grammar'
+import { LESSON_BY_ID, LESSONS } from '../data/grammar'
+import { AUDIO_LESSONS } from '../data/audio'
+import { SCENARIOS } from '../data/scenarios'
+import { STORIES } from '../data/stories'
+import { BUILTIN_TEXTS } from '../data/texts'
+import { THEMED_DECKS } from '../data/vocab'
+import { WRITING_PROMPTS } from '../data/writing'
+import type { Level } from '../data/types'
 import { STUDY_SKILLS, type DayActivity, type State, type StudySkill } from './store'
+import { lessonDone, storyDone } from './level'
 import { dayKey } from './date'
+
+export interface Tally {
+  done: number
+  total: number
+}
+
+/** Whole percent done; 1% as soon as anything is done, 100% only when everything is. */
+export const percent = ({ done, total }: Tally): number => (!total || !done ? 0 : Math.max(1, Math.floor((done / total) * 100)))
+
+type Course = Pick<State, 'lessons' | 'read' | 'stories' | 'audio' | 'introduced' | 'conversations' | 'writings'>
+
+/**
+ * How much of one level's material is done, per skill: words of its themed decks
+ * started, lessons passed, texts read, prompts written, stories and audio lessons
+ * finished, role-plays talked through.
+ */
+export function levelSections(level: Level, s: Course): Record<StudySkill, Tally> {
+  const at = <T extends { level: Level }>(xs: T[]) => xs.filter((x) => x.level === level)
+  const tally = <T>(xs: T[], done: (x: T) => boolean): Tally => ({ done: xs.filter(done).length, total: xs.length })
+  const words = [...new Set(at(THEMED_DECKS).flatMap((d) => d.words.map((w) => w.id)))]
+  const written = new Set(s.writings.map((w) => w.promptId))
+  const talked = new Set(s.conversations.filter((c) => c.feedback).map((c) => c.scenarioId))
+  const stories = tally(at(STORIES), (x) => storyDone(s, x.id))
+  const audio = tally(at(AUDIO_LESSONS), (x) => !!s.audio?.[x.id]?.done)
+  return {
+    vocabulary: tally(words, (id) => !!s.introduced[id]),
+    grammar: tally(at(LESSONS), (x) => lessonDone(s, x.id)),
+    reading: tally(at(BUILTIN_TEXTS), (x) => !!s.read[x.id]),
+    writing: tally(at(WRITING_PROMPTS), (x) => written.has(x.id)),
+    listening: { done: stories.done + audio.done, total: stories.total + audio.total },
+    speaking: tally(at(SCENARIOS), (x) => talked.has(x.id)),
+  }
+}
 
 /** A week (Monday to Sunday) or a calendar month. */
 export type PeriodKind = 'week' | 'month'

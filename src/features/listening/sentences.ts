@@ -5,7 +5,7 @@
 import { BUILTIN_WORDS } from '../../data/vocab'
 import { LESSONS } from '../../data/grammar'
 import { SOUND_SETS } from '../../data/sounds'
-import type { Level } from '../../data/types'
+import { levelRank, type Level } from '../../data/types'
 import { sentenceId } from '../../lib/french'
 import { dayKey } from '../../lib/date'
 import type { SentenceStat, State } from '../../lib/store'
@@ -91,15 +91,24 @@ export function poolFor(source: SentenceSource, s: Pick<State, 'introduced' | 's
 /**
  * Picks n sentences: unseen ones and ones that went badly come first,
  * sentences done well recently are avoided.
+ * `inOrder`: unseen sentences come only from the lowest level (A1 → B2) that
+ * still has some, and the picks are sorted by level.
  */
 export function pickSentences(
   pool: PracticeSentence[],
   stats: Record<string, SentenceStat>,
   n: number,
   rand: () => number = Math.random,
+  opts: { inOrder?: boolean } = {},
 ): PracticeSentence[] {
   const today = dayKey()
-  const weighted = pool.map((x) => {
+  let candidates = pool
+  if (opts.inOrder) {
+    const unseen = pool.filter((x) => !stats[x.id])
+    const frontier = unseen.length ? Math.min(...unseen.map((x) => levelRank(x.level))) : Infinity
+    candidates = pool.filter((x) => stats[x.id] || levelRank(x.level) <= frontier)
+  }
+  const weighted = candidates.map((x) => {
     const st = stats[x.id]
     let w = 1
     if (!st) w = 3
@@ -108,8 +117,9 @@ export function pickSentences(
     if (st && dayKey(new Date(st.at)) === today) w *= 0.1
     return { x, key: Math.pow(rand(), 1 / w) }
   })
-  return weighted
+  const picked = weighted
     .sort((a, b) => b.key - a.key)
     .slice(0, n)
     .map((t) => t.x)
+  return opts.inOrder ? picked.sort((a, b) => levelRank(a.level) - levelRank(b.level)) : picked
 }

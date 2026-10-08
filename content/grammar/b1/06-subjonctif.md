@@ -8,12 +8,12 @@ minutes: 18
 
 ## What the subjunctive is
 
-The **subjunctive** isn’t a tense but a **mood**. The indicative presents things as facts; the subjunctive presents them as **wished, needed, feared, felt or doubted** — not as reality. It almost always appears in a clause starting with **que**, after a trigger in the main clause:
+The **subjunctive** isn’t a tense but a **mood**. The indicative presents things as facts; the subjunctive presents them as **wished, needed, feared, felt or doubted**, not as fact. It almost always appears in a clause starting with **que**, after a trigger in the main clause:
 
 - Il vient. | He’s coming. (fact → indicative)
 - Je veux qu’il vienne. | I want him to come. (wish → subjunctive)
 
-English has traces of it (“I insist that he **be** on time”, “if I **were** you”), but French uses it all the time — especially in speech with **il faut que**.
+English has traces of it (“I insist that he **be** on time”, “if I **were** you”), but French uses it all the time, especially with **il faut que**.
 
 ## Regular formation
 
@@ -62,7 +62,7 @@ For -er verbs, je/tu/il/ils look like the present. **nous** and **vous** look li
 - Je suis content que tu sois là. | I’m glad you’re here.
 - C’est dommage qu’il pleuve. | It’s a pity it’s raining.
 
-**4. Doubt and possibility**: *douter que, il est possible que, il se peut que, il semble que, ne pas être sûr que* — and **ne pas penser / croire que** (see the B2 lesson).
+**4. Doubt and possibility**: *douter que, il est possible que, il se peut que, il semble que, ne pas être sûr que*, and **ne pas penser / croire que** (see the B2 lesson).
 
 - Je doute qu’il ait raison. | I doubt he’s right.
 - Il est possible qu’elle vienne. | She might come.
@@ -82,7 +82,7 @@ The subjunctive is used only when the **two subjects are different**. If they’
 - Je travaille pour gagner ma vie. / Je travaille pour que mes enfants aillent à l’école. | I work to earn a living. / I work so that my children can go to school.
 
 > [!WARNING]
-> ~~Je veux que je parte~~ is wrong — same subject → **Je veux partir**. And English “I want **you to** come” is never ~~Je veux toi venir~~: it’s ***Je veux que tu viennes***.
+> ~~Je veux que je parte~~ is wrong. With the same subject, use the infinitive: **Je veux partir**. And English “I want **you to** come” is never ~~Je veux toi venir~~: it’s ***Je veux que tu viennes***.
 
 ## Indicative after espérer, penser, croire (affirmative)
 
@@ -100,6 +100,14 @@ Some verbs look as if they should take the subjunctive but don’t:
 - Triggers: necessity, wishes, emotions, doubt, and conjunctions like pour que, bien que, avant que.
 - Same subject → infinitive. espérer, penser (affirmative) → indicative.
 
+## Goals
+
+- formation: Form the regular subjunctive from the ils stem § Regular formation
+- irregular: Know the irregular subjunctives (sois, aie, fasse, sache…) § Irregular subjunctives
+- triggers: Recognize triggers: il faut que, vouloir que, émotions, doute § Triggers: when to use it
+- infinitive: Use the infinitive when the subject is the same § Same subject? Use the infinitive
+- indicative: Keep the indicative after espérer and affirmative penser § Indicative after espérer, penser, croire (affirmative)
+
 ## Exercises
 
 ### cloze
@@ -108,6 +116,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: finisses
 - en: You have to finish your homework.
 - explain: ils finissent → finiss- + es.
+- goal: formation
 
 ### cloze
 - sentence: Je veux que vous ___ heureux.
@@ -115,6 +124,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: soyez
 - en: I want you to be happy.
 - explain: être: que vous soyez.
+- goal: irregular
 
 ### cloze
 - sentence: Il faut que nous ___ ensemble.
@@ -122,6 +132,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: parlions
 - en: We need to talk.
 - explain: nous → same as imparfait: parlions.
+- goal: formation
 
 ### cloze
 - sentence: Je suis content que tu ___ là.
@@ -129,6 +140,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: sois
 - en: I’m glad you’re here.
 - explain: Emotion → subjunctive.
+- goal: triggers
 
 ### cloze
 - sentence: Il est important qu’elle ___ la vérité.
@@ -136,6 +148,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: sache
 - en: It’s important that she knows the truth.
 - explain: savoir → sache.
+- goal: irregular
 
 ### cloze
 - sentence: Je voudrais que tu ___ le ménage.
@@ -143,6 +156,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: fasses
 - en: I’d like you to do the cleaning.
 - explain: faire → fass-.
+- goal: irregular
 
 ### cloze
 - sentence: Il faut qu’ils ___ le bus de 8 h.
@@ -150,6 +164,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: prennent
 - en: They have to take the 8 o’clock bus.
 - explain: prendre → prenn-.
+- goal: formation
 
 ### cloze
 - sentence: Bien qu’il ___ tard, je continue.
@@ -157,6 +172,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: soit
 - en: Although it’s late, I’m carrying on.
 - explain: bien que always takes the subjunctive.
+- goal: triggers
 
 ### mcq
 - prompt: I want to leave.
@@ -164,6 +180,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - [x] Je veux partir.
 - [ ] Je veux que je pars.
 - explain: Same subject → infinitive.
+- goal: infinitive
 
 ### mcq
 - prompt: Which one needs the subjunctive?
@@ -172,10 +189,12 @@ Some verbs look as if they should take the subjunctive but don’t:
 - [x] Je doute que…
 - [ ] Il est sûr que…
 - explain: Doubt triggers the subjunctive; certainty does not.
+- goal: triggers
 
 ### translate
 - en: You have to come. (tu)
 - answer: Il faut que tu viennes
+- goal: triggers
 
 ### cloze
 - sentence: Rentre avant qu’il ___ nuit.
@@ -183,6 +202,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: fasse
 - en: Come home before it gets dark.
 - explain: avant que + subjunctive; faire → fasse.
+- goal: triggers
 
 ### cloze
 - sentence: C’est dommage qu’il ___.
@@ -190,6 +210,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: pleuve
 - en: It’s a pity it’s raining.
 - explain: Emotion (c’est dommage que) → subjunctive: qu’il pleuve.
+- goal: irregular
 
 ### cloze
 - sentence: Je doute qu’il ___ la réponse.
@@ -197,6 +218,7 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: sache
 - en: I doubt he knows the answer.
 - explain: Doubt → subjunctive; savoir → sache.
+- goal: triggers
 
 ### cloze
 - sentence: J’espère que tu ___ bien.
@@ -204,28 +226,40 @@ Some verbs look as if they should take the subjunctive but don’t:
 - answer: vas
 - en: I hope you’re well.
 - explain: espérer takes the indicative, not the subjunctive.
+- goal: indicative
 
 ### mcq
 - prompt: “I’m happy to be here.”
 - [x] Je suis content d’être ici.
 - [ ] Je suis content que je sois ici.
 - explain: Same subject → de + infinitive.
+- goal: infinitive
 
 ### mcq
 - prompt: What is “que nous allions”?
 - [x] the subjunctive of aller (nous)
 - [ ] the imparfait of aller only
 - [ ] a mistake
-- explain: aller’s subjunctive uses the nous stem for nous/vous: que nous allions — identical to the imparfait form.
+- explain: aller’s subjunctive uses the nous stem for nous/vous: que nous allions; identical to the imparfait form.
+- goal: formation
 
 ### transform
 - instruction: Start with “Il faut que…”.
 - source: Tu fais tes devoirs.
 - answer: Il faut que tu fasses tes devoirs
 - explain: il faut que + subjunctive: faire → fasses.
+- goal: triggers
 
 ### translate
 - en: I want you to be happy. (tu)
 - answer: Je veux que tu sois heureux
 - answer: Je veux que tu sois heureuse
 - explain: Different subjects → que + subjunctive: être → sois.
+- goal: triggers
+
+### mcq
+- prompt: “I think he’s right.”
+- [x] Je pense qu’il a raison.
+- [ ] Je pense qu’il ait raison.
+- explain: Affirmative penser asserts a fact → indicative.
+- goal: indicative

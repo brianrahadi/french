@@ -588,7 +588,7 @@ function AiBubble({ turn, name, showEn, streaming, source }: { turn: ChatTurn; n
   const en = (showEn || reveal) && turn.translation
   return (
     <div className="msg msg--ai">
-      <Avatar size={32} radius="xl" color="indigo" className="fr" aria-hidden>
+      <Avatar size={32} radius="xl" color="accent" className="fr" aria-hidden>
         {name[0]}
       </Avatar>
       <div className="bubble bubble--ai">

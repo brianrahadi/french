@@ -1,0 +1,19 @@
+---
+id: une-decision
+title: A decision that changed your life
+titleFr: Une décision importante
+focus: plus-que-parfait, past tenses, the past conditional
+lessons: plus-que-parfait, pc-vs-imparfait
+words: 150-200
+---
+
+Tell the story of an important decision you made: the situation before, how you decided, what happened next, and whether you would do it again.
+
+## Phrases
+
+- À l’époque, je… depuis…
+- J’avais toujours pensé que…
+- Un jour, j’ai décidé de…
+- Au début, …, mais petit à petit…
+- Si c’était à refaire, je…
+- Si je n’avais pas pris cette décision, je n’aurais jamais…

@@ -22,11 +22,11 @@ export function LessonTile({ l, p, n }: { l: Lesson; p?: LessonProgress; n: numb
             {Math.round((p?.best ?? 0) * 100)}%
           </Badge>
         ) : (
-          p && (
+          p?.attempts ? (
             <Badge color="orange" className="tnum">
               {Math.round(p.best * 100)}%
             </Badge>
-          )
+          ) : null
         )
       }
       title={l.title}

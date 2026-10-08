@@ -126,7 +126,7 @@ export function SyncAccount() {
       <Stack gap="sm">
         <CardHead
           icon={
-            <Avatar src={user.avatar || null} alt="" size={44} radius="xl" color="indigo" variant="filled" imageProps={{ referrerPolicy: 'no-referrer' }}>
+            <Avatar src={user.avatar || null} alt="" size={44} radius="xl" color="accent" variant="filled" imageProps={{ referrerPolicy: 'no-referrer' }}>
               {user.name.charAt(0).toUpperCase()}
             </Avatar>
           }

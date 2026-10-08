@@ -405,6 +405,19 @@ input[type='range'] {
   margin-top: 26px;
 }
 
+/* Settings → Appearance: colour theme cards */
+.theme-card {
+  transition: border-color 120ms var(--ease), box-shadow 120ms var(--ease);
+}
+.theme-card[data-checked] {
+  border-color: var(--mantine-primary-color-filled);
+  box-shadow: 0 0 0 1px var(--mantine-primary-color-filled);
+}
+.theme-card__preview {
+  overflow: hidden;
+  border-radius: calc(var(--mantine-radius-md) - 2px);
+}
+
 /* ───────────── Floating action bar that tucks away while reading (phones) ───────────── */
 .practice-bar {
   transition:

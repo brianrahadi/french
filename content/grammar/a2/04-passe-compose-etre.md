@@ -2,7 +2,7 @@
 id: passe-compose-etre
 title: Passé composé with être
 titleFr: Le passé composé avec être
-summary: About 17 verbs of movement and change — plus all reflexive verbs — use être, and agree.
+summary: About 17 verbs of movement and change, and all reflexive verbs, use être and agree.
 minutes: 15
 ---
 
@@ -11,9 +11,9 @@ minutes: 15
 A small group of verbs builds the passé composé with **être** instead of avoir. Two kinds:
 
 - About **17 verbs of movement or change of state**, mostly intransitive (no direct object).
-- **All reflexive verbs** (*se lever, s’habiller, se souvenir…*) — see the reflexive lesson.
+- **All reflexive verbs** (*se lever, s’habiller, se souvenir…*). See the reflexive lesson.
 
-The classic memory aid is **DR & MRS VANDERTRAMP**, or picture a **house**: you *arrive*, *go in*, *go up* the stairs, *stay*, *go down*, *go out*, *fall*, *leave*, *return*… and are *born* and *die* there.
+A common memory aid is **DR & MRS VANDERTRAMP**, or picture a **house**: you *arrive*, *go in*, *go up* the stairs, *stay*, *go down*, *go out*, *fall*, *leave*, *return*… and are *born* and *die* there.
 
 | Verb      | Participle | Opposite  | Participle |
 | --------- | ---------- | --------- | ---------- |
@@ -52,11 +52,11 @@ With **être**, the past participle **agrees with the subject**, like an adjecti
 - Vous êtes arrivée quand, madame ? | When did you arrive, madam?
 
 > [!TIP]
-> Most of these participles end in a vowel, so the agreement is **silent**: *allé, allée, allés, allées* all sound the same. It matters in writing — and you’ll hear it with *mort / morte* and *assis / assise*.
+> Most of these participles end in a vowel, so the agreement is **silent**: *allé, allée, allés, allées* all sound the same. It matters in writing, and you hear it with *mort / morte* and *assis / assise*.
 
 ## The same verb with avoir: monter, descendre, sortir, passer, rentrer, retourner
 
-Six of the être verbs can also take a **direct object** — and then they use **avoir** and change meaning:
+Six of the être verbs can also take a **direct object**. Then they use **avoir** and change meaning:
 
 - Je suis monté au 3e étage. / J’ai monté les valises. | I went up to the 3rd floor. / I took the suitcases up.
 - Elle est sortie ce soir. / Elle a sorti le chien. | She went out tonight. / She took the dog out.
@@ -68,7 +68,7 @@ The rule: **object after the verb → avoir; no object → être.**
 
 ## Word order
 
-Exactly like with avoir — everything wraps around the auxiliary:
+As with avoir, everything goes around the auxiliary:
 
 - Je ne suis pas sorti hier soir. | I didn’t go out last night.
 - Est-elle déjà partie ? | Has she already left?
@@ -91,6 +91,12 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - monter, descendre, sortir, passer, rentrer, retourner + object → avoir.
 - Movement verbs that describe the manner (marcher, courir) → avoir.
 
+## Goals
+
+- which: Know which verbs take être § Which verbs take être?
+- agreement: Make the participle agree with the subject § Agreement with the subject
+- avoir-etre: Switch to avoir when monter, sortir… have an object § The same verb with avoir: monter, descendre, sortir, passer, rentrer, retourner
+
 ## Exercises
 
 ### cloze
@@ -99,6 +105,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: suis allé
 - en: Yesterday I went to the cinema.
 - explain: aller takes être.
+- goal: which
 
 ### cloze
 - sentence: Marie ___ à 8 heures.
@@ -106,6 +113,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: est arrivée
 - en: Marie arrived at 8.
 - explain: Feminine subject → arrivée.
+- goal: agreement
 
 ### cloze
 - sentence: Mes amis ___ en retard.
@@ -113,6 +121,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: sont venus
 - en: My friends came late.
 - explain: Masculine plural → venus.
+- goal: agreement
 
 ### cloze
 - sentence: Elles ___ à la maison.
@@ -120,6 +129,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: sont restées
 - en: They stayed at home.
 - explain: Feminine plural → restées.
+- goal: agreement
 
 ### cloze
 - sentence: Victor Hugo ___ en 1802.
@@ -127,6 +137,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: est né
 - en: Victor Hugo was born in 1802.
 - explain: naître → né, with être.
+- goal: which
 
 ### cloze
 - sentence: Nous ___ du train à Lyon.
@@ -134,6 +145,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: sommes descendus
 - en: We got off the train in Lyon.
 - explain: descendre (no direct object) → être.
+- goal: agreement
 
 ### mcq
 - prompt: Which verb takes être in the passé composé?
@@ -142,6 +154,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - [ ] dormir
 - [ ] finir
 - explain: tomber is one of the “house of être” verbs.
+- goal: which
 
 ### mcq
 - prompt: Choose the correct sentence.
@@ -149,29 +162,34 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - [x] Elle est sortie hier soir.
 - [ ] Elle est sorti hier soir.
 - explain: sortir without object → être + agreement.
+- goal: avoir-etre
 
 ### mcq
 - prompt: Choose the correct sentence.
 - [x] J’ai monté les valises.
 - [ ] Je suis monté les valises.
 - explain: With a direct object (les valises), monter takes avoir.
+- goal: avoir-etre
 
 ### order
 - en: She fell in the street.
 - words: Elle est tombée dans la rue
 - extra: a tombé
 - punct: .
+- goal: agreement
 
 ### translate
 - en: They (m) left at noon.
 - answer: Ils sont partis à midi
+- goal: which
 
 ### cloze
 - sentence: Elle ___ le chien ce matin.
 - hint: sortir
 - answer: a sorti
 - en: She took the dog out this morning.
-- explain: sortir with a direct object (le chien) uses avoir — no agreement.
+- explain: sortir with a direct object (le chien) uses avoir; no agreement.
+- goal: avoir-etre
 
 ### cloze
 - sentence: Ils ___ médecins.
@@ -179,6 +197,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: sont devenus
 - en: They became doctors.
 - explain: devenir takes être; agreement: devenus.
+- goal: agreement
 
 ### cloze
 - sentence: Nous ne sommes jamais ___ en Chine.
@@ -186,6 +205,7 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - answer: allés
 - en: We have never been to China.
 - explain: ne … jamais goes around the auxiliary.
+- goal: agreement
 
 ### mcq
 - prompt: Which verb takes avoir in the passé composé?
@@ -194,26 +214,31 @@ Exactly like with avoir — everything wraps around the auxiliary:
 - [x] courir
 - [ ] partir
 - explain: courir describes how you move, not a change of place → avoir: j’ai couru.
+- goal: which
 
 ### mcq
 - prompt: “He had a good day.”
 - [ ] Il est passé une bonne journée.
 - [x] Il a passé une bonne journée.
 - explain: passer + direct object (une journée) → avoir.
+- goal: avoir-etre
 
 ### transform
 - instruction: Change the subject to “ma sœur”.
 - source: Mon frère est parti hier.
 - answer: Ma sœur est partie hier
 - explain: With être, the participle agrees with a feminine subject: partie.
+- goal: agreement
 
 ### translate
 - en: She was born in Paris.
 - answer: Elle est née à Paris
 - explain: naître → né, with être and agreement: née.
+- goal: which
 
 ### translate
 - en: They (f) arrived late.
 - answer: Elles sont arrivées en retard
 - answer: Elles sont arrivées tard
 - explain: arriver + être; feminine plural: arrivées.
+- goal: agreement

@@ -35,6 +35,7 @@ import { customWord, definite, findSameWord, frTypo, matchesSearch, parseImport,
 import { relativeDay } from '../../lib/date'
 import { useNavigate } from 'react-router'
 import { dueCounts, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus, wordStats } from './selectors'
+import { RoadmapStrip } from '../roadmap/progress'
 
 type Tab = 'decks' | 'browse' | 'add'
 
@@ -66,11 +67,13 @@ export default function VocabPage() {
         title="Vocabulary"
       />
 
+      <RoadmapStrip area="review" />
+
       <Card px={24} py={22}>
         <Group justify="space-between" align="center" gap="lg" wrap="wrap">
           <Group justify="space-between" align="center" gap={20} wrap="wrap" style={{ flex: '1 1 320px' }}>
             <Group gap={28}>
-              <DueCount n={fresh} color="indigo" label="new" />
+              <DueCount n={fresh} color="blue" label="new" />
               <DueCount n={learning} color="orange" label="learn" />
               <DueCount n={review} color="green" label="review" />
             </Group>
@@ -158,7 +161,7 @@ function Forecast({ fc }: { fc: number[] }) {
               w="100%"
               mah={52}
               mih={3}
-              bg={i === 0 ? 'indigo.6' : 'indigo.2'}
+              bg={i === 0 ? 'accent.6' : 'accent.2'}
               style={{ height: `${(n / max) * 100}%`, borderRadius: '4px 4px 2px 2px' }}
             />
             <Text fz={10.5} fw={600} c="dimmed" style={{ whiteSpace: 'nowrap' }}>
@@ -337,7 +340,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
 const STATUS_BADGE = {
   new: <Badge color="gray">New</Badge>,
   learning: <Badge color="orange">Learning</Badge>,
-  young: <Badge color="indigo">Reviewing</Badge>,
+  young: <Badge color="blue">Reviewing</Badge>,
   mature: <Badge color="green">Known</Badge>,
 }
 

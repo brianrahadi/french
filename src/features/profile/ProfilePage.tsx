@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { ActionIcon, Box, Card, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
+import { ActionIcon, Box, Card, Container, Group, Progress, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
 import { BarChart, RadarChart } from '@mantine/charts'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
@@ -9,7 +9,25 @@ import { useSync } from '../../lib/sync/engine'
 import { useDocumentTitle } from '../../lib/hooks'
 import { computeStreak } from '../../lib/store'
 import { dayKey } from '../../lib/date'
-import { answersHistory, periodDays, periodLabel, periodOf, recap, samePeriod, shiftPeriod, skillsByDay, type Period, type PeriodKind, type Recap } from '../../lib/stats'
+import { LEVEL_INFO, LEVELS, type Level } from '../../data/types'
+import { currentLevel, LEVEL_UP_AT, levelProgress } from '../../lib/level'
+import {
+  answersHistory,
+  levelSections,
+  percent,
+  periodDays,
+  periodLabel,
+  periodOf,
+  recap,
+  samePeriod,
+  shiftPeriod,
+  skillsByDay,
+  type Period,
+  type PeriodKind,
+  type Recap,
+  type Tally,
+} from '../../lib/stats'
+import { AREA_LABEL, AREAS, estimatedTime, formatDuration, sumTime, toAreas, trackingSince, type Area } from '../../lib/studyTime'
 
 const SKILL_LABEL: Record<StudySkill, string> = {
   vocabulary: 'Vocabulary',
@@ -20,10 +38,10 @@ const SKILL_LABEL: Record<StudySkill, string> = {
   speaking: 'Speaking',
 }
 
-/** Two series, checked for colour-blind separation in both themes: this month (indigo) vs last month (orange). */
+/** Two series, checked for colour-blind separation in both themes: this month (blue) vs last month (orange). */
 function useSeriesColors() {
   const dark = useComputedColorScheme('light') === 'dark'
-  return { now: dark ? '#5c7cfa' : '#4263eb', before: '#e8590c', muted: dark ? 'dark.4' : 'gray.3' }
+  return { now: dark ? '#4dabf7' : '#1971c2', before: '#e8590c', muted: dark ? 'dark.4' : 'gray.3' }
 }
 
 const PREV: Record<PeriodKind, string> = { week: 'last week', month: 'last month' }
@@ -46,11 +64,21 @@ export default function ProfilePage() {
   const cur = recap(s, period, bySkill)
   const last = recap(s, prev, bySkill)
   const streak = computeStreak(s.activity)
+  const level = currentLevel(s)
+  const sections = useMemo(() => Object.fromEntries(LEVELS.map((l) => [l, levelSections(l, s)])) as Record<Level, Record<StudySkill, Tally>>, [s])
 
   return (
     <Container size={960} py="xl">
       <PageHeader eyebrow="Profil" title={user?.name ?? 'Profile'} />
       <SyncAccount />
+
+      <Title order={2} size="h3" mt="xl" mb="sm">
+        Progress
+      </Title>
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+        <Levels level={level} overall={LEVELS.map((l) => Math.floor(levelProgress(l, s) * 100))} />
+        <Sections level={level} sections={sections} />
+      </SimpleGrid>
 
       <Group justify="space-between" mt="xl" mb="sm" gap="sm">
         <Group gap="sm">
@@ -90,21 +118,134 @@ export default function ProfilePage() {
         <Skills cur={cur} last={last} />
         <Answers period={period} rows={answersHistory(s, period)} onPick={(i) => setOffset((o) => o + i - 11)} />
       </SimpleGrid>
+      <StudyTime period={period} prev={prev} s={s} />
     </Container>
   )
 }
 
-function Panel({ period, title, children }: { period: Period; title: ReactNode; children: ReactNode }) {
+function Panel({ eyebrow, title, children }: { eyebrow: ReactNode; title: ReactNode; children: ReactNode }) {
   return (
     <Card>
       <Text size="sm" c="dimmed">
-        {periodLabel(period)}
+        {eyebrow}
       </Text>
       <Title order={3} size="h4" mb="md">
         {title}
       </Title>
       {children}
     </Card>
+  )
+}
+
+/** Share of each level done (what moves you up: grammar, reading, stories); your level stands out. */
+function Levels({ level, overall }: { level: Level; overall: number[] }) {
+  const { now, muted } = useSeriesColors()
+  const data = LEVELS.map((l, i) => ({ level: l, Done: overall[i], color: l === level ? now : muted }))
+  return (
+    <Panel eyebrow="Current level" title={`${level} · ${LEVEL_INFO[level].name}`}>
+      <BarChart
+        h={224}
+        data={data}
+        dataKey="level"
+        series={[{ name: 'Done', color: now }]}
+        withBarValueLabel
+        valueFormatter={(v) => `${v}%`}
+        valueLabelProps={{ fill: 'var(--mantine-color-text)', fontWeight: 600 }}
+        withYAxis={false}
+        yAxisProps={{ domain: [0, 100] }}
+        gridAxis="none"
+        tickLine="none"
+        maxBarWidth={56}
+        barProps={{ radius: [4, 4, 0, 0] }}
+        barChartProps={{ margin: { top: 20, right: 4, left: 4 } }}
+        referenceLines={[{ y: LEVEL_UP_AT * 100, label: 'Level up', labelPosition: 'insideTopRight', strokeDasharray: '4 3', color: 'dimmed' }]}
+        withTooltip
+        tooltipProps={{
+          content: ({ payload }) => {
+            const row = payload?.[0]?.payload as { level: Level; Done: number } | undefined
+            return row ? (
+              <Card padding="xs" shadow="sm">
+                <Text size="sm" fw={600}>
+                  {row.level} · {LEVEL_INFO[row.level].name}
+                </Text>
+                <Text size="sm" className="tnum">
+                  {row.Done}% of grammar, reading and stories
+                </Text>
+              </Card>
+            ) : null
+          },
+        }}
+      />
+    </Panel>
+  )
+}
+
+const DONE_UNIT: Record<StudySkill, string> = {
+  vocabulary: 'words started',
+  grammar: 'lessons passed',
+  reading: 'texts read',
+  writing: 'prompts written',
+  listening: 'stories and audio lessons',
+  speaking: 'role-plays',
+}
+
+/** Text on each heat step (--heat-0…4), picked for contrast in each theme; quieter where nothing is done yet. */
+const HEAT_INK = {
+  light: ['var(--text-2)', 'var(--mantine-color-text)', 'var(--mantine-color-text)', 'var(--mantine-color-text)', '#fff'],
+  dark: ['var(--text-2)', '#fff', '#fff', 'var(--mantine-color-dark-9)', 'var(--mantine-color-dark-9)'],
+}
+const heatStep = (p: number) => (p === 0 ? 0 : p < 25 ? 1 : p < 50 ? 2 : p < 75 ? 3 : 4)
+
+/** Skills × levels: how much of each level's material you've done. */
+function Sections({ level, sections }: { level: Level; sections: Record<Level, Record<StudySkill, Tally>> }) {
+  const ink = HEAT_INK[useComputedColorScheme('light')]
+  return (
+    <Panel eyebrow={`${LEVELS[0]} – ${LEVELS[LEVELS.length - 1]}`} title="By section">
+      <Box role="table" aria-label="Progress by section and level" style={{ display: 'grid', gridTemplateColumns: `auto repeat(${LEVELS.length}, minmax(0, 1fr))`, gap: 4, alignItems: 'center' }}>
+        <Box role="row" style={{ display: 'contents' }}>
+          <span role="columnheader" />
+          {LEVELS.map((l) => (
+            <Text key={l} role="columnheader" size="xs" ta="center" fw={l === level ? 700 : 600} c={l === level ? undefined : 'dimmed'}>
+              {l}
+            </Text>
+          ))}
+        </Box>
+        {STUDY_SKILLS.map((k) => (
+          <Box key={k} role="row" style={{ display: 'contents' }}>
+            <Text role="rowheader" size="sm" pr="xs">
+              {SKILL_LABEL[k]}
+            </Text>
+            {LEVELS.map((l) => {
+              const t = sections[l][k]
+              const p = percent(t)
+              const step = heatStep(p)
+              const label = t.total ? `${SKILL_LABEL[k]} ${l}: ${t.done} of ${t.total} ${DONE_UNIT[k]}` : `${SKILL_LABEL[k]} ${l}: nothing yet`
+              return (
+                <Tooltip key={l} label={label} withArrow openDelay={150}>
+                  <Box
+                    role="cell"
+                    aria-label={label}
+                    className="tnum"
+                    style={{
+                      height: 32,
+                      display: 'grid',
+                      placeItems: 'center',
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      background: t.total ? `var(--heat-${step})` : 'transparent',
+                      color: t.total ? ink[step] : 'var(--mantine-color-dimmed)',
+                    }}
+                  >
+                    {t.total ? `${p}%` : '–'}
+                  </Box>
+                </Tooltip>
+              )
+            })}
+          </Box>
+        ))}
+      </Box>
+    </Panel>
   )
 }
 
@@ -139,7 +280,7 @@ function Summary({ cur, last, streak }: { cur: Recap; last: Recap; streak?: numb
     { label: 'Accuracy', value: acc(cur), before: acc(last), unit: '%' },
   ]
   return (
-    <Panel period={cur.period} title="Overview">
+    <Panel eyebrow={periodLabel(cur.period)} title="Overview">
       <SimpleGrid cols={2} spacing="lg" verticalSpacing="lg">
         {tiles.map((t) => (
           <Stack key={t.label} gap={0}>
@@ -172,7 +313,7 @@ function DaysLog({ period, active, activity }: { period: Period; active: string[
   const on = new Set(active)
   const todayKey = dayKey()
   return (
-    <Panel period={period} title="Study days">
+    <Panel eyebrow={periodLabel(period)} title="Study days">
       <SimpleGrid cols={7} spacing={6} verticalSpacing={6} w="100%" maw={340} mx="auto">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <Text key={i} size="xs" fw={600} c="dimmed" ta="center">
@@ -223,7 +364,7 @@ function Skills({ cur, last }: { cur: Recap; last: Recap }) {
   // Share of each period's practice, so a busy period and a quiet one compare by mix, not size.
   const data = STUDY_SKILLS.map((k) => ({ skill: SKILL_LABEL[k], [nowName]: Math.round((cur.skills[k] / tc) * 100), [beforeName]: Math.round((last.skills[k] / tl) * 100) }))
   return (
-    <Panel period={cur.period} title="Skill mix">
+    <Panel eyebrow={periodLabel(cur.period)} title="Skill mix">
       <RadarChart
         h={280}
         data={data}
@@ -253,7 +394,7 @@ function Answers({ period, rows, onPick }: { period: Period; rows: { period: Per
   })
   return (
     <Panel
-      period={period}
+      eyebrow={periodLabel(period)}
       title={
         <Group gap="sm" align="baseline">
           <span>Answers</span>
@@ -294,5 +435,105 @@ function Answers({ period, rows, onPick }: { period: Period; rows: { period: Per
         }}
       />
     </Panel>
+  )
+}
+
+type TimeSource = Parameters<typeof estimatedTime>[0]
+
+/** Seconds per area for each day of a period: tracked time, plus estimates for days before tracking. */
+function periodTime(p: Period, est: ReturnType<typeof estimatedTime>, tracked: ReturnType<typeof sumTime>) {
+  return periodDays(p).map((d) => {
+    const day = dayKey(d)
+    const areas: Partial<Record<Area, number>> = toAreas(tracked[day] ?? {})
+    for (const [a, n] of Object.entries(est[day] ?? {}) as [Area, number][]) areas[a] = (areas[a] ?? 0) + n
+    return { date: d, day, areas, total: Object.values(areas).reduce((x, y) => x + (y ?? 0), 0), estimated: !!est[day] }
+  })
+}
+
+/** Time spent studying in the period, per day and per area, against the period before. */
+function StudyTime({ period, prev, s }: { period: Period; prev: Period; s: TimeSource }) {
+  const { now } = useSeriesColors()
+  const est = useMemo(() => estimatedTime(s), [s])
+  const tracked = useMemo(() => sumTime(s.studyTime), [s.studyTime])
+  const days = periodTime(period, est, tracked)
+  const before = periodTime(prev, est, tracked)
+  const sum = (xs: typeof days, a?: Area) => xs.reduce((n, d) => n + (a ? (d.areas[a] ?? 0) : d.total), 0)
+  const total = sum(days)
+  const since = trackingSince(s.studyTime)
+  const data = days.map((d) => ({
+    label: period.kind === 'week' ? d.date.toLocaleDateString('en', { weekday: 'short' }) : String(d.date.getDate()),
+    name: d.date.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
+    Minutes: Math.round(d.total / 60),
+    estimated: d.estimated,
+  }))
+  const max = Math.max(1, ...AREAS.map((a) => sum(days, a)))
+  return (
+    <Box id="time" mt="md" style={{ scrollMarginTop: 16 }}>
+      <Panel
+        eyebrow={periodLabel(period)}
+        title={
+          <Group gap="sm" align="baseline">
+            <span>Study time</span>
+            <Text span fz={26} fw={700} className="tnum">
+              {formatDuration(total)}
+            </Text>
+            <Delta now={Math.round(total / 60)} before={Math.round(sum(before) / 60)} unit=" min" kind={period.kind} />
+          </Group>
+        }
+      >
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
+          <BarChart
+            h={200}
+            data={data}
+            dataKey="label"
+            series={[{ name: 'Minutes', color: now }]}
+            barProps={{ radius: [4, 4, 0, 0] }}
+            gridAxis="x"
+            tickLine="none"
+            withTooltip
+            tooltipProps={{
+              content: ({ payload }) => {
+                const row = payload?.[0]?.payload as { name: string; Minutes: number; estimated: boolean } | undefined
+                return row ? (
+                  <Card padding="xs" shadow="sm">
+                    <Text size="sm" fw={600}>
+                      {row.name}
+                    </Text>
+                    <Text size="sm" className="tnum">
+                      {formatDuration(row.Minutes * 60)}
+                      {row.estimated ? ' (estimated)' : ''}
+                    </Text>
+                  </Card>
+                ) : null
+              },
+            }}
+          />
+          <Stack gap={10}>
+            {AREAS.map((a) => {
+              const n = sum(days, a)
+              return (
+                <Box key={a}>
+                  <Group justify="space-between" gap={8} wrap="nowrap">
+                    <Text size="sm">{AREA_LABEL[a]}</Text>
+                    <Text size="sm" fw={600} className="tnum">
+                      {formatDuration(n)}
+                      <Text span size="xs" c="dimmed" fw={500}>
+                        {' '}
+                        · {formatDuration(sum(before, a))} {PREV[period.kind]}
+                      </Text>
+                    </Text>
+                  </Group>
+                  <Progress value={(n / max) * 100} size={6} radius="xl" mt={4} color={now} aria-label={`${AREA_LABEL[a]}: ${formatDuration(n)}`} />
+                </Box>
+              )
+            })}
+          </Stack>
+        </SimpleGrid>
+        <Text size="xs" c="dimmed" mt="md">
+          Counted while a study page is open and in use.{' '}
+          {since ? `Tracked since ${new Date(since + 'T12:00').toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}; earlier days are estimated from what you did.` : 'Earlier days are estimated from what you did.'}
+        </Text>
+      </Panel>
+    </Box>
   )
 }

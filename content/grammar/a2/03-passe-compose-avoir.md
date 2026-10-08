@@ -10,7 +10,7 @@ minutes: 16
 
 The **passé composé** is the past tense you’ll use most in conversation. It talks about **completed actions and events**: what happened, what you did. One French form covers three English ones: *j’ai mangé* = **I ate**, **I have eaten**, **I did eat**.
 
-It’s a compound tense: **auxiliary (avoir or être) in the present + past participle**. Most verbs — around 95% — use **avoir**.
+It’s a compound tense: **auxiliary (avoir or être) in the present + past participle**. About 95% of verbs use **avoir**.
 
 |             | avoir | + participle |
 | ----------- | ----- | ------------ |
@@ -70,7 +70,7 @@ The auxiliary is the conjugated verb, so everything wraps around **it**:
 Short, common adverbs (*bien, mal, déjà, beaucoup, trop, assez, encore, toujours, souvent*) go **between** the auxiliary and the participle. Longer ones and time expressions go at the end or the start: *J’ai travaillé **hier** / **rapidement***.
 
 > [!WARNING]
-> In the negative, ne … pas surrounds **avoir**, not the participle: *Je **n’**ai **pas** mangé* — never ~~Je n’ai mangé pas~~.
+> In the negative, ne … pas surrounds **avoir**, not the participle: *Je **n’**ai **pas** mangé*, never ~~Je n’ai mangé pas~~.
 
 ## Agreement with a preceding direct object
 
@@ -80,7 +80,7 @@ Normally the participle after **avoir never agrees** with the subject: *Elle a m
 - Les photos que j’ai prises. | The photos (that) I took.
 - Quelles robes as-tu achetées ? | Which dresses did you buy?
 
-This is mostly a spelling rule — you usually can’t hear it — except with participles ending in a consonant: *pris → prise* (“preez”), *fait → faite*, *mis → mise*, *écrit → écrite*.
+This is mostly a spelling rule you can’t hear, except with participles ending in a consonant: *pris → prise* (“preez”), *fait → faite*, *mis → mise*, *écrit → écrite*.
 
 ## Time words that go with it
 
@@ -89,9 +89,16 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 ## Quick summary
 
 - avoir (present) + past participle: j’ai parlé, tu as fini, il a vendu.
-- -er → -é, -ir → -i, -re → -u — plus the irregulars (eu, été, fait, pris, vu, dit…).
+- -er → -é, -ir → -i, -re → -u, plus the irregulars (eu, été, fait, pris, vu, dit…).
 - ne … pas and short adverbs around/after the auxiliary.
-- No agreement with the subject after avoir — only with a direct object placed before.
+- After avoir, no agreement with the subject; only with a direct object placed before.
+
+## Goals
+
+- regular: Form the passé composé with avoir and regular participles § Regular past participles
+- irregular: Know the irregular past participles (vu, pris, fait, bu…) § Irregular past participles
+- order: Place ne… pas and adverbs like déjà § Word order: negatives, questions, adverbs
+- agreement: Agree the participle with a direct object placed before § Agreement with a preceding direct object
 
 ## Exercises
 
@@ -101,6 +108,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: ai vu
 - en: Yesterday I saw a good film.
 - explain: voir → vu.
+- goal: irregular
 
 ### cloze
 - sentence: Nous ___ au restaurant.
@@ -108,6 +116,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: avons mangé
 - en: We ate at the restaurant.
 - explain: avons + mangé.
+- goal: regular
 
 ### cloze
 - sentence: Tu ___ tes devoirs ?
@@ -115,6 +124,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: as fini
 - en: Did you finish your homework?
 - explain: -ir → -i.
+- goal: regular
 
 ### cloze
 - sentence: Ils ___ leur maison.
@@ -122,6 +132,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: ont vendu
 - en: They sold their house.
 - explain: -re → -u.
+- goal: regular
 
 ### cloze
 - sentence: Elle ___ le bus.
@@ -129,6 +140,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: a pris
 - en: She took the bus.
 - explain: prendre → pris.
+- goal: irregular
 
 ### cloze
 - sentence: Qu’est-ce que vous ___ ce week-end ?
@@ -136,6 +148,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: avez fait
 - en: What did you do this weekend?
 - explain: faire → fait.
+- goal: irregular
 
 ### cloze
 - sentence: J’___ une lettre à ma grand-mère.
@@ -143,12 +156,14 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: ai écrit
 - en: I wrote a letter to my grandmother.
 - explain: écrire → écrit.
+- goal: irregular
 
 ### transform
 - instruction: Make it negative.
 - source: J’ai compris.
 - answer: Je n’ai pas compris
 - explain: ne … pas goes around the auxiliary.
+- goal: order
 
 ### mcq
 - prompt: Past participle of “boire”?
@@ -157,17 +172,20 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - [ ] boit
 - [ ] bois
 - explain: boire → bu.
+- goal: irregular
 
 ### order
 - en: I have already read this book.
 - words: J’ai déjà lu ce livre
 - extra: lire
 - punct: .
+- goal: order
 
 ### translate
 - en: We drank some wine.
 - answer: Nous avons bu du vin
 - answer: On a bu du vin
+- goal: irregular
 
 ### cloze
 - sentence: Il a ___ la fenêtre.
@@ -175,6 +193,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: ouvert
 - en: He opened the window.
 - explain: ouvrir → ouvert (like offrir → offert).
+- goal: irregular
 
 ### cloze
 - sentence: J’ai ___ de la chance.
@@ -182,6 +201,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: eu
 - en: I was lucky.
 - explain: avoir → eu (pronounced like “u”).
+- goal: irregular
 
 ### cloze
 - sentence: Elle a ___ une erreur.
@@ -189,18 +209,14 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: fait
 - en: She made a mistake.
 - explain: faire → fait.
-
-### transform
-- instruction: Make the sentence negative.
-- source: J’ai compris.
-- answer: Je n’ai pas compris
-- explain: ne … pas goes around the auxiliary.
+- goal: irregular
 
 ### transform
 - instruction: Add “déjà” (already) in the right place.
 - source: J’ai vu ce film.
 - answer: J’ai déjà vu ce film
 - explain: Short adverbs go between the auxiliary and the participle.
+- goal: order
 
 ### mcq
 - prompt: “Les photos que j’ai ___.” (prendre)
@@ -208,6 +224,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - [x] prises
 - [ ] prisent
 - explain: que (= les photos, f. pl.) comes before → the participle agrees: prises.
+- goal: agreement
 
 ### mcq
 - prompt: “I’ve never seen that.”
@@ -215,6 +232,7 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - [ ] Je n’ai vu jamais ça.
 - [ ] Je jamais n’ai vu ça.
 - explain: ne … jamais goes around the auxiliary.
+- goal: order
 
 ### translate
 - en: We waited for two hours.
@@ -223,3 +241,19 @@ This is mostly a spelling rule — you usually can’t hear it — except with p
 - answer: Nous avons attendu pendant deux heures
 - answer: On a attendu pendant deux heures
 - explain: attendre → attendu.
+- goal: regular
+
+### cloze
+- sentence: La lettre ? Je l’ai ___ hier.
+- hint: écrire
+- answer: écrite
+- en: The letter? I wrote it yesterday.
+- explain: l’ (la lettre, feminine) comes before avoir → écrite.
+- goal: agreement
+
+### transform
+- instruction: Replace “les fleurs” with a pronoun.
+- source: J’ai acheté les fleurs.
+- answer: Je les ai achetées
+- explain: les (feminine plural) before avoir → achetées.
+- goal: agreement

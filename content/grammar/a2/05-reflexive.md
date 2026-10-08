@@ -19,7 +19,7 @@ A **reflexive** (pronominal) verb comes with a pronoun that refers back to the s
 | vous        | vous    | vous lavez | vous habillez |
 | ils/elles   | se (s’) | se lavent  | s’habillent |
 
-The pronoun always matches the subject — *je me, tu te, il se* — and goes **right before the verb**.
+The pronoun matches the subject (*je me, tu te, il se*) and goes **right before the verb**.
 
 ## Four kinds of reflexive verbs
 
@@ -69,7 +69,7 @@ The pronoun always matches the subject — *je me, tu te, il se* — and goes **
 | neg. imperative | Ne te lève pas !              | Don’t get up!               |
 
 > [!WARNING]
-> After a conjugated verb, the pronoun must match the subject: *Je vais **me** coucher, tu vas **te** coucher, nous allons **nous** coucher* — never ~~je vais se coucher~~. In the affirmative imperative, **te → toi**: *Assieds-**toi** !*
+> After a conjugated verb, the pronoun must match the subject: *Je vais **me** coucher, tu vas **te** coucher, nous allons **nous** coucher*, never ~~je vais se coucher~~. In the affirmative imperative, **te → toi**: *Assieds-**toi** !*
 
 ## In the past: always être
 
@@ -84,10 +84,17 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 
 ## Quick summary
 
-- me, te, se, nous, vous, se — right before the verb, matching the subject.
+- me, te, se, nous, vous, se: right before the verb, matching the subject.
 - Reflexive, reciprocal (each other), idiomatic and always-pronominal verbs.
 - Body parts: je me lave les mains.
 - Imperative: lève-toi, ne te lève pas. Passé composé: always être.
+
+## Goals
+
+- present: Conjugate reflexive verbs in the present § What makes a verb reflexive
+- kinds: Use reciprocal and idiomatic reflexive verbs § Meaning changes with and without se
+- order: Place the pronoun in negatives, infinitives and imperatives § Word order: negative, questions, infinitive, imperative
+- past: Form the passé composé of reflexive verbs § In the past: always être
 
 ## Exercises
 
@@ -97,6 +104,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: me lève
 - en: I get up at 7.
 - explain: je → me, and lever → lève.
+- goal: present
 
 ### cloze
 - sentence: Comment tu ___ ?
@@ -104,6 +112,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: t’appelles
 - en: What’s your name?
 - explain: te → t’ before a vowel; appeler doubles the l.
+- goal: present
 
 ### cloze
 - sentence: Nous ___ bien ici.
@@ -111,6 +120,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: nous amusons
 - en: We’re having fun here.
 - explain: nous + nous amusons.
+- goal: present
 
 ### cloze
 - sentence: Les enfants ___ tôt.
@@ -118,12 +128,14 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: se couchent
 - en: The children go to bed early.
 - explain: ils → se.
+- goal: present
 
 ### transform
 - instruction: Make it negative.
 - source: Je me réveille tôt.
 - answer: Je ne me réveille pas tôt
 - explain: ne goes before the reflexive pronoun.
+- goal: order
 
 ### cloze
 - sentence: Elle ___ à 6 heures ce matin.
@@ -131,6 +143,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: s’est réveillée
 - en: She woke up at 6 this morning.
 - explain: Reflexive → être + agreement.
+- goal: past
 
 ### cloze
 - sentence: ___ ! Le train part.
@@ -138,6 +151,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: Dépêche-toi
 - en: Hurry up! The train is leaving.
 - explain: Affirmative imperative: verb-toi.
+- goal: order
 
 ### cloze
 - sentence: Demain, je vais ___ tôt.
@@ -145,6 +159,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: me lever
 - en: Tomorrow I’m going to get up early.
 - explain: The pronoun matches the subject: je → me lever.
+- goal: order
 
 ### mcq
 - prompt: How do you say “I brush my teeth”?
@@ -152,23 +167,27 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - [x] Je me brosse les dents.
 - [ ] Je me brosse mes dents.
 - explain: Body parts: reflexive verb + definite article.
+- goal: present
 
 ### order
 - en: Do you remember this song?
 - words: Tu te souviens de cette chanson
 - extra: se
 - punct: ?
+- goal: kinds
 
 ### translate
 - en: We see each other on Mondays.
 - answer: Nous nous voyons le lundi
 - answer: On se voit le lundi
+- goal: kinds
 
 ### cloze
 - sentence: Nous allons ___ promener au parc.
 - answer: nous
 - en: We’re going to go for a walk in the park.
 - explain: The pronoun matches the subject, even before an infinitive: nous allons nous promener.
+- goal: order
 
 ### cloze
 - sentence: Elle s’est ___ les dents.
@@ -176,6 +195,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: brossé
 - en: She brushed her teeth.
 - explain: Direct object after the verb (les dents) → no agreement: brossé.
+- goal: past
 
 ### cloze
 - sentence: Ils se sont ___ hier soir.
@@ -183,6 +203,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: téléphoné
 - en: They phoned each other last night.
 - explain: téléphoner à quelqu’un: se is indirect → no agreement.
+- goal: past
 
 ### mcq
 - prompt: “Don’t get up!” (tu)
@@ -190,6 +211,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - [x] Ne te lève pas !
 - [ ] Ne lève-toi pas !
 - explain: Negative imperative: the pronoun goes back before the verb in its normal form (te).
+- goal: order
 
 ### mcq
 - prompt: “Elle s’ennuie” means…
@@ -197,6 +219,7 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - [x] She is bored.
 - [ ] She annoys herself.
 - explain: s’ennuyer = to be bored; ennuyer quelqu’un = to bore / bother someone.
+- goal: kinds
 
 ### transform
 - instruction: Put it in the passé composé.
@@ -204,13 +227,16 @@ The participle usually **agrees with the subject** (*elle s’est levée*). But 
 - answer: Nous nous sommes amusés
 - answer: Nous nous sommes amusées
 - explain: Reflexive verbs take être; the participle agrees with nous.
+- goal: past
 
 ### translate
 - en: Sit down! (vous)
 - answer: Asseyez-vous !
 - explain: Affirmative imperative: verb + hyphen + pronoun.
+- goal: order
 
 ### translate
 - en: I get on well with my brother.
 - answer: Je m’entends bien avec mon frère
 - explain: s’entendre avec = to get on with.
+- goal: kinds

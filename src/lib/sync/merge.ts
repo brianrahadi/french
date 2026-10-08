@@ -5,7 +5,7 @@
  *   stats keep their most recent result
  * - mistakes, writings, conversations, texts and words from both are kept,
  *   minus anything deleted on either device (tombstones)
- * - daily activity is kept per device and added up
+ * - daily activity and study time are kept per device and added up
  * - each study setting, the deck list, level, drill setup and each skill's
  *   recent results come from whichever device changed them last; voice, speed
  *   and theme stay per device
@@ -15,6 +15,7 @@
  * "local"), so ties are always broken by content.
  */
 import type { Word } from '../../data/types'
+import { mergeTime } from '../studyTime'
 import { DEVICE_SETTINGS, MAX_MISTAKES, initialState, type DayActivity, type Settings, type State, type StudySkill } from '../store'
 
 /** What is stored in the cloud: everything except derived and per-device data. */
@@ -69,6 +70,10 @@ export function toDoc(s: State): SyncDoc {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
+    roadmap: s.roadmap ?? initialState.roadmap,
+    planDays: s.planDays ?? {},
+    studyTime: s.studyTime ?? {},
+    talkLog: s.talkLog ?? {},
     sync: s.sync,
   }
 }
@@ -242,6 +247,12 @@ export function mergeDocs(local: SyncDoc, remote: SyncDoc, now = new Date()): Sy
       .sort(newestFirst((t) => t.createdAt))
       .slice(0, 150),
     read: byKey(local.read, remote.read, (x, y) => later(x, y)),
+    roadmap: pick('roadmap', local.roadmap, remote.roadmap),
+    planDays: byKey(local.planDays, remote.planDays, (x, y) => newest(x, y, x.at, y.at)),
+    studyTime: mergeTime(local.studyTime, remote.studyTime),
+    talkLog: Object.fromEntries(
+      Object.entries(byKey(local.talkLog ?? {}, remote.talkLog ?? {}, (x, y) => newest(x, y, x.at, y.at))).filter(([id]) => !gone(`talk:${id}`)),
+    ),
     sync: {
       epoch: local.sync.epoch,
       epochAt: local.sync.epochAt,

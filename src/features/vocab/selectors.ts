@@ -1,5 +1,5 @@
 import { DECKS, CUSTOM_DECK_ID, findWord } from '../../data/vocab'
-import type { Word } from '../../data/types'
+import { LEVELS, type Word } from '../../data/types'
 import { addDays, dayKey, endOfDay } from '../../lib/date'
 import { cardId, cardStatus, combineStatus, parseCardId, type CardDir, type StoredCard, type WordStatus } from '../../lib/srs'
 import type { Directions, State } from '../../lib/store'
@@ -15,15 +15,19 @@ export function wordStatus(wordId: string, cards: Record<string, StoredCard>): W
   return combineStatus([r, p].filter(Boolean).map((c) => cardStatus(c)))
 }
 
+/** Every deck A1 → B2; within a level, themed decks before frequency decks (DECKS order). */
+const DECKS_BY_LEVEL = LEVELS.flatMap((level) => DECKS.filter((d) => d.level === level))
+
 /**
- * New words from active decks (curriculum order), then the learner's own words.
- * A word in two active decks (themed + frequency) is queued once.
+ * New words from active decks, A1 → B2: a level's themed decks, then its
+ * frequency decks, then the next level. The learner's own words come last.
+ * A word in two active decks (themed + frequency) is queued once, at its first place.
  */
 export function newWordQueue(s: Pick<State, 'activeDecks' | 'introduced' | 'customWords'>): Word[] {
   const active = new Set(s.activeDecks)
   const out: Word[] = []
   const queued = new Set<string>()
-  for (const d of DECKS)
+  for (const d of DECKS_BY_LEVEL)
     if (active.has(d.id))
       for (const w of d.words)
         if (!s.introduced[w.id] && !queued.has(w.id)) {

@@ -1,10 +1,13 @@
+import { pickReview } from '../grammar/goals'
 import { LESSON_BY_ID, LESSONS } from '../../data/grammar'
+import { findWord } from '../../data/vocab'
+import { levelRank, type Lesson } from '../../data/types'
 import type { State } from '../../lib/store'
 import { dueCardIds, newAvailableToday, newWordQueue } from '../vocab/selectors'
 import { dueLessons, lessonStatus } from '../grammar/status'
 import { makeDrill, poolFor, type DrillItem } from '../conjugation/drill'
 import { TENSE_BY_ID } from '../../lib/conjugate'
-import { cardId } from '../../lib/srs'
+import { cardId, parseCardId } from '../../lib/srs'
 import { computeWeakSpots } from '../weak/weak'
 import { pickSentences, poolFor as sentencePool } from '../listening/sentences'
 
@@ -16,6 +19,11 @@ export type MixedItem =
   | { kind: 'fix'; mistakeId: string; retry?: boolean }
   | { kind: 'listen'; sentenceId: string }
   | { kind: 'say'; sentenceId: string }
+
+type GrammarItem = Extract<MixedItem, { kind: 'grammar' }>
+
+/** Each lesson's place in the course (A1 → B2). */
+const LESSON_RANK: Record<string, number> = Object.fromEntries(LESSONS.map((l, i) => [l.id, i]))
 
 export interface PlanCounts {
   reviews: number
@@ -84,9 +92,13 @@ export function interleave<T>(lists: T[][]): T[] {
 }
 
 export function buildMixedPlan(s: State, rand: () => number = Math.random, opts: PlanOptions = {}): MixedPlan {
-  // ── vocabulary: oldest-due reviews first, a few new words woven in
+  // Every topic runs in course order, A1 → B2: new material comes only from the lowest
+  // level that still has some; reviews of what's been learned come up when due, A1 first.
+
+  // ── vocabulary: the oldest-due reviews, then new words in course order, a few woven in
   const due = dueCardIds(s.cards, s.customWords)
-  const reviews = due.slice(0, MIX.maxReviews)
+  const cardLevel = (id: string) => levelRank(findWord(parseCardId(id).wordId, s.customWords)?.level ?? 'A1')
+  const reviews = due.slice(0, MIX.maxReviews).sort((a, b) => cardLevel(a) - cardLevel(b))
   const fresh = newWordQueue(s).slice(0, Math.min(MIX.maxNew, newAvailableToday(s)))
   const vocab: MixedItem[] = []
   let ni = 0
@@ -96,53 +108,42 @@ export function buildMixedPlan(s: State, rand: () => number = Math.random, opts:
   })
   while (ni < fresh.length) vocab.push({ kind: 'intro', wordId: fresh[ni++].id })
 
-  // ── grammar: spaced reviews of due lessons, then extra practice from lessons already studied
-  const grammar: MixedItem[] = []
-  const reviewLessons = dueLessons(s.lessons).slice(0, MIX.maxReviewLessons)
-  for (const l of reviewLessons) {
-    const idx = sample(
-      l.exercises.map((_, i) => i),
-      MIX.perReviewLesson,
-      rand,
-    )
-    for (const index of idx) grammar.push({ kind: 'grammar', lessonId: l.id, index, review: true })
+  // ── grammar: spaced reviews of due lessons, weak points, then practice from lessons already studied
+  const grammar: GrammarItem[] = []
+  const add = (l: Lesson, n: number, item: Omit<GrammarItem, 'kind' | 'lessonId' | 'index'>) => {
+    const taken = new Set(grammar.filter((g) => g.lessonId === l.id).map((g) => g.index))
+    const free = l.exercises.map((_, i) => i).filter((i) => !taken.has(i))
+    // A review spreads its questions over the lesson's goals, weakest first.
+    const reviewPicks = item.review ? pickReview(l, s.lessons[l.id], n, rand).filter((i) => !taken.has(i)) : []
+    for (const index of reviewPicks.length ? reviewPicks : sample(free, n, rand)) grammar.push({ kind: 'grammar', lessonId: l.id, index, ...item })
   }
+  const room = () => Math.max(0, MIX.grammar - grammar.length)
+  const reviewLessons = dueLessons(s.lessons).slice(0, MIX.maxReviewLessons)
+  for (const l of reviewLessons) add(l, MIX.perReviewLesson, { review: true })
   // Weak grammar points (from drills, writing and conversation) get a question each.
   const weak = computeWeakSpots(s)
   let weakCount = 0
   for (const w of weak.lessons.slice(0, MIX.weakLessons)) {
-    if (grammar.length >= MIX.grammar || grammar.some((g) => g.kind === 'grammar' && g.lessonId === w.lessonId)) continue
-    const l = LESSON_BY_ID[w.lessonId]
-    grammar.push({ kind: 'grammar', lessonId: l.id, index: Math.floor(rand() * l.exercises.length), review: false, weak: true })
+    if (!room() || grammar.some((g) => g.lessonId === w.lessonId)) continue
+    add(LESSON_BY_ID[w.lessonId], 1, { review: false, weak: true })
     weakCount++
   }
-  if (grammar.length < MIX.grammar) {
-    const reviewed = new Set(grammar.map((g) => (g as { lessonId: string }).lessonId))
-    const studied = LESSONS.filter((l) => s.lessons[l.id] && !reviewed.has(l.id))
-    // Lessons not yet mastered first — they need the practice most.
-    const ordered = [
-      ...sample(studied.filter((l) => lessonStatus(s.lessons[l.id]) === 'started'), studied.length, rand),
-      ...sample(studied.filter((l) => lessonStatus(s.lessons[l.id]) !== 'started'), studied.length, rand),
-    ]
-    let k = 0
-    while (grammar.length < MIX.grammar && ordered.length && k < MIX.grammar * 3) {
-      const l = ordered[k % ordered.length]
-      const index = Math.floor(rand() * l.exercises.length)
-      if (!grammar.some((g) => g.kind === 'grammar' && g.lessonId === l.id && g.index === index))
-        grammar.push({ kind: 'grammar', lessonId: l.id, index, review: false })
-      k++
-    }
-  }
-  // Keep each lesson's review items apart from each other.
-  const grammarMixed = interleave(
-    [...new Set(grammar.map((g) => (g as { lessonId: string }).lessonId))].map((id) =>
-      grammar.filter((g) => (g as { lessonId: string }).lessonId === id),
-    ),
-  )
+  const used = new Set(grammar.map((g) => g.lessonId))
+  const studied = LESSONS.filter((l) => s.lessons[l.id] && !used.has(l.id))
+  const learning = studied.filter((l) => lessonStatus(s.lessons[l.id]) === 'started')
+  // Lessons not yet mastered, lowest level first: each gets a few questions before the next one gets any.
+  for (const l of learning) if (room()) add(l, Math.min(MIX.perReviewLesson, room()), { review: false })
+  // Then a refresher question each from lessons already mastered.
+  const mastered = studied.filter((l) => !learning.includes(l))
+  for (const l of sample(mastered, room(), rand)) add(l, 1, { review: false })
+  // Still room (few lessons studied): more questions from the same lessons, in the same order.
+  for (const l of [...learning, ...mastered]) if (room()) add(l, room(), { review: false })
+  // A1 → B2: lessons in course order, each lesson's questions in the order they're written.
+  grammar.sort((a, b) => LESSON_RANK[a.lessonId] - LESSON_RANK[b.lessonId] || a.index - b.index)
 
   // ── conjugation: a short adaptive drill from the learner's usual settings
   const tenses = s.conjConfig.tenses.length ? s.conjConfig.tenses : ['present' as const]
-  const conj: MixedItem[] = makeDrill(poolFor(s.conjConfig), tenses, s.conj, MIX.conj, rand).map((item) => ({
+  const conj: MixedItem[] = makeDrill(poolFor(s.conjConfig), tenses, s.conj, MIX.conj, rand, { inOrder: true }).map((item) => ({
     kind: 'conj',
     item,
   }))
@@ -154,16 +155,17 @@ export function buildMixedPlan(s: State, rand: () => number = Math.random, opts:
   const sentences = sentencePool('mine', s)
   const listen: MixedItem[] =
     opts.tts && s.settings.sessionListening
-      ? pickSentences(sentences, s.listening, MIX.listen, rand).map((x) => ({ kind: 'listen', sentenceId: x.id }))
+      ? pickSentences(sentences, s.listening, MIX.listen, rand, { inOrder: true }).map((x) => ({ kind: 'listen', sentenceId: x.id }))
       : []
   const say: MixedItem[] =
     opts.asr && s.settings.sessionSpeaking
-      ? pickSentences(sentences, s.speaking, MIX.say, rand).map((x) => ({ kind: 'say', sentenceId: x.id }))
+      ? pickSentences(sentences, s.speaking, MIX.say, rand, { inOrder: true }).map((x) => ({ kind: 'say', sentenceId: x.id }))
       : []
 
   // Only worth a session if something is actually due or new.
   const core = vocab.length + grammar.length + conj.length
-  const items = core ? interleave([vocab, grammarMixed, conj, fix, listen, say]) : []
+  // Interleaving spreads the topics through the session but keeps each topic's own order.
+  const items = core ? interleave<MixedItem>([vocab, grammar, conj, fix, listen, say]) : []
   const counts = {
     reviews: reviews.length,
     newWords: fresh.length,

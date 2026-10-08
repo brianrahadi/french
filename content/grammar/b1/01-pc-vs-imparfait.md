@@ -2,13 +2,13 @@
 id: pc-vs-imparfait
 title: Passé composé vs. imparfait
 titleFr: Passé composé ou imparfait ?
-summary: The key to telling stories: events move the plot forward, the imparfait sets the scene.
+summary: Telling a story in the past: the passé composé for events, the imparfait for the background.
 minutes: 16
 ---
 
 ## The core idea: events vs. background
 
-Telling a story in French means constantly choosing between two past tenses. The choice isn’t about how long ago something happened — it’s about **how you present it**:
+Telling a story in French means constantly choosing between two past tenses. The choice isn’t about how long ago something happened but about **how you present it**:
 
 | Passé composé                         | Imparfait                                   |
 | ------------------------------------- | ------------------------------------------- |
@@ -33,7 +33,7 @@ Signal words: *hier, un jour, soudain, tout à coup, puis, ensuite, enfin, à ce
 
 ## Use the imparfait for…
 
-- **Description and setting**: weather, time, place, appearance, age — *Il était tard. Il faisait froid.*
+- **Description and setting**: weather, time, place, appearance, age: *Il était tard. Il faisait froid.*
 - **States of mind and feelings** in progress: *J’étais nerveux. Je voulais partir.*
 - **Habits and repeated actions** with no fixed number: *Le samedi, on allait au marché.*
 - **Actions in progress** when something else happened: *Je dormais quand le téléphone a sonné.*
@@ -57,7 +57,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 | ----------------------------------- | ------------------------------------- |
 | Je savais la vérité. (I knew)       | J’ai su la vérité. (I found out)      |
 | Je connaissais Paul. (I knew him)   | J’ai connu Paul en 2010. (I met him)  |
-| Je pouvais venir. (I was able to — maybe I didn’t) | J’ai pu venir. (I managed to) |
+| Je pouvais venir. (I was able to, but maybe I didn’t) | J’ai pu venir. (I managed to) |
 | Je voulais partir. (I wanted to)    | J’ai voulu partir. (I tried to)       |
 | J’avais peur. (I was afraid)        | J’ai eu peur. (I got scared)          |
 | Il était malade. (he was ill)       | Il a été malade. (he fell ill / was ill for a while) |
@@ -84,6 +84,13 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - Interruptions: imparfait (ongoing) + passé composé (event).
 - savoir, connaître, pouvoir, vouloir, avoir peur change meaning with the tense.
 
+## Goals
+
+- events: Use the passé composé for events that move the story on § Use the passé composé for…
+- background: Use the imparfait for background, description and habits § Use the imparfait for…
+- interruption: Combine them: was doing (imparfait) when … happened (PC) § The interruption pattern
+- meaning: Know verbs that change meaning (j’ai su, j’ai connu, j’ai eu peur) § Same verb, different meaning
+
 ## Exercises
 
 ### cloze
@@ -92,6 +99,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: dormais
 - en: I was sleeping when the phone rang.
 - explain: Ongoing background action → imparfait.
+- goal: interruption
 
 ### cloze
 - sentence: Il pleuvait, alors nous ___ à la maison.
@@ -100,6 +108,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: sommes restées
 - en: It was raining, so we stayed home.
 - explain: A completed event → passé composé.
+- goal: events
 
 ### cloze
 - sentence: Quand j’___ petit, j’habitais à Nice.
@@ -107,6 +116,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: étais
 - en: When I was little, I lived in Nice.
 - explain: Age/description → imparfait.
+- goal: background
 
 ### cloze
 - sentence: Hier, j’___ trois fois.
@@ -114,6 +124,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: ai appelé
 - en: Yesterday I called three times.
 - explain: A specific number of times → passé composé.
+- goal: events
 
 ### cloze
 - sentence: D’habitude, nous ___ le bus.
@@ -121,6 +132,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: prenions
 - en: We usually took the bus.
 - explain: Habit → imparfait.
+- goal: background
 
 ### cloze
 - sentence: Tout à coup, la lumière ___.
@@ -128,6 +140,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: s’est éteinte
 - en: Suddenly, the light went out.
 - explain: Sudden event → passé composé (reflexive → être, agreement).
+- goal: events
 
 ### mcq
 - prompt: Choose the natural sentence.
@@ -135,12 +148,14 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - [x] Il faisait beau et les oiseaux chantaient.
 - [ ] Il faisait beau et les oiseaux ont chanté.
 - explain: Pure scene-setting → both verbs in the imparfait.
+- goal: background
 
 ### mcq
 - prompt: “J’ai su la vérité hier” means…
 - [ ] I knew the truth yesterday.
 - [x] I found out the truth yesterday.
 - explain: savoir in the passé composé = to find out.
+- goal: meaning
 
 ### mcq
 - prompt: When I arrived, everyone was dancing.
@@ -148,6 +163,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - [ ] Quand j’arrivais, tout le monde a dansé.
 - [ ] Quand je suis arrivé, tout le monde a dansé.
 - explain: Event (arrival) interrupts an ongoing action (dancing).
+- goal: interruption
 
 ### cloze
 - sentence: Elle ___ un livre quand je suis entré.
@@ -155,6 +171,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: lisait
 - en: She was reading a book when I came in.
 - explain: Ongoing action interrupted → imparfait.
+- goal: interruption
 
 ### translate
 - en: It was cold, so I put on a sweater.
@@ -162,6 +179,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: Il faisait froid donc j’ai mis un pull
 - answer: Il faisait froid, donc j’ai mis un pull
 - answer: Il faisait froid alors j’ai mis un pull
+- goal: events
 
 ### cloze
 - sentence: J’___ à Lyon pendant dix ans, puis j’ai déménagé.
@@ -169,6 +187,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: ai habité
 - en: I lived in Lyon for ten years, then I moved.
 - explain: A closed, finished period (pendant dix ans) → passé composé.
+- goal: events
 
 ### cloze
 - sentence: Il ___ chaud et les rues étaient pleines.
@@ -176,6 +195,7 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: faisait
 - en: It was hot and the streets were full.
 - explain: Weather and setting → imparfait.
+- goal: background
 
 ### cloze
 - sentence: Nous ___ quand la lumière s’est éteinte.
@@ -183,31 +203,37 @@ Some verbs change meaning depending on the tense, because one shows a **state** 
 - answer: dînions
 - en: We were having dinner when the lights went out.
 - explain: Ongoing action interrupted by an event → imparfait.
+- goal: interruption
 
 ### mcq
 - prompt: “I met Paul in 2010.”
 - [ ] Je connaissais Paul en 2010.
 - [x] J’ai connu Paul en 2010.
 - explain: connaître in the passé composé = to meet (for the first time).
+- goal: meaning
 
 ### mcq
 - prompt: “I got scared.”
 - [ ] J’avais peur.
 - [x] J’ai eu peur.
 - explain: A sudden reaction → passé composé.
+- goal: meaning
 
 ### mcq
 - prompt: Choose the natural sequence of events.
 - [x] Il s’est levé, il a pris une douche et il est parti.
 - [ ] Il se levait, il prenait une douche et il partait.
 - explain: A one-off sequence (and then… and then…) → passé composé. The imparfait version would describe a habit.
+- goal: events
 
 ### translate
 - en: I was reading when the phone rang.
 - answer: Je lisais quand le téléphone a sonné
 - explain: Ongoing action (imparfait) interrupted by an event (passé composé).
+- goal: interruption
 
 ### translate
 - en: It was midnight and everyone was sleeping.
 - answer: Il était minuit et tout le monde dormait
 - explain: Time and an ongoing situation → imparfait.
+- goal: background

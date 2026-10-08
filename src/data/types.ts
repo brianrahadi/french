@@ -1,6 +1,9 @@
 export type Level = 'A1' | 'A2' | 'B1' | 'B2'
 export const LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2']
 
+/** Position of a level in the course (A1 = 0 … B2 = 3), for sorting A1 → B2. */
+export const levelRank = (l: Level): number => LEVELS.indexOf(l)
+
 export const LEVEL_INFO: Record<Level, { name: string; description: string }> = {
   A1: { name: 'Beginner', description: 'The building blocks: être, avoir, articles, the present tense.' },
   A2: { name: 'Elementary', description: 'Talk about the past and near future, use pronouns.' },
@@ -58,7 +61,21 @@ export interface LessonSection {
   blocks: Block[]
 }
 
-export type Exercise =
+/** A can-do point a lesson teaches; every exercise tests one. */
+export interface LessonGoal {
+  id: string
+  /** What the learner can do, e.g. “Choose c’est or il / elle est”. */
+  text: string
+  /** Index of the lesson section that teaches it. */
+  section?: number
+}
+
+export type Exercise = ExerciseBody & {
+  /** Id of the lesson goal it tests (see Lesson.goals). */
+  goal?: string
+}
+
+type ExerciseBody =
   | {
       type: 'mcq'
       prompt: string
@@ -110,6 +127,8 @@ export interface Lesson {
   summary: string
   minutes: number
   sections: LessonSection[]
+  /** Can-do goals, in teaching order (empty for lessons without a ## Goals section). */
+  goals: LessonGoal[]
   exercises: Exercise[]
 }
 

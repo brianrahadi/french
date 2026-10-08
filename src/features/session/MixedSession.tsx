@@ -8,7 +8,7 @@ import { FocusShell } from '../../components/FocusShell'
 import { Kbd, Stat } from '../../components/ui'
 import { PASS_MARK, useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
-import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
+import { cardId, parseCardId, Rating, type Grade } from '../../lib/srs'
 import { displayFr } from '../../lib/words'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
@@ -27,74 +27,11 @@ import { DrillQuestion, type DrillAnswer } from '../conjugation/DrillQuestion'
 import { fullForm } from '../conjugation/drill'
 import { TENSE_BY_ID } from '../../lib/conjugate'
 import { buildMixedPlan, buildWeakPlan, lessonTitle, type MixedItem, type MixedPlan } from './plan'
+import { lessonGoals, bump, cardComesBack, insertAt, lessonsToRecord, pick, remaining, start, type Run, type Tally } from './run'
+import { clearSession, loadSession, saveSession, settleSession } from './saved'
 
-interface Tally {
-  n: number
-  ok: number
-}
-
-interface Run {
-  items: MixedItem[]
-  learning: { id: string; due: number }[]
-  current: MixedItem | null
-  done: number
-  vocab: Tally
-  newWords: number
-  grammar: Tally
-  conj: Tally
-  listen: Tally
-  say: Tally
-  fix: Tally
-  /** First-try results for lessons being reviewed. */
-  lessons: Record<string, Tally>
-  mistakes: { what: string; given: string; expected: string }[]
-}
-
-const LEARN_AHEAD_MS = 20 * 60_000
-
-function pick(r: Run): Run {
-  const now = Date.now()
-  const learning = [...r.learning].sort((a, b) => a.due - b.due)
-  if (learning[0] && learning[0].due <= now) {
-    const [first, ...rest] = learning
-    return { ...r, learning: rest, current: { kind: 'card', id: first.id } }
-  }
-  if (r.items.length) {
-    const [first, ...rest] = r.items
-    return { ...r, items: rest, current: first, learning }
-  }
-  if (learning[0] && learning[0].due - now < LEARN_AHEAD_MS) {
-    const [first, ...rest] = learning
-    return { ...r, learning: rest, current: { kind: 'card', id: first.id } }
-  }
-  return { ...r, current: null, learning }
-}
-
-function insertAt<T>(arr: T[], index: number, item: T): T[] {
-  const a = [...arr]
-  a.splice(Math.min(index, a.length), 0, item)
-  return a
-}
-
-const bump = (t: Tally, ok: boolean): Tally => ({ n: t.n + 1, ok: t.ok + (ok ? 1 : 0) })
-
-function start(plan: MixedPlan): Run {
-  return pick({
-    items: plan.items,
-    learning: [],
-    current: null,
-    done: 0,
-    vocab: { n: 0, ok: 0 },
-    newWords: 0,
-    grammar: { n: 0, ok: 0 },
-    conj: { n: 0, ok: 0 },
-    listen: { n: 0, ok: 0 },
-    say: { n: 0, ok: 0 },
-    fix: { n: 0, ok: 0 },
-    lessons: {},
-    mistakes: [],
-  })
-}
+/** "Grammar · A1 · Articles · review" — skips the parts that don't apply. */
+const tag = (...parts: (string | false | undefined)[]) => parts.filter(Boolean).join(' · ')
 
 function Kind({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -125,12 +62,16 @@ export default function MixedSessionRoute() {
 function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   useDocumentTitle(mode === 'weak' ? 'Weak spots' : 'Today’s session')
   const exitTo = mode === 'weak' ? '/weak' : '/'
+  // Today's session carries on where it was left; weak-spot sessions start fresh.
+  const keep = mode === 'daily'
+  const [resumed] = useState(() => (keep ? loadSession(useStore.getState()) : null))
   const [plan] = useState(() => {
+    if (resumed) return resumed.plan
     const opts = { tts: speechSupported, asr: recognitionSupported }
     return mode === 'weak' ? buildWeakPlan(useStore.getState(), Math.random, opts) : buildMixedPlan(useStore.getState(), Math.random, opts)
   })
-  const [run, setRun] = useState<Run>(() => start(plan))
-  const [startedAt] = useState(() => Date.now())
+  const [run, setRun] = useState<Run>(() => resumed?.run ?? start(plan))
+  const [startedAt] = useState(() => Date.now() - (resumed?.elapsed ?? 0))
 
   const directions = useStore((s) => s.settings.directions)
   const customWords = useStore((s) => s.customWords)
@@ -138,25 +79,35 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   const rateCard = useStore((s) => s.rateCard)
   const recordConj = useStore((s) => s.recordConj)
   const recordLesson = useStore((s) => s.recordLesson)
+  const recordGoals = useStore((s) => s.recordGoals)
   const logActivity = useStore((s) => s.logActivity)
   const recordSentence = useStore((s) => s.recordSentence)
   const resolveMistake = useStore((s) => s.resolveMistake)
 
-  const remaining = run.items.length + run.learning.length + (run.current ? 1 : 0)
-  const progress = run.done / Math.max(1, run.done + remaining)
-  const count = `${run.done}/${run.done + remaining}`
+  const total = run.done + remaining(run)
+  const progress = run.done / Math.max(1, total)
+  const count = `${run.done}/${total}`
   const cur = run.current
 
-  // Record spaced-review results once the session is over.
-  const finalized = useRef(false)
+  // A session left unfinished on an earlier day is wrapped up first.
   useEffect(() => {
-    if (cur || finalized.current) return
-    finalized.current = true
-    for (const id of plan.reviewLessons) {
-      const t = run.lessons[id]
-      if (t && t.n > 0) recordLesson(id, t.ok / t.n)
+    if (keep) settleSession()
+  }, [keep])
+
+  // Saved after every answer, so leaving part-way loses nothing: Today offers to carry
+  // on from there. A lesson review is scored once all of its questions are answered.
+  const recorded = useRef(new Set(run.recorded))
+  useEffect(() => {
+    const ids = lessonsToRecord(plan, run).filter((id) => !recorded.current.has(id))
+    for (const id of ids) {
+      recorded.current.add(id)
+      recordLesson(id, run.lessons[id].ok / run.lessons[id].n, { goals: lessonGoals(run, id) })
     }
-  }, [cur, plan.reviewLessons, run.lessons, recordLesson])
+    if (ids.length) setRun((r) => ({ ...r, recorded: [...r.recorded, ...ids] }))
+    if (!keep) return
+    if (!run.current) clearSession()
+    else if (run.done || run.answered) saveSession(plan, { ...run, recorded: [...recorded.current] }, Date.now() - startedAt)
+  }, [run, plan, keep, startedAt, recordLesson])
 
   const advance = () => setRun((r) => pick({ ...r, done: r.done + 1 }))
 
@@ -185,7 +136,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     }
     setRun((r) => {
       const dueMs = new Date(next.due).getTime()
-      const again = (next.state === State.Learning || next.state === State.Relearning) && dueMs - Date.now() < 60 * 60_000
+      const again = cardComesBack(grade, dueMs)
       return pick({
         ...r,
         learning: again ? [...r.learning, { id, due: dueMs }] : r.learning,
@@ -197,13 +148,21 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
 
   const onGrammar = (item: Extract<MixedItem, { kind: 'grammar' }>, g: Graded) => {
     logActivity(g.pass, { skill: 'grammar' })
-    if (item.retry) return
+    if (item.retry) {
+      setRun((r) => ({ ...r, answered: true }))
+      return
+    }
     const ex = LESSON_BY_ID[item.lessonId].exercises[item.index]
     noteGrammar(item.lessonId, promptText(ex), g, 'explain' in ex ? ex.explain : undefined)
+    // Practice outside a review still counts for the goal it tests.
+    if (!item.review && ex.goal) recordGoals(item.lessonId, { [ex.goal]: { n: 1, ok: g.pass ? 1 : 0 } })
+    const goalKey = `${item.lessonId} ${ex.goal}`
     setRun((r) => ({
       ...r,
+      answered: true,
       grammar: bump(r.grammar, g.pass),
       lessons: item.review ? { ...r.lessons, [item.lessonId]: bump(r.lessons[item.lessonId] ?? { n: 0, ok: 0 }, g.pass) } : r.lessons,
+      goals: item.review && ex.goal ? { ...r.goals, [goalKey]: bump(r.goals?.[goalKey] ?? { n: 0, ok: 0 }, g.pass) } : r.goals,
       mistakes: g.pass ? r.mistakes : [...r.mistakes, { what: promptText(ex), given: g.given, expected: g.expected }],
       // A missed item comes back a few questions later.
       items: g.pass ? r.items : insertAt(r.items, 4, { ...item, retry: true }),
@@ -219,6 +178,10 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
         lessons: item.review
           ? { ...r.lessons, [item.lessonId]: { ...r.lessons[item.lessonId], ok: (r.lessons[item.lessonId]?.ok ?? 0) + 1 } }
           : r.lessons,
+        goals: (() => {
+          const k = `${item.lessonId} ${LESSON_BY_ID[item.lessonId].exercises[item.index].goal}`
+          return item.review && r.goals?.[k] ? { ...r.goals, [k]: { ...r.goals[k], ok: r.goals[k].ok + 1 } } : r.goals
+        })(),
         mistakes: r.mistakes.slice(0, -1),
         items: r.items.filter((x) => !(x.kind === 'grammar' && x.retry && x.lessonId === item.lessonId && x.index === item.index)),
       }),
@@ -227,11 +190,15 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
 
   const onConj = (item: Extract<MixedItem, { kind: 'conj' }>, a: DrillAnswer) => {
     logActivity(a.pass, { skill: 'grammar' })
-    if (item.retry) return
+    if (item.retry) {
+      setRun((r) => ({ ...r, answered: true }))
+      return
+    }
     recordConj(a.item.inf, a.item.tense, a.pass)
     noteConj(a.item.inf, a.item.tense, { pass: a.pass, given: a.given, expected: fullForm(a.item) })
     setRun((r) => ({
       ...r,
+      answered: true,
       conj: bump(r.conj, a.pass),
       mistakes: a.pass
         ? r.mistakes
@@ -243,9 +210,13 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   const onFix = (item: Extract<MixedItem, { kind: 'fix' }>, a: FixAnswer) => {
     logActivity(a.pass, { skill: 'grammar' })
     if (a.pass) resolveMistake(a.mistake.id)
-    if (item.retry) return
+    if (item.retry) {
+      setRun((r) => ({ ...r, answered: true }))
+      return
+    }
     setRun((r) => ({
       ...r,
+      answered: true,
       fix: bump(r.fix, a.pass),
       mistakes: a.pass ? r.mistakes : [...r.mistakes, { what: a.mistake.prompt ?? '', given: a.given, expected: a.mistake.expected }],
       items: a.pass ? r.items : insertAt(r.items, 4, { ...item, retry: true }),
@@ -256,7 +227,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     recordSentence('listening', a.sentence.id, a.result.score)
     noteDictation(a.sentence, a.result)
     logActivity(a.result.score >= 70, { skill: 'listening' })
-    setRun((r) => ({ ...r, listen: bump(r.listen, a.result.score >= 70) }))
+    setRun((r) => ({ ...r, answered: true, listen: bump(r.listen, a.result.score >= 70) }))
   }
 
   const onSay = (a: SpeakAnswer) => {
@@ -264,7 +235,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     recordSentence('speaking', a.sentence.id, a.score)
     if (a.match) noteSpeaking(a.sentence, a.match)
     logActivity(a.score >= 60, { skill: 'speaking' })
-    setRun((r) => ({ ...r, say: bump(r.say, a.score >= 60) }))
+    setRun((r) => ({ ...r, answered: true, say: bump(r.say, a.score >= 60) }))
   }
 
   if (!plan.items.length) return <NothingToDo mode={mode} />
@@ -289,7 +260,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     }
     body = (
       <>
-        <Kind icon={<Layers size={15} aria-hidden />} label={plan.mode === 'weak' ? 'Vocabulary · weak spot' : 'Vocabulary'} />
+        <Kind icon={<Layers size={15} aria-hidden />} label={tag('Vocabulary', !w.custom && w.level, plan.mode === 'weak' && 'weak spot')} />
         {cur.kind === 'intro' ? (
           <IntroCard key={key} word={w} onDone={(known) => onIntroduced(w.id, known)} />
         ) : parseCardId(cur.id).dir === 'r' ? (
@@ -308,7 +279,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
         context={
           <Kind
             icon={<BookOpen size={15} aria-hidden />}
-            label={`Grammar · ${lesson.title}${cur.retry ? ' · retry' : cur.review ? ' · review' : cur.weak ? ' · weak spot' : ''}`}
+            label={tag('Grammar', lesson.level, lesson.title, cur.retry ? 'retry' : cur.review ? 'review' : cur.weak && 'weak spot')}
           />
         }
         onAnswered={(g) => onGrammar(cur, g)}
@@ -319,7 +290,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   } else if (cur.kind === 'conj') {
     body = (
       <>
-        <Kind icon={<PenLine size={15} aria-hidden />} label={`Conjugation${cur.retry ? ' · retry' : ''}`} />
+        <Kind icon={<PenLine size={15} aria-hidden />} label={tag('Conjugation', TENSE_BY_ID[cur.item.tense].level, cur.retry && 'retry')} />
         <DrillQuestion key={key} item={cur.item} onAnswered={(a) => onConj(cur, a)} onContinue={advance} />
       </>
     )
@@ -349,7 +320,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
         <DictationQuestion
           key={key}
           sentence={sentence}
-          context={<Kind icon={<Headphones size={15} aria-hidden />} label="Listening" />}
+          context={<Kind icon={<Headphones size={15} aria-hidden />} label={tag('Listening', sentence.level)} />}
           onAnswered={onListen}
           onContinue={advance}
         />
@@ -357,7 +328,7 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
         <SpeakQuestion
           key={key}
           sentence={sentence}
-          context={<Kind icon={<Mic size={15} aria-hidden />} label="Speaking" />}
+          context={<Kind icon={<Mic size={15} aria-hidden />} label={tag('Speaking', sentence.level)} />}
           onAnswered={onSay}
           onContinue={advance}
         />

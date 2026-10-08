@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
-import { Badge, Box, Card, Container, Group, NavLink, SimpleGrid, Text, ThemeIcon, Title } from '@mantine/core'
-import { ArrowRight, CheckCircle2, Circle, CircleDashed, Clock } from 'lucide-react'
+import { Badge, Box, Button, Card, Container, Group, NavLink, SimpleGrid, Text, ThemeIcon, Title } from '@mantine/core'
+import { ArrowRight, CheckCircle2, Circle, CircleDashed, Clock, ShieldCheck } from 'lucide-react'
 import { lessonsByLevel, LESSONS } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS } from '../../data/types'
 import { LevelBadge, ProgressBar } from '../../components/ui'
@@ -8,6 +8,9 @@ import { PageHeader } from '../../components/PageHeader'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { dueLessons, lessonStatus, nextUp, type LessonStatus } from './status'
+import { GoalDots } from './GoalResults'
+import { goalCounts, levelCheckLessons } from './goals'
+import { RoadmapStrip } from '../roadmap/progress'
 
 const STATUS_ICON: Record<LessonStatus, React.ReactNode> = {
   new: <Circle size={20} color="var(--mantine-color-dimmed)" aria-hidden />,
@@ -53,13 +56,18 @@ export default function GrammarPage() {
     const s = lessonStatus(progress[l.id])
     return s === 'mastered' || s === 'due'
   }).length
+  let goalsTotal = 0
+  let goalsSolid = 0
+  for (const l of LESSONS) {
+    goalsTotal += l.goals.length
+    goalsSolid += goalCounts(l, progress[l.id]).solid
+  }
 
   return (
     <Container size={960} py="xl">
-      <PageHeader
-        eyebrow="Grammaire"
-        title="Grammar"
-      />
+      <PageHeader eyebrow="Grammaire" title="Grammar" />
+
+      <RoadmapStrip area="grammar" />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }}>
         {due.length > 0 && (
@@ -86,7 +94,7 @@ export default function GrammarPage() {
             }
             meta={
               <>
-                {up.level} · {up.minutes} min · {up.exercises.length} exercises
+                {up.level} · {up.minutes} min · {up.goals.length} goals
               </>
             }
           />
@@ -95,7 +103,7 @@ export default function GrammarPage() {
           <Group justify="space-between" mb={10}>
             <Text fw={650}>Overall progress</Text>
             <Text c="dimmed" className="tnum">
-              {mastered} / {LESSONS.length} mastered
+              {mastered} / {LESSONS.length} lessons mastered · {goalsSolid} / {goalsTotal} goals solid
             </Text>
           </Group>
           <ProgressBar value={mastered / LESSONS.length} label="Lessons mastered" variant="success" />
@@ -105,6 +113,7 @@ export default function GrammarPage() {
       {LEVELS.map((level) => {
         const lessons = lessonsByLevel(level)
         const done = lessons.filter((l) => ['mastered', 'due'].includes(lessonStatus(progress[l.id]))).length
+        const toCheck = levelCheckLessons(level, progress)
         return (
           <Box component="section" key={level} mt="xl" aria-labelledby={`lvl-${level}`}>
             <Group gap="sm">
@@ -116,9 +125,23 @@ export default function GrammarPage() {
                 {done}/{lessons.length}
               </Text>
             </Group>
-            <Text size="sm" c="dimmed" mt={4} mb="sm">
-              {LEVEL_INFO[level].description}
-            </Text>
+            <Group justify="space-between" align="flex-end" mt={4} mb="sm" gap="xs">
+              <Text size="sm" c="dimmed" maw={560}>
+                {LEVEL_INFO[level].description}
+              </Text>
+              {toCheck.length > 0 && (
+                <Button
+                  component={Link}
+                  to={`/grammar/check/${level.toLowerCase()}`}
+                  variant="subtle"
+                  size="compact-sm"
+                  leftSection={<ShieldCheck size={15} aria-hidden />}
+                  title={`${toCheck.length * 2} questions: two from each lesson you haven’t mastered yet`}
+                >
+                  Already know {level}? Test out
+                </Button>
+              )}
+            </Group>
             <Card padding={0}>
               {lessons.map((l, i) => {
                 const p = progress[l.id]
@@ -137,24 +160,23 @@ export default function GrammarPage() {
                         <span className="sr-only">{STATUS_LABEL[st]}.</span>
                       </>
                     }
-                    label={
-                      <Text fw={600}>
-                        {l.title}
-                      </Text>
-                    }
+                    label={<Text fw={600}>{l.title}</Text>}
                     description={
                       <Text className="fr" lang="fr" size="sm" c="dimmed" truncate>
                         {l.titleFr}
                       </Text>
                     }
                     rightSection={
-                      <Group gap={8} wrap="nowrap">
-                        {st === 'due' && <Badge color="indigo">Review</Badge>}
-                        {p && (
+                      <Group gap={10} wrap="nowrap">
+                        <Box visibleFrom="sm">
+                          <GoalDots lesson={l} progress={p} />
+                        </Box>
+                        {st === 'due' && <Badge color="accent">Review</Badge>}
+                        {p?.attempts ? (
                           <Badge color={p.best >= 0.8 ? 'green' : 'orange'} className="tnum" title="Best score">
                             {Math.round(p.best * 100)}%
                           </Badge>
-                        )}
+                        ) : null}
                         <Text size="sm" c="dimmed" visibleFrom="xs" miw={44} ta="right">
                           {l.minutes} min
                         </Text>

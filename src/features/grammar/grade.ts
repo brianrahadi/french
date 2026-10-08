@@ -17,7 +17,8 @@ export function gradeExercise(ex: Exercise, value: string, strictAccents: boolea
   const passFor = (v: Verdict) => v === 'correct' || (v === 'almost' && !strictAccents)
   switch (ex.type) {
     case 'mcq': {
-      const idx = Number(value)
+      // A skipped question ("I don’t know") sends '', which Number() would read as option 0.
+      const idx = value.trim() === '' ? -1 : Number(value)
       const ok = idx === ex.answer
       return { verdict: ok ? 'correct' : 'wrong', pass: ok, given: ex.options[idx] ?? '', expected: ex.options[ex.answer] }
     }

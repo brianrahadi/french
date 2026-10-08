@@ -107,7 +107,7 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
     { g: Rating.Again, label: 'Again', color: 'red' },
     { g: Rating.Hard, label: 'Hard', color: 'orange' },
     { g: Rating.Good, label: 'Good', color: 'green' },
-    { g: Rating.Easy, label: 'Easy', color: 'indigo' },
+    { g: Rating.Easy, label: 'Easy', color: 'blue' },
   ]
   const def = suggested ?? Rating.Good
   useHotkeys({
