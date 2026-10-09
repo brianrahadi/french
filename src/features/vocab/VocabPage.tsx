@@ -35,7 +35,6 @@ import { customWord, definite, findSameWord, frTypo, matchesSearch, parseImport,
 import { relativeDay } from '../../lib/date'
 import { useNavigate } from 'react-router'
 import { dueCounts, forecast, newAvailableToday, newWordQueue, vocabCounts, wordStatus, wordStats } from './selectors'
-import { RoadmapStrip } from '../roadmap/progress'
 
 type Tab = 'decks' | 'browse' | 'add'
 
@@ -66,8 +65,6 @@ export default function VocabPage() {
         eyebrow="Vocabulaire"
         title="Vocabulary"
       />
-
-      <RoadmapStrip area="review" />
 
       <Card px={24} py={22}>
         <Group justify="space-between" align="center" gap="lg" wrap="wrap">

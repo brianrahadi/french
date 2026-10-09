@@ -47,12 +47,7 @@ describe('sync bookkeeping in the store', () => {
   })
 })
 
-describe('study time and finished conversations', () => {
-  it('adds study time to this device’s day', () => {
-    useStore.getState().addStudyTime('2026-10-12', { grammar: 30 })
-    useStore.getState().addStudyTime('2026-10-12', { grammar: 15, talk: 5 })
-    expect(useStore.getState().studyTime[DEVICE_ID]['2026-10-12']).toEqual({ grammar: 45, talk: 5 })
-  })
+describe('finished conversations', () => {
   it('keeps a short record of each finished conversation, and forgets it when the conversation is deleted', () => {
     const at = new Date().toISOString()
     const c = { id: 'c1', scenarioId: 'cafe', title: '', level: 'A1' as const, turns: [], goalsMet: [], startedAt: at, updatedAt: at, model: '' }

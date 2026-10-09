@@ -6,7 +6,6 @@ import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
-import { useStudyTimer } from '../lib/useStudyTimer'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -41,7 +40,6 @@ const NAV: (NavItem & { also?: string[] })[] = [
 const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
 
 export function Layout() {
-  useStudyTimer()
   const { due, grammar, weak } = useBadges()
   const { pathname } = useLocation()
   const active = (item: (typeof NAV)[number]) => isActive(pathname, item.to, item.end) || (item.also ?? []).some((p) => isActive(pathname, p))
@@ -132,7 +130,6 @@ export function Layout() {
 
 /** Wrapper for full-screen study sessions (no navigation chrome). */
 export function FocusLayout() {
-  useStudyTimer()
   return (
     <Box bg="var(--bg)" mih="100dvh">
       <Outlet />

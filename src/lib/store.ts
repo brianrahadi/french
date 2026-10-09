@@ -11,8 +11,6 @@ import { cardId, newCard, Rating, review, type CardDir, type Grade, type StoredC
 import { BUILTIN_WORDS } from '../data/vocab'
 import { findSameWord } from './words'
 import type { PaletteId } from '../theme'
-import type { Roadmap } from '../features/roadmap/plan'
-import { addTime, type DayTime, type StudyTimeLog } from './studyTime'
 
 export type Theme = 'system' | 'light' | 'dark'
 export type Directions = 'both' | 'recognition' | 'production'
@@ -119,32 +117,18 @@ export interface State {
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
   read: Record<string, string>
-  /** The road-to-B2 plan: when it starts and from which week. */
-  roadmap: Roadmap
-  /** Daily-lesson blocks ticked off, per day (dayKey). */
-  planDays: Record<string, PlanDay>
-  /** Active study time: device → day → seconds per kind of page (see lib/studyTime). */
-  studyTime: StudyTimeLog
   /** Every finished conversation, kept as a short record after old transcripts are pruned. */
   talkLog: Record<string, TalkRecord>
   /** Bookkeeping that lets progress from several devices be merged. */
   sync: SyncMeta
 }
 
-/** A finished conversation, in brief: enough for progress and the roadmap. */
+/** A finished conversation, in brief: enough for progress stats. */
 export interface TalkRecord {
   scenarioId: string
   level: Level
   score: number
   /** When it was finished (ISO). */
-  at: string
-}
-
-export interface PlanDay {
-  /** Block ids ticked off by hand. */
-  done: string[]
-  /** A rough day: only the minimum blocks count. */
-  min?: boolean
   at: string
 }
 
@@ -269,11 +253,6 @@ interface Actions {
   importData: (data: unknown) => void
   ignoreWord: (wordId: string) => void
   resetAll: () => void
-  setRoadmap: (patch: Partial<Roadmap>) => void
-  tickBlock: (day: string, blockId: string, on: boolean) => void
-  setMinimumDay: (day: string, on: boolean) => void
-  /** Adds active study time for this device (seconds per kind of page). */
-  addStudyTime: (day: string, add: DayTime) => void
 }
 
 export const REVIEW_INTERVALS = [1, 3, 7, 16, 35, 90]
@@ -327,9 +306,6 @@ export const initialState: State = {
   conversations: [],
   texts: [],
   read: {},
-  roadmap: { start: null, startWeek: 1 },
-  planDays: {},
-  studyTime: {},
   talkLog: {},
   sync: { epoch: '', epochAt: '', changed: {}, deleted: {}, devices: {} },
 }
@@ -350,7 +326,6 @@ export function stampAll(s: Pick<State, 'settings' | 'skills'>, at = now()): Rec
     'activeDecks',
     'conjConfig',
     'startLevel',
-    'roadmap',
     ...Object.keys(s.skills ?? {}).map((k) => `skill:${k}`),
   ]
   return Object.fromEntries(keys.map((k) => [k, at]))
@@ -686,23 +661,6 @@ export const useStore = create<State & Actions>()(
         set({ ...restored, sync: { ...restored.sync, epoch: newId('e'), epochAt: at, changed: stampAll(restored, at) } })
       },
 
-      setRoadmap: (patch) => set((s) => ({ roadmap: { ...s.roadmap, ...patch }, ...stamp(s, ['roadmap']) })),
-
-      tickBlock: (day, blockId, on) =>
-        set((s) => {
-          const prev = s.planDays[day] ?? { done: [], at: '' }
-          const done = on ? [...new Set([...prev.done, blockId])] : prev.done.filter((id) => id !== blockId)
-          return { planDays: { ...s.planDays, [day]: { ...prev, done, at: now() } } }
-        }),
-
-      setMinimumDay: (day, on) =>
-        set((s) => {
-          const prev = s.planDays[day] ?? { done: [], at: '' }
-          return { planDays: { ...s.planDays, [day]: { ...prev, min: on || undefined, at: now() } } }
-        }),
-
-      addStudyTime: (day, add) => set((s) => ({ studyTime: addTime(s.studyTime ?? {}, DEVICE_ID, day, add) })),
-
       // Resetting also resets every synced device.
       resetAll: () => {
         const at = now()
@@ -724,7 +682,9 @@ export const useStore = create<State & Actions>()(
         return out as State
       },
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<State>
+        const p = { ...((persisted ?? {}) as Partial<State>) }
+        // Left over from the old 52-week plan and study timer.
+        for (const k of ['roadmap', 'planDays', 'studyTime']) delete (p as Record<string, unknown>)[k]
         const legacy = !p.sync && ('cards' in p || 'lessons' in p)
         return withSyncMeta({ ...current, ...p, settings: { ...DEFAULT_SETTINGS, ...(p.settings ?? {}) } } as State & Actions, legacy) as State & Actions
       },
@@ -756,9 +716,6 @@ export function exportData(): string {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
-    roadmap: s.roadmap,
-    planDays: s.planDays,
-    studyTime: s.studyTime,
     talkLog: s.talkLog,
     sync: s.sync,
   }

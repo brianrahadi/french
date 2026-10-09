@@ -38,7 +38,6 @@ import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
 import { useSync } from '../../lib/sync/engine'
-import { TodayPlan } from './TodayPlan'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -107,8 +106,6 @@ export default function TodayPage() {
         state.setStartLevel(lvl, decks)
         navigate(`/grammar/${lessonsByLevel(lvl)[0].id}`)
       }} />}
-
-      <TodayPlan />
 
       <Card component="section" aria-labelledby="session-title" padding="xl">
         <Group gap="xl" align="center" wrap="wrap">

@@ -15,7 +15,6 @@ import { LISTEN_CATEGORIES, type ListenCategory } from '../../lib/french'
 import { frTypo } from '../../lib/words'
 import { poolFor, sentenceById, type SentenceSource } from './sentences'
 import { PercentBadge } from './StoryTile'
-import { RoadmapStrip } from '../roadmap/progress'
 
 const LENGTHS = [5, 10, 15]
 
@@ -79,8 +78,6 @@ export default function DictationPage() {
           </Callout>
         )
       )}
-
-      <RoadmapStrip area="listening" only={['dictation']} />
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="md">
         {sources.map((src) => (

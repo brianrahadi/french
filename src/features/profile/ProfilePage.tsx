@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { ActionIcon, Box, Card, Container, Group, Progress, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
+import { ActionIcon, Box, Card, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
 import { BarChart, RadarChart } from '@mantine/charts'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
@@ -27,7 +27,6 @@ import {
   type Recap,
   type Tally,
 } from '../../lib/stats'
-import { AREA_LABEL, AREAS, estimatedTime, formatDuration, sumTime, toAreas, trackingSince, type Area } from '../../lib/studyTime'
 
 const SKILL_LABEL: Record<StudySkill, string> = {
   vocabulary: 'Vocabulary',
@@ -118,7 +117,6 @@ export default function ProfilePage() {
         <Skills cur={cur} last={last} />
         <Answers period={period} rows={answersHistory(s, period)} onPick={(i) => setOffset((o) => o + i - 11)} />
       </SimpleGrid>
-      <StudyTime period={period} prev={prev} s={s} />
     </Container>
   )
 }
@@ -435,105 +433,5 @@ function Answers({ period, rows, onPick }: { period: Period; rows: { period: Per
         }}
       />
     </Panel>
-  )
-}
-
-type TimeSource = Parameters<typeof estimatedTime>[0]
-
-/** Seconds per area for each day of a period: tracked time, plus estimates for days before tracking. */
-function periodTime(p: Period, est: ReturnType<typeof estimatedTime>, tracked: ReturnType<typeof sumTime>) {
-  return periodDays(p).map((d) => {
-    const day = dayKey(d)
-    const areas: Partial<Record<Area, number>> = toAreas(tracked[day] ?? {})
-    for (const [a, n] of Object.entries(est[day] ?? {}) as [Area, number][]) areas[a] = (areas[a] ?? 0) + n
-    return { date: d, day, areas, total: Object.values(areas).reduce((x, y) => x + (y ?? 0), 0), estimated: !!est[day] }
-  })
-}
-
-/** Time spent studying in the period, per day and per area, against the period before. */
-function StudyTime({ period, prev, s }: { period: Period; prev: Period; s: TimeSource }) {
-  const { now } = useSeriesColors()
-  const est = useMemo(() => estimatedTime(s), [s])
-  const tracked = useMemo(() => sumTime(s.studyTime), [s.studyTime])
-  const days = periodTime(period, est, tracked)
-  const before = periodTime(prev, est, tracked)
-  const sum = (xs: typeof days, a?: Area) => xs.reduce((n, d) => n + (a ? (d.areas[a] ?? 0) : d.total), 0)
-  const total = sum(days)
-  const since = trackingSince(s.studyTime)
-  const data = days.map((d) => ({
-    label: period.kind === 'week' ? d.date.toLocaleDateString('en', { weekday: 'short' }) : String(d.date.getDate()),
-    name: d.date.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
-    Minutes: Math.round(d.total / 60),
-    estimated: d.estimated,
-  }))
-  const max = Math.max(1, ...AREAS.map((a) => sum(days, a)))
-  return (
-    <Box id="time" mt="md" style={{ scrollMarginTop: 16 }}>
-      <Panel
-        eyebrow={periodLabel(period)}
-        title={
-          <Group gap="sm" align="baseline">
-            <span>Study time</span>
-            <Text span fz={26} fw={700} className="tnum">
-              {formatDuration(total)}
-            </Text>
-            <Delta now={Math.round(total / 60)} before={Math.round(sum(before) / 60)} unit=" min" kind={period.kind} />
-          </Group>
-        }
-      >
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
-          <BarChart
-            h={200}
-            data={data}
-            dataKey="label"
-            series={[{ name: 'Minutes', color: now }]}
-            barProps={{ radius: [4, 4, 0, 0] }}
-            gridAxis="x"
-            tickLine="none"
-            withTooltip
-            tooltipProps={{
-              content: ({ payload }) => {
-                const row = payload?.[0]?.payload as { name: string; Minutes: number; estimated: boolean } | undefined
-                return row ? (
-                  <Card padding="xs" shadow="sm">
-                    <Text size="sm" fw={600}>
-                      {row.name}
-                    </Text>
-                    <Text size="sm" className="tnum">
-                      {formatDuration(row.Minutes * 60)}
-                      {row.estimated ? ' (estimated)' : ''}
-                    </Text>
-                  </Card>
-                ) : null
-              },
-            }}
-          />
-          <Stack gap={10}>
-            {AREAS.map((a) => {
-              const n = sum(days, a)
-              return (
-                <Box key={a}>
-                  <Group justify="space-between" gap={8} wrap="nowrap">
-                    <Text size="sm">{AREA_LABEL[a]}</Text>
-                    <Text size="sm" fw={600} className="tnum">
-                      {formatDuration(n)}
-                      <Text span size="xs" c="dimmed" fw={500}>
-                        {' '}
-                        · {formatDuration(sum(before, a))} {PREV[period.kind]}
-                      </Text>
-                    </Text>
-                  </Group>
-                  <Progress value={(n / max) * 100} size={6} radius="xl" mt={4} color={now} aria-label={`${AREA_LABEL[a]}: ${formatDuration(n)}`} />
-                </Box>
-              )
-            })}
-          </Stack>
-        </SimpleGrid>
-        <Text size="xs" c="dimmed" mt="md">
-          Counted while a study page is open and in use.{' '}
-          {since ? `Tracked since ${new Date(since + 'T12:00').toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}; earlier days are estimated from what you did.` : 'Earlier days are estimated from what you did.'}
-        </Text>
-      </Panel>
-    </Box>
   )
 }

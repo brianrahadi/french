@@ -32,15 +32,6 @@ describe('mergeDocs', () => {
     expect(sumActivity(m.sync.devices)[day]).toEqual({ items: 15, correct: 13, newWords: 2 })
   })
 
-  it('adds up study time from different devices and never double counts one device', () => {
-    const day = '2026-09-20'
-    const local = doc({ studyTime: { laptop: { [day]: { grammar: 600, talk: 120 } } } })
-    const remote = doc({ studyTime: { laptop: { [day]: { grammar: 300 } }, phone: { [day]: { grammar: 60, audio: 900 } } } })
-    const m = mergeDocs(local, remote)
-    expect(m.studyTime).toEqual({ laptop: { [day]: { grammar: 600, talk: 120 } }, phone: { [day]: { grammar: 60, audio: 900 } } })
-    expect(mergeDocs(remote, local).studyTime).toEqual(m.studyTime)
-  })
-
   it('keeps finished conversations from both sides unless one was deleted', () => {
     const rec = (score: number) => ({ scenarioId: 'cafe', level: 'A1' as const, score, at: T(2) })
     const local = doc({ talkLog: { c1: rec(70), c2: rec(80) } })

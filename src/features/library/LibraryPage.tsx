@@ -24,7 +24,6 @@ import { StoryTile } from '../listening/StoryTile'
 import { DeleteTextDialog, GenerateDialog, GradedTile, PasteDialog, UserTextTile } from '../reading/texts'
 import { ConversationTile, FreeTalkDialog, ScenarioTile } from '../talk/TalkTiles'
 import { PromptTile, WritingTile, suggestPrompt } from '../writing/tiles'
-import { RoadmapStrip } from '../roadmap/progress'
 
 /**
  * Everything to study, LingQ-style: one row per kind of content (courses,
@@ -146,7 +145,6 @@ export default function LibraryPage() {
         id="grammar"
         title="Grammar course"
         count={grammar.length}
-        above={<RoadmapStrip area="grammar" />}
         action={
           <Button component={Link} to="/grammar" variant="subtle" size="xs" leftSection={<BookOpen size={14} aria-hidden />}>
             All lessons
@@ -158,19 +156,19 @@ export default function LibraryPage() {
         ))}
       </Shelf>
 
-      <Shelf id="audio" title="Audio course" count={audioTodo.length} above={<RoadmapStrip area="listening" only={['audio']} />}>
+      <Shelf id="audio" title="Audio course" count={audioTodo.length}>
         {audioTodo.map((l) => (
           <AudioTile key={l.id} l={l} p={audio[l.id]} next={l === nextAudio} />
         ))}
       </Shelf>
 
-      <Shelf id="stories" title="Mini stories" count={storiesTodo.length} above={<RoadmapStrip area="listening" only={['stories', 'dictation']} showTime={false} />}>
+      <Shelf id="stories" title="Mini stories" count={storiesTodo.length}>
         {storiesTodo.map((x) => (
           <StoryTile key={x.id} s={x} />
         ))}
       </Shelf>
 
-      <Shelf id="texts" title="Graded texts" count={texts.length} above={<RoadmapStrip area="reading" />}>
+      <Shelf id="texts" title="Graded texts" count={texts.length}>
         {texts.map((t) => (
           <GradedTile key={t.id} t={t} />
         ))}
@@ -186,14 +184,14 @@ export default function LibraryPage() {
         </Shelf>
       )}
 
-      <Shelf id="talk" title="Conversations" count={scenarios.length} above={<RoadmapStrip area="speaking" only={['roleplays', 'talks']} />}>
+      <Shelf id="talk" title="Conversations" count={scenarios.length}>
         <ActionTile icon={<MessagesSquare size={18} aria-hidden />} title="Free conversation" sub="Chat about anything with Camille" onClick={() => setFreeTalk(true)} />
         {scenarios.map((x) => (
           <ScenarioTile key={x.id} s={x} />
         ))}
       </Shelf>
 
-      <Shelf id="writing" title="Writing" count={prompts.length + (suggested ? 1 : 0)} above={<RoadmapStrip area="writing" />}>
+      <Shelf id="writing" title="Writing" count={prompts.length + (suggested ? 1 : 0)}>
         {suggested && <PromptTile p={suggested} suggested />}
         <ActionTile icon={<Feather size={18} aria-hidden />} title="Free writing" sub="A diary entry, a message, anything" to="/writing/new?prompt=free" />
         {prompts.map((p) => (

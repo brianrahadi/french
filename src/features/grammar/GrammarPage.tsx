@@ -10,7 +10,6 @@ import { useDocumentTitle } from '../../lib/hooks'
 import { dueLessons, lessonStatus, nextUp, type LessonStatus } from './status'
 import { GoalDots } from './GoalResults'
 import { goalCounts, levelCheckLessons } from './goals'
-import { RoadmapStrip } from '../roadmap/progress'
 
 const STATUS_ICON: Record<LessonStatus, React.ReactNode> = {
   new: <Circle size={20} color="var(--mantine-color-dimmed)" aria-hidden />,
@@ -66,8 +65,6 @@ export default function GrammarPage() {
   return (
     <Container size={960} py="xl">
       <PageHeader eyebrow="Grammaire" title="Grammar" />
-
-      <RoadmapStrip area="grammar" />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }}>
         {due.length > 0 && (

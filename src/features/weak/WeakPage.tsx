@@ -28,7 +28,6 @@ import { LISTEN_CATEGORIES } from '../../lib/french'
 import { displayFr, frTypo } from '../../lib/words'
 import { buildWeakPlan } from '../session/plan'
 import { computeWeakSpots } from './weak'
-import { RoadmapStrip } from '../roadmap/progress'
 
 export const SOURCE_INFO: Record<MistakeSource, { label: string; icon: React.ComponentType<{ size?: number }> }> = {
   grammar: { label: 'Grammar', icon: BookOpen },
@@ -70,8 +69,6 @@ export default function WeakPage() {
         eyebrow="Points faibles"
         title="Weak spots"
       />
-
-      <RoadmapStrip area="review" only={['weak']} showTime={false} />
 
       {nothing ? (
         <Card>
