@@ -83,8 +83,8 @@ export function ContinueRows({ items }: { items: ContinueItem[] }) {
   )
 }
 
-/** How many past items the sidebar lists before pointing to History. */
-const RECENT = 30
+/** The sidebar keeps to the last seven days; History has the rest. */
+const SIDEBAR_GROUPS = new Set(['Today', 'Past week'])
 
 const short = (t?: string) => (t && t.length <= 10 ? t : undefined)
 
@@ -100,7 +100,7 @@ export function SidebarActivity() {
   // Something already under Continue isn't listed twice.
   const open = new Set(cont.map((c) => c.to))
   const history = useHistory().filter((e) => !open.has(e.to))
-  const groups = recentGroups(history.slice(0, RECENT))
+  const groups = recentGroups(history).filter((g) => SIDEBAR_GROUPS.has(g.label))
   if (!cont.length && !groups.length) return null
   return (
     <Stack gap="sm" mt="md">
@@ -117,7 +117,7 @@ export function SidebarActivity() {
           <Group justify="space-between" pr="xs">
             {heading('Recent')}
             <Anchor component={Link} to="/history" size="xs" mb={4}>
-              All
+              See all
             </Anchor>
           </Group>
           {groups.map((g) => (
