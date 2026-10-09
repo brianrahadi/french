@@ -1,9 +1,11 @@
 import { Link } from 'react-router'
-import { Badge, Box, Button, Card, Container, Group, NavLink, SimpleGrid, Text, ThemeIcon, Title } from '@mantine/core'
+import { Badge, Box, Button, Card, Container, Group, NavLink, SimpleGrid, Text, ThemeIcon } from '@mantine/core'
 import { ArrowRight, CheckCircle2, Circle, CircleDashed, Clock, ShieldCheck } from 'lucide-react'
 import { lessonsByLevel, LESSONS } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS } from '../../data/types'
-import { LevelBadge, ProgressBar } from '../../components/ui'
+import { ProgressBar } from '../../components/ui'
+import { LevelGroup } from '../../components/LevelGroup'
+import { useCurrentLevel } from '../../lib/level'
 import { PageHeader } from '../../components/PageHeader'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
@@ -49,6 +51,7 @@ function HeroCard({ to, icon, color, title, meta }: { to: string; icon: React.Re
 export default function GrammarPage() {
   useDocumentTitle('Grammar')
   const progress = useStore((s) => s.lessons)
+  const current = useCurrentLevel()
   const due = dueLessons(progress)
   const up = nextUp(progress)
   const mastered = LESSONS.filter((l) => {
@@ -112,17 +115,8 @@ export default function GrammarPage() {
         const done = lessons.filter((l) => ['mastered', 'due'].includes(lessonStatus(progress[l.id]))).length
         const toCheck = levelCheckLessons(level, progress)
         return (
-          <Box component="section" key={level} mt="xl" aria-labelledby={`lvl-${level}`}>
-            <Group gap="sm">
-              <LevelBadge level={level} />
-              <Title order={2} size="h4" id={`lvl-${level}`}>
-                {LEVEL_INFO[level].name}
-              </Title>
-              <Text size="sm" c="dimmed" className="tnum" ml="auto">
-                {done}/{lessons.length}
-              </Text>
-            </Group>
-            <Group justify="space-between" align="flex-end" mt={4} mb="sm" gap="xs">
+          <LevelGroup key={level} group="grammar" level={level} done={done} total={lessons.length} defaultOpen={level === current}>
+            <Group justify="space-between" align="flex-end" mb="sm" gap="xs">
               <Text size="sm" c="dimmed" maw={560}>
                 {LEVEL_INFO[level].description}
               </Text>
@@ -183,7 +177,7 @@ export default function GrammarPage() {
                 )
               })}
             </Card>
-          </Box>
+          </LevelGroup>
         )
       })}
     </Container>

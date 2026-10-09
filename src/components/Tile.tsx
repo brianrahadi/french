@@ -1,8 +1,23 @@
-import type { MouseEvent, ReactNode } from 'react'
-import { Card, Group, Progress, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
+import { createContext, useContext, type MouseEvent, type ReactNode } from 'react'
+import { Card, Group, Progress, SimpleGrid, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
 import { Link, useNavigate } from 'react-router'
 
 const WIDTH = { base: '72vw', xs: 232 }
+
+/** Inside a TileGrid (or a stacked shelf on phones) tiles fill their cell instead of the shelf width. */
+const Fluid = createContext(false)
+export const FluidTiles = Fluid.Provider
+
+/** Tiles in a grid that wraps: one column on phones, more on wider screens. */
+export function TileGrid({ children }: { children: ReactNode }) {
+  return (
+    <Fluid.Provider value>
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="sm">
+        {children}
+      </SimpleGrid>
+    </Fluid.Provider>
+  )
+}
 
 /**
  * A card in a Shelf: a text, story or lesson. The whole card opens `to`;
@@ -45,6 +60,8 @@ export function Tile({
   highlight?: boolean
 }) {
   const navigate = useNavigate()
+  const inGrid = useContext(Fluid)
+  const fill = fluid || inGrid
   const open = (e: MouseEvent) => {
     if (disabled || (e.target as HTMLElement).closest('a, button:not([data-tile])')) return
     if (onClick) onClick()
@@ -53,7 +70,7 @@ export function Tile({
   const button = onClick ? { component: 'button' as const, type: 'button' as const, disabled, 'data-tile': true, ta: 'left' as const } : {}
   return (
     <Card
-      w={fluid ? undefined : WIDTH}
+      w={fill ? undefined : WIDTH}
       padding="md"
       onClick={open}
       {...button}
@@ -104,6 +121,7 @@ export function Tile({
 
 /** A dashed "do something" card at the end of a Shelf (e.g. "write a new story"). */
 export function ActionTile({ icon, title, sub, onClick, to }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; onClick?: () => void; to?: string }) {
+  const fluid = useContext(Fluid)
   const body = (
     <Stack gap={6} justify="center" h="100%">
       <ThemeIcon variant="light" size="lg" radius="md">
@@ -118,7 +136,7 @@ export function ActionTile({ icon, title, sub, onClick, to }: { icon: ReactNode;
     </Stack>
   )
   return (
-    <Card w={WIDTH} padding="md" style={{ borderStyle: 'dashed', flexShrink: 0 }} bg="transparent">
+    <Card w={fluid ? undefined : WIDTH} padding="md" style={{ borderStyle: 'dashed', flexShrink: 0 }} bg="transparent">
       {to ? (
         <UnstyledButton component={Link} to={to} h="100%">
           {body}

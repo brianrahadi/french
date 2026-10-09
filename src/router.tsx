@@ -35,6 +35,7 @@ export const router = createBrowserRouter(
         { path: 'verbs', lazy: page(() => import('./features/verbs/VerbsPage')) },
         { path: 'verbs/:inf', lazy: page(() => import('./features/verbs/VerbDetailPage')) },
         { path: 'library', lazy: page(() => import('./features/library/LibraryPage')) },
+        { path: 'library/:section', lazy: page(() => import('./features/library/LibrarySectionPage')) },
         // Old content homes now live as rows in the Library.
         { path: 'writing', element: <Navigate to="/library#writing" replace /> },
         { path: 'writing/new', lazy: page(() => import('./features/writing/WritingEditor')) },
