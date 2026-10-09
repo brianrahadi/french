@@ -19,11 +19,10 @@ import {
   Wrench,
 } from 'lucide-react'
 import { THEMED_DECKS } from '../../data/vocab'
-import { LESSONS, lessonsByLevel } from '../../data/grammar'
+import { lessonsByLevel } from '../../data/grammar'
 import { LEVEL_INFO, LEVELS, type Level } from '../../data/types'
 import { TENSE_BY_ID } from '../../lib/conjugate'
-import { Heatmap } from '../../components/Heatmap'
-import { Kbd, LevelBadge, Ring, Stat } from '../../components/ui'
+import { Kbd, LevelBadge, Ring } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { computeStreak, useStore } from '../../lib/store'
 import { dayKey, frenchDate } from '../../lib/date'
@@ -31,13 +30,14 @@ import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { buildMixedPlan } from '../session/plan'
 import { remaining } from '../session/run'
 import { loadSession, settleSession } from '../session/saved'
-import { dueCardIds, newAvailableToday, vocabCounts } from '../vocab/selectors'
-import { dueLessons, lessonStatus, nextUp } from '../grammar/status'
+import { dueCardIds, newAvailableToday } from '../vocab/selectors'
+import { dueLessons, nextUp } from '../grammar/status'
 import { computeWeakSpots } from '../weak/weak'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
-import { ContinueRows, useContinue, useDayDetails } from '../history/Activity'
+import { ContinueRows, useContinue } from '../history/Activity'
+import { ProgressCard } from './ProgressCard'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -46,13 +46,10 @@ export default function TodayPage() {
   const today = state.activity[dayKey()] ?? { items: 0, correct: 0, newWords: 0 }
   const streak = computeStreak(state.activity)
   const goal = state.settings.dailyGoal
-  const dayDetails = useDayDetails()
   const due = useMemo(() => dueCardIds(state.cards, state.customWords).length, [state.cards, state.customWords])
   const fresh = newAvailableToday(state)
   const grammarDue = dueLessons(state.lessons)
   const up = nextUp(state.lessons)
-  const { learned } = useMemo(() => vocabCounts(state), [state])
-  const mastered = LESSONS.filter((l) => ['mastered', 'due'].includes(lessonStatus(state.lessons[l.id]))).length
   const totalItems = Object.values(state.activity).reduce((a, d) => a + d.items, 0)
   const hour = new Date().getHours()
   const greeting = hour >= 18 || hour < 4 ? 'Bonsoir' : 'Bonjour'
@@ -272,20 +269,7 @@ export default function TodayPage() {
         </SimpleGrid>
       </Box>
 
-      <Box component="section" aria-labelledby="progress-title" mt="xl">
-        <Title order={2} size="h4" id="progress-title" mb="sm">
-          Your progress
-        </Title>
-        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
-          <Stat label="Day streak" value={streak} />
-          <Stat label="Words started" value={learned} />
-          <Stat label="Lessons mastered" value={mastered} unit={`/ ${LESSONS.length}`} />
-          <Stat label="Total answers" value={totalItems.toLocaleString()} />
-        </SimpleGrid>
-        <Card mt="sm">
-          <Heatmap activity={state.activity} goal={goal} details={dayDetails} />
-        </Card>
-      </Box>
+      <ProgressCard />
     </Container>
   )
 }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { initialState, useStore, withSyncMeta, type State } from './store'
+import { bestStreak, computeStreak, initialState, useStore, withSyncMeta, type State } from './store'
 import { DEVICE_ID } from './device'
 import { dayKey } from './date'
 
@@ -98,5 +98,23 @@ describe('no duplicate words', () => {
     useStore.getState().addCustomWords([customWord('la trottinette', 'scooter')])
     useStore.getState().addCustomWords([customWord('une trottinette', 'kick scooter'), customWord('trottinette (f)', 'scooter')])
     expect(useStore.getState().customWords.map((w) => w.fr)).toEqual(['la trottinette'])
+  })
+})
+
+describe('streaks', () => {
+  const day = { items: 5, correct: 4, newWords: 0 }
+  const act = (...keys: string[]) => Object.fromEntries(keys.map((k) => [k, day]))
+
+  it('counts the current run, ending today or yesterday', () => {
+    const now = new Date(2026, 9, 9, 12)
+    expect(computeStreak(act('2026-10-07', '2026-10-08', '2026-10-09'), now)).toBe(3)
+    expect(computeStreak(act('2026-10-07', '2026-10-08'), now)).toBe(2)
+    expect(computeStreak(act('2026-10-06'), now)).toBe(0)
+  })
+
+  it('finds the longest run, across month ends and gaps', () => {
+    expect(bestStreak({})).toBe(0)
+    expect(bestStreak(act('2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-05', '2026-10-06'))).toBe(4)
+    expect(bestStreak({ ...act('2026-10-01', '2026-10-03'), '2026-10-02': { items: 0, correct: 0, newWords: 0 } })).toBe(1)
   })
 })

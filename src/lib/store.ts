@@ -722,6 +722,22 @@ export function exportData(): string {
   return JSON.stringify({ app: 'petit-a-petit', version: 1, exportedAt: new Date().toISOString(), state: data }, null, 2)
 }
 
+/** The longest run of consecutive study days ever. */
+export function bestStreak(activity: Record<string, DayActivity>): number {
+  const days = Object.keys(activity).filter((k) => activity[k]?.items).sort()
+  let best = 0
+  let run = 0
+  let prev: Date | null = null
+  for (const k of days) {
+    const [y, m, d] = k.split('-').map(Number)
+    const date = new Date(y, m - 1, d)
+    run = prev && dayKey(addDays(prev, 1)) === k ? run + 1 : 1
+    best = Math.max(best, run)
+    prev = date
+  }
+  return best
+}
+
 /** Days in a row (ending today or yesterday) with at least one answered item. */
 export function computeStreak(activity: Record<string, DayActivity>, now = new Date()): number {
   let d = new Date(now)

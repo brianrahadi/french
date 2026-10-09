@@ -417,6 +417,106 @@ input[type='range'] {
   pointer-events: none;
 }
 
+/* ───────────── Today: progress card ───────────── */
+.progress-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.progress-metric {
+  padding: 16px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.progress-metric__visual {
+  margin-top: auto;
+  padding-top: 14px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.progress-metric:nth-child(odd) {
+  border-right: 1px solid var(--mantine-color-default-border);
+}
+.progress-metric:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+@media (min-width: 48em) {
+  .progress-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .progress-metric {
+    padding: 20px;
+  }
+  .progress-metric:nth-child(-n + 2) {
+    border-bottom: 0;
+  }
+  .progress-metric:not(:last-child) {
+    border-right: 1px solid var(--mantine-color-default-border);
+  }
+}
+.progress-heatmap {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.progress-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  max-width: 170px;
+}
+.progress-week__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.progress-week__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--heat-0);
+}
+.progress-week__dot.is-on {
+  background: var(--mantine-color-orange-filled);
+}
+.progress-week__dot.is-today {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--mantine-color-orange-filled);
+}
+.progress-week__label {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-3);
+}
+
+.progress-levels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.progress-spark {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+}
+.progress-spark__bar {
+  flex: 1;
+  min-width: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--heat-0);
+}
+.progress-spark__bar.is-on {
+  background: var(--heat-2);
+}
+.progress-spark__bar.is-goal {
+  background: var(--heat-4);
+}
+
 /* ───────────── Shelves: rows of cards that scroll sideways ───────────── */
 .shelf {
   margin-top: 26px;
