@@ -355,51 +355,60 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 6.5rem;
-  padding: 14px 16px;
+  gap: 2px;
+  height: 4.75rem;
+  padding: 8px 12px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-2);
 }
 .qp-big {
-  font-size: 1.375rem;
-  line-height: 1.35;
+  font-size: 1.25rem;
+  line-height: 1.3;
 }
 .qp-gap {
   display: inline-block;
-  width: 5.5em;
-  height: 1.05em;
+  width: 5em;
+  height: 1em;
   vertical-align: -0.2em;
   border-bottom: 2px solid var(--primary);
 }
 .qp-blanks {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 8px;
+  gap: 8px 6px;
   min-width: 0;
+  max-height: 2.6rem;
+  overflow: hidden;
 }
 .qp-blank {
   display: inline-block;
-  height: 0.9rem;
+  height: 0.8rem;
   border-radius: 4px;
   background: var(--surface-3);
   border-bottom: 2px solid var(--border-strong);
 }
-.qp-weak {
+.qp-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
 }
-.qp-weak .qp-fix {
-  margin-top: 6px;
-  padding: 0;
-  background: none;
+.qp-row > :first-child {
+  flex-shrink: 0;
+  max-width: 55%;
 }
-.qp-ref {
-  transition: border-color 0.15s;
+.qp-fix del {
+  color: var(--danger);
 }
-.qp-ref:hover {
-  border-color: var(--border-strong);
+.qp-fix ins {
+  color: var(--success);
+  text-decoration: none;
+  font-weight: 600;
+}
+.qp-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 14px;
 }
