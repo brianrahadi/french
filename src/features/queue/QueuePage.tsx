@@ -44,7 +44,7 @@ export default function QueuePage() {
   const setTab = (t: Tab) => setParams((p) => ({ ...Object.fromEntries(p), tab: t }), { replace: true })
 
   return (
-    <Container size={1040} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader eyebrow="File d’attente" title="Study queue" subtitle="Why the app picks what it picks, and everything still ahead." />
       <Tabs value={tab} onChange={(v) => v && setTab(v as Tab)}>
         <Tabs.List mb="lg" style={{ flexWrap: 'nowrap', overflowX: 'auto', scrollbarWidth: 'none' }}>

@@ -73,7 +73,7 @@ export default function PracticeHub() {
   ]
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader eyebrow="S’entraîner" title="Practice" />
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 'sm', sm: 'md' }}>
         {drills.map((d) => (

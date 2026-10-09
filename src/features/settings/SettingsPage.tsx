@@ -173,7 +173,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader eyebrow="Réglages" title="Settings" />
 
       <Section id="set-study" title="Study">

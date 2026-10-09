@@ -24,7 +24,7 @@ export default function WritingResult() {
 
   if (!entry) {
     return (
-      <Container size={960} py="xl">
+      <Container size="var(--page-w)" py="xl">
         <BackLink />
         <Empty icon={<PencilLine size={30} />} title="This text isn’t here any more">
           It may have been deleted.{' '}
@@ -72,7 +72,7 @@ function Result({ entry, before }: { entry: WritingEntry; before?: WritingEntry 
   const shownText = view === 'corrected' ? fb.corrected : view === 'improved' ? fb.improved : entry.text
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <BackLink />
 
       <Group component="header" gap={20} wrap="nowrap" mb="md">

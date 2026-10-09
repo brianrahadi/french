@@ -48,7 +48,7 @@ export default function VerbsPage() {
   }).sort((a, b) => a.inf.localeCompare(b.inf, 'fr'))
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Tableaux de conjugaison"
         title="Verb tables"

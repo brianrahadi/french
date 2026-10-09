@@ -154,7 +154,7 @@ export default function WritingEditor() {
   const counterColor = words === 0 ? undefined : words < min || words > max ? 'orange' : 'green'
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <Anchor
         component={Link}
         to={original ? `/writing/${original.id}` : '/library#writing'}

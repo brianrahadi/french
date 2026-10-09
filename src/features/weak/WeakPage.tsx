@@ -64,7 +64,7 @@ export default function WeakPage() {
   const nothing = !weak.recent.length && !weak.lessons.length && !weak.verbs.length && !weak.words.length
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Points faibles"
         title="Weak spots"

@@ -61,7 +61,7 @@ export default function LibrarySectionPage() {
     const { continuing, done } = libraryEntries(s, d.askDelete)
     const list = section === 'continue' ? continuing : done
     return (
-      <Container size={960} py="xl">
+      <Container size="var(--page-w)" py="xl">
         <PageHeader back={back} eyebrow={meta.eyebrow} title={meta.title} subtitle={`${list.length} item${list.length === 1 ? '' : 's'}`} />
         {list.length ? <TileGrid>{list.map((e) => e.node)}</TileGrid> : <Text c="dimmed">Nothing here yet.</Text>}
         {d.dialogs}
@@ -126,7 +126,7 @@ export default function LibrarySectionPage() {
 
   const doneCount = items.filter((i) => i.done).length
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         back={back}
         eyebrow={meta.eyebrow}

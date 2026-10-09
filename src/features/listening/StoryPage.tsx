@@ -27,7 +27,7 @@ export default function StoryPage() {
   useDocumentTitle(story ? story.title : 'Listening')
   if (!story)
     return (
-      <Container size={760} py="xl">
+      <Container size="var(--page-w-narrow)" py="xl">
         <PageHeader back={{ to: '/library#stories', label: 'Library' }} title="Listening" />
         <Empty icon={<Headphones size={30} />} title="This story isn’t here">
           <Anchor component={Link} to="/library#stories">
@@ -150,7 +150,7 @@ function Story({ story }: { story: StoryDef }) {
   const progress = playing || current > 0 ? (current + (playing ? 0.5 : 0)) / sentences.length : 0
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader back={{ to: '/library#stories', label: 'Library' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
         <Group gap={8} mt="sm">
           <LevelBadge level={story.level} />

@@ -81,7 +81,7 @@ export default function TalkChatRoute() {
   useDocumentTitle(c ? c.title : 'Conversation')
   if (!c)
     return (
-      <Container size={720} py="xl">
+      <Container size="var(--page-w-narrow)" py="xl">
         <PageHeader back={{ to: '/library#talk', label: 'Library' }} title="Conversation" />
         <Empty icon={<Flag size={30} />} title="This conversation isn’t here any more">
           It may have been deleted.{' '}

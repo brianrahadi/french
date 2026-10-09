@@ -73,7 +73,7 @@ export default function ReaderPage() {
 
   if (!doc)
     return (
-      <Container size={760} py="xl">
+      <Container size="var(--page-w-narrow)" py="xl">
         <Anchor component={Link} to="/library#texts" size="sm" fw={600} c="dimmed" mb="sm" display="inline-flex" style={{ alignItems: 'center', gap: 6 }}>
           <ArrowLeft size={16} aria-hidden /> Library
         </Anchor>
@@ -209,7 +209,7 @@ function Reader({ doc }: { doc: Doc }) {
   }
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/library#texts', label: 'Library' }} fr>
         <Group gap={8} mt="xs">
           {doc.level && <LevelBadge level={doc.level} />}

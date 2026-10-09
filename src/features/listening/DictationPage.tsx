@@ -51,7 +51,7 @@ export default function DictationPage() {
   const topCats = [...cats.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         back={{ to: '/practice', label: 'Practice' }}
         eyebrow="Dictée"

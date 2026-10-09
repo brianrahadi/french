@@ -46,7 +46,7 @@ export default function RoadmapPage() {
   const level = currentLevel(s)
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader eyebrow="Feuille de route" title="The road to TCF B2" />
 
       <Stack gap="xl">

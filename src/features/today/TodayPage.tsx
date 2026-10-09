@@ -67,7 +67,7 @@ export default function TodayPage() {
   const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, 3)
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow={capitalize(frenchDate())}
         title={<>{greeting}&nbsp;!</>}

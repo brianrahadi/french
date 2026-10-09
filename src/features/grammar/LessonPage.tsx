@@ -123,7 +123,7 @@ export default function LessonPage() {
 
   if (!lesson) {
     return (
-      <Container size={960} py="xl">
+      <Container size="var(--page-w)" py="xl">
         <PageHeader back={{ to: '/grammar', label: 'Grammar' }} title="Lesson not found" />
       </Container>
     )
@@ -142,7 +142,7 @@ export default function LessonPage() {
         : `${lesson.exercises.length} exercises · instant feedback`
 
   return (
-    <Container size={780} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader back={{ to: '/grammar', label: 'Grammar' }} title={lesson.titleFr} fr subtitle={lesson.title}>
         <Text mt={8} maw={640}>
           {lesson.summary}

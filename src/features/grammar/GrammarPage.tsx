@@ -66,7 +66,7 @@ export default function GrammarPage() {
   }
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader eyebrow="Grammaire" title="Grammar" />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }}>

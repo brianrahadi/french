@@ -20,7 +20,7 @@ export default function HistoryPage() {
   const days = [...new Set(list.map((e) => e.day))]
 
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader eyebrow="Historique" title="History" />
 
       {cont.length > 0 && (

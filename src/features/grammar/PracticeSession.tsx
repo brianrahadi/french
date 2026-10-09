@@ -89,7 +89,7 @@ function PracticeSession() {
 
   if (!lesson || !set.length) {
     return (
-      <Container size={960} py="xl">
+      <Container size="var(--page-w)" py="xl">
         <Text>
           {lesson ? 'Nothing to practise here.' : 'Lesson not found.'}{' '}
           <Anchor component={Link} to={lesson ? `/grammar/${lesson.id}` : '/grammar'}>

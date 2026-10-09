@@ -57,7 +57,7 @@ export default function ConjugationPage() {
   }, [stats])
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Conjugaison"
         title="Conjugation"

@@ -22,7 +22,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 export default function PrivacyPage() {
   useDocumentTitle('Privacy')
   return (
-    <Container size={760} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader eyebrow="Confidentialité" title="Privacy" subtitle={`Petit à petit keeps as little about you as it can. Last updated ${UPDATED}.`} />
 
       <Section id="p-device" title="On your device">

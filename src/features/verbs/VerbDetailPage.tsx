@@ -18,7 +18,7 @@ export default function VerbDetailPage() {
 
   if (!v) {
     return (
-      <Container size={960} py="xl">
+      <Container size="var(--page-w)" py="xl">
         <PageHeader back={{ to: '/verbs', label: 'Verb tables' }} title="Verb not found" />
       </Container>
     )
@@ -27,7 +27,7 @@ export default function VerbDetailPage() {
   const tenses = TENSES.filter((t) => hasTense(v, t.id))
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         back={{ to: '/verbs', label: 'Verb tables' }}
         title={v.inf}

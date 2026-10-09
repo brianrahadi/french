@@ -40,7 +40,7 @@ export default function SpeakingPage() {
   const hard = [...words.entries()].filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]).slice(0, 12)
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Expression orale"
         title="Speaking"

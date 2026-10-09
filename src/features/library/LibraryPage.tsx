@@ -82,7 +82,7 @@ export default function LibraryPage() {
   const prompts = WRITING_PROMPTS.filter((p) => !written.has(p.id) && p !== suggested && shown(p.level)).sort(byLevel)
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Bibliothèque"
         title="Library"

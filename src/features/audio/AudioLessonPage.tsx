@@ -34,7 +34,7 @@ export default function AudioLessonPage() {
   useDocumentTitle(lesson ? lesson.title : 'Audio lessons')
   if (!lesson)
     return (
-      <Container size={720} py="xl">
+      <Container size="var(--page-w-narrow)" py="xl">
         <PageHeader back={{ to: '/library#audio', label: 'Library' }} title="Audio lessons" />
         <Empty icon={<AudioLines size={30} />} title="This lesson isn’t here">
           <Anchor component={Link} to="/library#audio">
@@ -178,7 +178,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
   }
 
   return (
-    <Container size={720} py="xl">
+    <Container size="var(--page-w-narrow)" py="xl">
       <PageHeader back={{ to: '/library#audio', label: 'Library' }} title={frTypo(lesson.title)} fr subtitle={lesson.titleEn}>
         <Group gap={8} mt="sm">
           <LevelBadge level={lesson.level} />

@@ -60,7 +60,7 @@ export default function VocabPage() {
   useHotkeys({ s: () => canStudy && navigate('/vocab/study') })
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Vocabulaire"
         title="Vocabulary"

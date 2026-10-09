@@ -68,7 +68,7 @@ export default function ProfilePage() {
   const sections = useMemo(() => Object.fromEntries(LEVELS.map((l) => [l, levelSections(l, s)])) as Record<Level, Record<StudySkill, Tally>>, [s])
 
   return (
-    <Container size={960} py="xl">
+    <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow="Profil"
         title={user?.name ?? 'Profile'}

@@ -59,7 +59,7 @@ export default function LevelCheck() {
 
   if (!items.length) {
     return (
-      <Container size={720} py="xl">
+      <Container size="var(--page-w-narrow)" py="xl">
         <Text>
           {LEVELS.includes(level) ? `Every ${level} lesson is already mastered.` : 'Unknown level.'}{' '}
           <Anchor component={Link} to="/grammar">
