@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ActionIcon, Alert, Anchor, Avatar, Box, Button, Card, Group, Loader, NavLink, Stack, Text, ThemeIcon } from '@mantine/core'
+import { ActionIcon, Alert, Anchor, Avatar, Box, Button, Card, Group, Indicator, Loader, NavLink, Stack, Text, ThemeIcon, Tooltip } from '@mantine/core'
 import { Link } from 'react-router'
 import { AlertTriangle, Cloud, CloudCog, CloudOff, LogIn, LogOut, RefreshCw, X } from 'lucide-react'
 import { signInWithGoogle, signOut, syncConfigured, syncNow, useSync, type SyncState } from '../lib/sync/engine'
+import { railLink } from './rail'
 
 /** "just now", "3 min ago", "at 14:05" */
 function since(iso: string | null, now = Date.now()): string {
@@ -197,10 +198,30 @@ export function SyncGlyph({ state, size = 16 }: { state: SyncState; size?: numbe
 
 /** Compact status for the sidebar: synced / syncing / sign-in prompt. */
 /** The sidebar's profile link: your picture (or initial) and the sync state. */
-export function ProfileLink({ active }: { active: boolean }) {
+export function ProfileLink({ active, compact }: { active: boolean; /** Icon only, for the collapsed sidebar. */ compact?: boolean }) {
   const { state, user } = useSync()
   useTick()
   const problem = state === 'error' || state === 'offline'
+  if (compact) {
+    const name = user?.name ?? 'Profile'
+    const note = !user && syncConfigured ? 'Sign in to sync' : problem ? LABEL[state] : undefined
+    return (
+      <Tooltip label={note ? `${name} · ${note}` : name} position="right" withArrow openDelay={150}>
+        <NavLink
+          component={Link}
+          to="/profile"
+          active={active}
+          aria-label={note ? `${name}, ${note}` : name}
+          leftSection={
+            <Indicator disabled={!problem} size={8} offset={2} color="orange">
+              <Avatar src={user?.avatar} name={user?.name} size={24} radius="xl" imageProps={{ referrerPolicy: 'no-referrer' }} />
+            </Indicator>
+          }
+          {...railLink}
+        />
+      </Tooltip>
+    )
+  }
   return (
     <NavLink
       component={Link}

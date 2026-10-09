@@ -562,3 +562,11 @@ input[type='range'] {
 .nav-row:hover {
   background: var(--mantine-color-default-hover);
 }
+
+/* ───────────── Sidebar collapse ───────────── */
+.app-nav {
+  transition-property: transform, top, height, width;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease);
+  overflow: hidden;
+}

@@ -14,6 +14,8 @@ import type { PaletteId } from '../theme'
 
 export type Theme = 'system' | 'light' | 'dark'
 export type Directions = 'both' | 'recognition' | 'production'
+/** How big the interface is: text, cards and spacing. Big is the original size. */
+export type UiSize = 'big' | 'medium' | 'small'
 
 export interface Settings {
   newPerDay: number
@@ -26,6 +28,10 @@ export interface Settings {
   theme: Theme
   /** Colour theme (see PALETTES in src/theme.ts). */
   palette: PaletteId
+  /** Interface size: library cards, text and spacing everywhere. */
+  size: UiSize
+  /** Sidebar shrunk to an icon rail (wide screens only). */
+  navCollapsed: boolean
   retention: number
   /** Include a couple of dictation sentences in Today's session. */
   sessionListening: boolean
@@ -149,7 +155,7 @@ export interface SyncMeta {
 }
 
 /** Settings that belong to one device (voice, speed, theme) and are never synced. */
-export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme', 'palette'] as const
+export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme', 'palette', 'size', 'navCollapsed'] as const
 
 export interface AudioProgress {
   /** Step to resume from. */
@@ -279,6 +285,8 @@ export const DEFAULT_SETTINGS: Settings = {
   strictAccents: false,
   theme: 'system',
   palette: 'clay',
+  size: 'big',
+  navCollapsed: false,
   retention: 0.9,
   sessionListening: true,
   sessionSpeaking: false,

@@ -1,11 +1,13 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
-import { AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
-import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, Settings } from 'lucide-react'
+import { ActionIcon, AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, Tooltip, UnstyledButton } from '@mantine/core'
+import { useHotkeys } from '@mantine/hooks'
+import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
 import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
+import { RAIL_W, railLink, SIDEBAR_SHORTCUT } from './rail'
 import { SidebarActivity } from '../features/history/Activity'
 
 function useBadges() {
@@ -42,9 +44,16 @@ const PHONE_PROFILE: NavItem & { also?: string[] } = { to: '/profile', label: 'P
 
 const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
 
+const NAV_W = 232
+
 export function Layout() {
   const { due, grammar, weak } = useBadges()
   const { pathname } = useLocation()
+  // The sidebar can shrink to a rail of icons (wide screens; phones use the bottom bar).
+  const collapsed = useStore((s) => s.settings.navCollapsed)
+  const updateSettings = useStore((s) => s.updateSettings)
+  const toggleNav = () => updateSettings({ navCollapsed: !collapsed })
+  useHotkeys([['mod+B', toggleNav]])
   const active = (item: (typeof NAV)[number]) => isActive(pathname, item.to, item.end) || (item.also ?? []).some((p) => isActive(pathname, p))
   const badge = (to: string) => (to === '/vocab' ? due : to === '/library' ? grammar : to === '/practice' ? weak : 0)
   const soft = (to: string) => to === '/practice'
@@ -53,6 +62,24 @@ export function Layout() {
   const link = (item: (typeof NAV)[number]) => {
     const { to, label: text, icon: Icon } = item
     const n = badge(to)
+    if (collapsed) {
+      return (
+        <Tooltip key={to} label={n > 0 ? `${text} · ${n} ${label(to)}` : text} position="right" withArrow openDelay={150}>
+          <NavLink
+            component={Link}
+            to={to}
+            aria-label={n > 0 ? `${text}, ${n} ${label(to)}` : text}
+            active={active(item)}
+            leftSection={
+              <Indicator disabled={n === 0} size={8} offset={1} color={soft(to) ? 'gray' : undefined}>
+                <Icon size={19} aria-hidden />
+              </Indicator>
+            }
+            {...railLink}
+          />
+        </Tooltip>
+      )
+    }
     return (
       <NavLink
         key={to}
@@ -75,31 +102,47 @@ export function Layout() {
   }
 
   return (
-    <AppShell navbar={{ width: 232, breakpoint: 'sm', collapsed: { mobile: true } }} footer={{ height: { base: 64, sm: 0 } }} padding={0}>
+    <AppShell navbar={{ width: collapsed ? RAIL_W : NAV_W, breakpoint: 'sm', collapsed: { mobile: true } }} footer={{ height: { base: 64, sm: 0 } }} padding={0}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <AppShell.Navbar p="sm" bg="var(--nav-bg)" aria-label="Main navigation">
+      <AppShell.Navbar p="sm" bg="var(--nav-bg)" aria-label="Main navigation" className="app-nav" data-collapsed={collapsed || undefined}>
         <AppShell.Section>
-          <UnstyledButton component={Link} to="/" aria-label="Petit à petit — home" p="xs" mb="sm">
-            <Group gap="sm">
-              <ThemeIcon size={32} radius="md" fz={20} className="fr">
-                é
-              </ThemeIcon>
-              <Text fz={19} fw={600} className="fr">
-                Petit à petit
-              </Text>
+          {collapsed ? (
+            <Stack gap={6} align="center" mb="sm">
+              <UnstyledButton component={Link} to="/" aria-label="Petit à petit — home" py="xs">
+                <ThemeIcon size={32} radius="md" fz={20} className="fr">
+                  é
+                </ThemeIcon>
+              </UnstyledButton>
+              <NavToggle collapsed onClick={toggleNav} />
+            </Stack>
+          ) : (
+            <Group justify="space-between" wrap="nowrap" gap={4} mb="sm">
+              <UnstyledButton component={Link} to="/" aria-label="Petit à petit — home" p="xs" miw={0}>
+                <Group gap="sm" wrap="nowrap">
+                  <ThemeIcon size={32} radius="md" fz={20} className="fr">
+                    é
+                  </ThemeIcon>
+                  <Text fz={19} fw={600} className="fr" truncate>
+                    Petit à petit
+                  </Text>
+                </Group>
+              </UnstyledButton>
+              <NavToggle collapsed={false} onClick={toggleNav} />
             </Group>
-          </UnstyledButton>
+          )}
         </AppShell.Section>
-        <AppShell.Section grow component={ScrollArea}>
+        <AppShell.Section grow component={ScrollArea} scrollbars="y">
           <Stack gap={2}>{NAV.map(link)}</Stack>
-          <SidebarActivity />
+          {!collapsed && <SidebarActivity />}
         </AppShell.Section>
         <AppShell.Section>
-          {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
-          <ProfileLink active={isActive(pathname, '/profile')} />
-          {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
+          <Stack gap={2}>
+            {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
+            <ProfileLink active={isActive(pathname, '/profile')} compact={collapsed} />
+            {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
+          </Stack>
         </AppShell.Section>
       </AppShell.Navbar>
 
@@ -130,6 +173,19 @@ export function Layout() {
       </AppShell.Footer>
       <ScrollRestoration />
     </AppShell>
+  )
+}
+
+/** Shrink the sidebar to icons, or open it back up. */
+function NavToggle({ collapsed, onClick }: { collapsed: boolean; onClick: () => void }) {
+  const text = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+  const Icon = collapsed ? PanelLeftOpen : PanelLeftClose
+  return (
+    <Tooltip label={`${text} (${SIDEBAR_SHORTCUT})`} position="right" withArrow openDelay={300}>
+      <ActionIcon variant="subtle" color="gray" size="lg" onClick={onClick} aria-label={text} aria-expanded={!collapsed}>
+        <Icon size={18} aria-hidden />
+      </ActionIcon>
+    </Tooltip>
   )
 }
 
