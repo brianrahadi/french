@@ -18,7 +18,7 @@ export function Dialog({
   wide?: boolean
 }) {
   return (
-    <Modal opened={open} onClose={onClose} title={title} size={wide ? 680 : 'md'} styles={{ title: { fontWeight: 650, fontSize: 18 } }}>
+    <Modal opened={open} onClose={onClose} title={title} size={wide ? 680 : 'md'} styles={{ title: { fontWeight: 650, fontSize: '1.125rem' } }}>
       {children}
       {actions && (
         <Group justify="flex-end" gap="sm" mt="lg">

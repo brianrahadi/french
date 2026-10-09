@@ -109,7 +109,7 @@ export function DictationQuestion({
             autosize
             minRows={2}
             classNames={{ input: 'fr' }}
-            styles={{ input: { fontSize: 21, lineHeight: 1.45, borderWidth: 2 } }}
+            styles={{ input: { fontSize: '1.3125rem', lineHeight: 1.45, borderWidth: 2 } }}
             lang="fr"
             value={value}
             onChange={(e) => setValue(e.currentTarget.value)}

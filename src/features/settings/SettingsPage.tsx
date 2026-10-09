@@ -29,13 +29,14 @@ import { Dialog } from '../../components/Dialog'
 import { PageHeader } from '../../components/PageHeader'
 import { Kbd } from '../../components/ui'
 import { toast } from '../../components/Toast'
-import { exportData, useStore, type Directions, type Theme } from '../../lib/store'
+import { exportData, useStore, type Directions, type Theme, type UiSize } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
 import { AiSetup } from '../../components/AiSetup'
 import { useSync } from '../../lib/sync/engine'
 import { PALETTES, paletteOf, type Palette, type PaletteId } from '../../theme'
+import { SIDEBAR_SHORTCUT } from '../../components/rail'
 
 /** A titled settings group: an h2 and the controls in a Card (or bare, for cards that bring their own). */
 function Section({ id, anchor, title, bare, children }: { id: string; anchor?: string; title: ReactNode; bare?: boolean; children: ReactNode }) {
@@ -340,6 +341,24 @@ export default function SettingsPage() {
             ['dark', 'Dark'],
           ]}
         />
+        <Segmented<UiSize>
+          label="Size"
+          desc="Text, cards and spacing everywhere. Smaller fits more library cards on a row."
+          value={settings.size ?? 'big'}
+          onChange={(v) => update({ size: v })}
+          data={[
+            ['big', 'Big'],
+            ['medium', 'Medium'],
+            ['small', 'Small'],
+          ]}
+        />
+        <Switch
+          checked={!settings.navCollapsed}
+          onChange={(e) => update({ navCollapsed: !e.currentTarget.checked })}
+          label="Show sidebar labels"
+          description={<>Off shrinks the sidebar to icons. Toggle it any time with {SIDEBAR_SHORTCUT} or the button at the top of the sidebar.</>}
+          visibleFrom="sm"
+        />
       </Section>
 
       <Section id="set-keys" title="Keyboard shortcuts">
@@ -349,6 +368,7 @@ export default function SettingsPage() {
           <Shortcut keys={<><Kbd>1</Kbd> – <Kbd>4</Kbd></>}>Rate a card (Again · Hard · Good · Easy) / choose an option</Shortcut>
           <Shortcut keys={<Kbd>K</Kbd>}>“I already know this word”</Shortcut>
           <Shortcut keys={<Kbd>Esc</Kbd>}>Leave a session</Shortcut>
+          <Shortcut keys={<Kbd>{SIDEBAR_SHORTCUT}</Kbd>}>Collapse or expand the sidebar</Shortcut>
           <Shortcut keys={<><Kbd>S</Kbd> / <Kbd>P</Kbd></>}>Start studying (Vocabulary) / practice (in a lesson)</Shortcut>
         </DataList>
       </Section>

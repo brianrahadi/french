@@ -1,8 +1,22 @@
 import { createContext, useContext, type MouseEvent, type ReactNode } from 'react'
 import { Card, Group, Progress, SimpleGrid, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
 import { Link, useNavigate } from 'react-router'
+import { useStore, type UiSize } from '../lib/store'
 
-const WIDTH = { base: '72vw', xs: 232 }
+/** Card width on a shelf, by interface size (Settings → Appearance). Rem-based, so it also follows the text size. */
+const SHELF_W: Record<UiSize, number> = { big: 232, medium: 212, small: 192 }
+/** Columns when cards wrap in a grid: smaller cards fit more per row. */
+const GRID_COLS: Record<UiSize, Record<string, number>> = {
+  big: { base: 1, xs: 2, md: 3 },
+  medium: { base: 1, xs: 2, md: 3, lg: 4 },
+  small: { base: 1, xs: 2, sm: 3, md: 4, lg: 5 },
+}
+
+/** Width for a card on a sideways-scrolling shelf. */
+export function useTileWidth() {
+  const size = useStore((s) => s.settings.size)
+  return { base: '72vw', xs: SHELF_W[size] ?? SHELF_W.big }
+}
 
 /** Inside a TileGrid (or a stacked shelf on phones) tiles fill their cell instead of the shelf width. */
 const Fluid = createContext(false)
@@ -10,9 +24,10 @@ export const FluidTiles = Fluid.Provider
 
 /** Tiles in a grid that wraps: one column on phones, more on wider screens. */
 export function TileGrid({ children }: { children: ReactNode }) {
+  const size = useStore((s) => s.settings.size)
   return (
     <Fluid.Provider value>
-      <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="sm">
+      <SimpleGrid cols={GRID_COLS[size] ?? GRID_COLS.big} spacing="sm">
         {children}
       </SimpleGrid>
     </Fluid.Provider>
@@ -60,6 +75,7 @@ export function Tile({
   highlight?: boolean
 }) {
   const navigate = useNavigate()
+  const width = useTileWidth()
   const inGrid = useContext(Fluid)
   const fill = fluid || inGrid
   const open = (e: MouseEvent) => {
@@ -70,7 +86,7 @@ export function Tile({
   const button = onClick ? { component: 'button' as const, type: 'button' as const, disabled, 'data-tile': true, ta: 'left' as const } : {}
   return (
     <Card
-      w={fill ? undefined : WIDTH}
+      w={fill ? undefined : width}
       padding="md"
       onClick={open}
       {...button}
@@ -122,6 +138,7 @@ export function Tile({
 /** A dashed "do something" card at the end of a Shelf (e.g. "write a new story"). */
 export function ActionTile({ icon, title, sub, onClick, to }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; onClick?: () => void; to?: string }) {
   const fluid = useContext(Fluid)
+  const width = useTileWidth()
   const body = (
     <Stack gap={6} justify="center" h="100%">
       <ThemeIcon variant="light" size="lg" radius="md">
@@ -136,7 +153,7 @@ export function ActionTile({ icon, title, sub, onClick, to }: { icon: ReactNode;
     </Stack>
   )
   return (
-    <Card w={fluid ? undefined : WIDTH} padding="md" style={{ borderStyle: 'dashed', flexShrink: 0 }} bg="transparent">
+    <Card w={fluid ? undefined : width} padding="md" style={{ borderStyle: 'dashed', flexShrink: 0 }} bg="transparent">
       {to ? (
         <UnstyledButton component={Link} to={to} h="100%">
           {body}

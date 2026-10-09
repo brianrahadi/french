@@ -40,7 +40,7 @@
 .page-eyebrow {
   margin-bottom: 6px;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 560;
   letter-spacing: 0.02em;
 }
@@ -76,7 +76,7 @@
   color: var(--text-3);
 }
 .small {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -103,7 +103,7 @@
   border: 1px solid transparent;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 0.9062rem;
   line-height: 1;
   white-space: nowrap;
   text-decoration: none !important;
@@ -133,7 +133,7 @@
   border-radius: 6px;
   background: var(--surface-2);
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: 0.7188rem;
   font-weight: 650;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -189,7 +189,7 @@
   padding: 0 5px;
   border-radius: 5px;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   vertical-align: middle;
 }
@@ -209,12 +209,12 @@
   gap: 6px;
 }
 .label {
-  font-size: 13.5px;
+  font-size: 0.8438rem;
   font-weight: 600;
 }
 .hint {
   color: var(--text-3);
-  font-size: 12.5px;
+  font-size: 0.7812rem;
 }
 .input,
 .select {
@@ -376,7 +376,7 @@ input[type='range'] {
   display: grid;
   gap: 3px;
   color: var(--text-3);
-  font-size: 11px;
+  font-size: 0.6875rem;
   height: 14px;
 }
 .heatmap__months span {
@@ -485,7 +485,7 @@ input[type='range'] {
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--mantine-color-orange-filled);
 }
 .progress-week__label {
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1;
   color: var(--text-3);
 }

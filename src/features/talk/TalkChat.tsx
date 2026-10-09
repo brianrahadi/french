@@ -634,7 +634,7 @@ export function correctedText(text: string, corrections: WritingError[]): string
 /** "wrong → right" in the diff colours. */
 function Change({ from, to, mt, fallback = '' }: { from?: string; to: string; mt?: number; fallback?: string }) {
   return (
-    <div className="fix__change fr" lang="fr" style={{ fontSize: 16, marginTop: mt }}>
+    <div className="fix__change fr" lang="fr" style={{ fontSize: '1rem', marginTop: mt }}>
       {from !== undefined && <del>{frTypo(from)}</del>}
       {from !== undefined && <ArrowRight size={14} aria-hidden color="var(--mantine-color-dimmed)" />}
       <ins>{frTypo(to) || fallback}</ins>

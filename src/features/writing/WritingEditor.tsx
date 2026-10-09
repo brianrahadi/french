@@ -272,7 +272,7 @@ export default function WritingEditor() {
           autosize
           minRows={8}
           classNames={{ input: 'writing-area' }}
-          styles={{ input: { minHeight: 260, padding: '20px 22px 8px', fontSize: 19, lineHeight: 1.7 } }}
+          styles={{ input: { minHeight: 260, padding: '20px 22px 8px', fontSize: '1.1875rem', lineHeight: 1.7 } }}
           lang="fr"
           value={text}
           onChange={(e) => setText(e.currentTarget.value)}

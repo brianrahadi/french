@@ -63,6 +63,14 @@
   --bottom-nav-h: 64px;
 }
 
+/* Interface size (Settings → Appearance). Big is 16px; everything in rem follows. */
+html[data-size='medium'] {
+  font-size: 93.75%;
+}
+html[data-size='small'] {
+  font-size: 87.5%;
+}
+
 [data-mantine-color-scheme='dark'] {
   --bg: var(--mantine-color-dark-8);
   --nav-bg: var(--mantine-color-dark-9);

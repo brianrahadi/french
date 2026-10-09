@@ -95,7 +95,7 @@ export function DrillQuestion({
           size="xl"
           className={result && !result.pass ? 'shake' : undefined}
           classNames={{ input: 'fr' }}
-          styles={{ input: { fontSize: 21, borderWidth: 2, ...(result ? VERDICT_INPUT[result.verdict] : null) } }}
+          styles={{ input: { fontSize: '1.3125rem', borderWidth: 2, ...(result ? VERDICT_INPUT[result.verdict] : null) } }}
           value={value}
           autoFocus
           readOnly={answered}

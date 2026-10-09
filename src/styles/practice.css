@@ -14,7 +14,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 0;
-  font-size: 16.5px;
+  font-size: 1.0312rem;
   color: var(--text-2);
 }
 .dmark {
@@ -87,7 +87,7 @@
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
-  font-size: 15.5px;
+  font-size: 0.9688rem;
 }
 .weak-example del {
   color: var(--danger);
@@ -101,7 +101,7 @@
 /* Fix-it questions */
 .fix-q__sentence {
   margin: 4px 0 16px;
-  font-size: 24px;
+  font-size: 1.5rem;
   line-height: 1.5;
 }
 .fix-q__wrong {
@@ -233,7 +233,7 @@
   border-color: var(--primary);
 }
 .phrase .fr {
-  font-size: 15.5px;
+  font-size: 0.9688rem;
 }
 .msg {
   display: flex;
@@ -260,18 +260,18 @@
   border-bottom-right-radius: 6px;
   background: var(--primary);
   color: var(--on-primary);
-  font-size: 17px;
+  font-size: 1.0625rem;
   white-space: pre-wrap;
 }
 .bubble__text {
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .bubble__en {
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px dashed var(--border-strong);
   color: var(--text-2);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .caret {
   display: inline-block;
@@ -329,7 +329,7 @@
   padding: 1px 8px;
   border-radius: 7px;
   background: var(--surface-2);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .mw del {
   color: var(--danger);

@@ -9,6 +9,7 @@ import { paletteOf, THEMES } from '../theme'
 export function AppProvider({ children }: { children: ReactNode }) {
   const setting = useStore((s) => s.settings.theme)
   const palette = paletteOf(useStore((s) => s.settings.palette))
+  const size = useStore((s) => s.settings.size)
   const system = useColorScheme()
   const scheme = palette.darkOnly ? 'dark' : setting === 'system' ? system : setting
 
@@ -21,6 +22,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       m.content = palette.darkOnly || m.media.includes('dark') ? palette.dark[8] : palette.gray[0]
     }
   }, [palette])
+
+  // Interface size: the root font size, which every rem (all of Mantine) follows.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-size', size ?? 'big')
+  }, [size])
 
   return (
     <MantineProvider theme={THEMES[palette.id]} forceColorScheme={scheme}>

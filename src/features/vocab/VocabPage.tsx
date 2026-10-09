@@ -25,7 +25,7 @@ import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
-import { ActionTile } from '../../components/Tile'
+import { ActionTile, useTileWidth } from '../../components/Tile'
 import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
@@ -200,9 +200,10 @@ function DeckCard({
   onToggle: () => void
   children?: ReactNode
 }) {
+  const width = useTileWidth()
   return (
     <Card
-      w={{ base: '72vw', xs: 232 }}
+      w={width}
       padding="md"
       style={{ flexShrink: 0, ...(active ? { borderColor: 'var(--mantine-primary-color-filled)' } : {}) }}
       bg={total > 0 && started === total ? 'var(--surface-2)' : undefined}
