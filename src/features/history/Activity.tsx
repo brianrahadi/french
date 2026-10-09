@@ -3,9 +3,10 @@ import { Link, useLocation } from 'react-router'
 import { Anchor, Box, Group, Progress, Stack, Text, UnstyledButton } from '@mantine/core'
 import { BookOpen, BookOpenText, Headphones, Layers, MessagesSquare, Mic, NotebookPen, PenLine, Play } from 'lucide-react'
 import { useStore } from '../../lib/store'
+import { dayKey } from '../../lib/date'
 import { loadSession } from '../session/saved'
 import { remaining } from '../session/run'
-import { buildHistory, continueItems, dayLabel, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
+import { buildHistory, continueItems, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
 
 export const KIND_ICON: Record<HistoryKind | 'session', React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
   session: Play,
@@ -45,7 +46,7 @@ const heading = (text: string) => (
 function Row({ to, kind, title, right, sub, progress }: { to: string; kind: HistoryKind | 'session'; title: string; right?: string; sub?: string; progress?: number }) {
   const Icon = KIND_ICON[kind]
   return (
-    <UnstyledButton component={Link} to={to} px="xs" py={5} className="nav-row" style={{ borderRadius: 'var(--mantine-radius-sm)', display: 'block' }}>
+    <UnstyledButton component={Link} to={to} px="xs" py={3} className="nav-row" style={{ borderRadius: 'var(--mantine-radius-sm)', display: 'block' }}>
       <Group gap={8} wrap="nowrap" align="flex-start">
         <Box c="dimmed" mt={2} style={{ flexShrink: 0, display: 'flex' }}>
           <Icon size={14} aria-hidden />
@@ -83,42 +84,41 @@ export function ContinueRows({ items }: { items: ContinueItem[] }) {
   )
 }
 
-const RECENT = 6
+const RECENT = 5
 
-/** The sidebar's lower half: what you left half-way, and what you did last. */
+const short = (t?: string) => (t && t.length <= 10 ? t : undefined)
+
+/** The sidebar's lower half, one line per item: what you left half-way, and what you did today. */
 export function SidebarActivity() {
   const cont = useContinue().slice(0, 3)
-  const recent = useHistory().slice(0, RECENT)
-  const days = [...new Set(recent.map((e) => e.day))]
+  const today = dayKey()
+  // Something already under Continue isn't listed twice.
+  const open = new Set(cont.map((c) => c.to))
+  const recent = useHistory()
+    .filter((e) => e.day === today && !open.has(e.to))
+    .slice(0, RECENT)
   if (!cont.length && !recent.length) return null
   return (
-    <Stack gap="md" mt="lg">
+    <Stack gap="sm" mt="md">
       {cont.length > 0 && (
         <Box component="section" aria-label="Continue">
           {heading('Continue')}
-          <ContinueRows items={cont} />
+          {cont.map((c) => (
+            <Row key={c.id} to={c.to} kind={c.kind} title={c.title} right={c.progress !== undefined ? `${Math.round(c.progress * 100)}%` : short(c.detail)} />
+          ))}
         </Box>
       )}
       {recent.length > 0 && (
-        <Box component="section" aria-label="Recent">
-          {heading('Recent')}
-          <Stack gap={6}>
-            {days.map((d) => (
-              <Box key={d}>
-                <Text size="xs" c="dimmed" px="xs" mb={2}>
-                  {dayLabel(d)}
-                </Text>
-                {recent
-                  .filter((e) => e.day === d)
-                  .map((e) => (
-                    <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : e.detail && e.detail.length <= 12 ? e.detail : undefined} />
-                  ))}
-              </Box>
-            ))}
-          </Stack>
-          <Anchor component={Link} to="/history" size="xs" fw={600} px="xs" mt={6} display="block">
-            See all →
-          </Anchor>
+        <Box component="section" aria-label="Done today">
+          <Group justify="space-between" pr="xs">
+            {heading('Done today')}
+            <Anchor component={Link} to="/history" size="xs" mb={4}>
+              All
+            </Anchor>
+          </Group>
+          {recent.map((e) => (
+            <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : short(e.detail)} />
+          ))}
         </Box>
       )}
     </Stack>
