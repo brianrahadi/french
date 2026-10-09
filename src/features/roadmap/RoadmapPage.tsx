@@ -163,6 +163,9 @@ function LevelItem({ level }: { level: Level }) {
                 {label}
               </Anchor>
             ))}
+            <Anchor component={Link} to={`/queue?tab=level&level=${level}`} size="sm" fw={600}>
+              What’s left →
+            </Anchor>
           </Group>
         </Stack>
       </Accordion.Panel>

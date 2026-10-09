@@ -19,7 +19,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { Layers, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
+import { Layers, ListOrdered, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
 import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, BUILTIN_WORDS, allWords, alreadyHave, deckWords } from '../../data/vocab'
 import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
@@ -64,6 +64,11 @@ export default function VocabPage() {
       <PageHeader
         eyebrow="Vocabulaire"
         title="Vocabulary"
+        actions={
+          <Button component={Link} to="/queue?tab=reviews" variant="default" size="sm" leftSection={<ListOrdered size={16} aria-hidden />}>
+            Queue
+          </Button>
+        }
       />
 
       <Card px={24} py={22}>

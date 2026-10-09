@@ -123,7 +123,12 @@ export default function TodayPage() {
               </Text>
             ) : hasSession ? (
               <>
-                <Text c="dimmed">About {plan.minutes} min — everything that’s due, mixed together so it sticks.</Text>
+                <Text c="dimmed">
+                  About {plan.minutes} min — everything that’s due, mixed together so it sticks.{' '}
+                  <Anchor component={Link} to="/queue" size="sm">
+                    Why these?
+                  </Anchor>
+                </Text>
                 <Group gap={6} mt={4}>
                   {plan.counts.reviews > 0 && (
                     <PlanBadge icon={<Layers size={14} aria-hidden />}>
