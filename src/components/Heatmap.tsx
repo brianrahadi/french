@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Group, Stack } from '@mantine/core'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Group, Stack, Text } from '@mantine/core'
 import { addDays, dayKey, startOfDay } from '../lib/date'
 import type { DayActivity } from '../lib/store'
 
@@ -23,9 +24,17 @@ function useWeeks(ref: React.RefObject<HTMLDivElement | null>) {
   return weeks
 }
 
-export function Heatmap({ activity, goal }: { activity: Record<string, DayActivity>; goal: number }) {
+interface HeatmapProps {
+  activity: Record<string, DayActivity>
+  goal: number
+  /** What happened on a day, shown in the hover card under the date and count. */
+  details?: (day: string) => React.ReactNode
+}
+
+export function Heatmap({ activity, goal, details }: HeatmapProps) {
   const ref = useRef<HTMLDivElement>(null)
   const weeks = useWeeks(ref)
+  const [hover, setHover] = useState<{ key: string; date: Date; rect: DOMRect } | null>(null)
   const { columns, months } = useMemo(() => {
     const today = startOfDay()
     // Start on a Monday so rows are Mon..Sun
@@ -70,20 +79,32 @@ export function Heatmap({ activity, goal }: { activity: Record<string, DayActivi
           </span>
         ))}
       </div>
-      <div className="heatmap__grid" role="img" aria-label={`Study activity over the last ${weeks} weeks`} style={{ gridTemplateColumns: `repeat(${weeks}, ${CELL}px)` }}>
+      <div
+        className="heatmap__grid"
+        role="img"
+        aria-label={`Study activity over the last ${weeks} weeks`}
+        style={{ gridTemplateColumns: `repeat(${weeks}, ${CELL}px)` }}
+        onPointerLeave={() => setHover(null)}
+      >
         {columns.map((col, i) => (
           <div key={i} className="heatmap__col">
             {col.map((c) => (
               <span
                 key={c.key}
-                className={`heatmap__cell${c.future ? ' is-future' : ''}`}
+                className={`heatmap__cell${c.future ? ' is-future' : ''}${hover?.key === c.key ? ' is-hover' : ''}`}
                 style={{ background: c.future ? 'transparent' : `var(--heat-${level(c.items)})` }}
-                title={`${c.date.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}: ${c.items} items`}
+                onPointerEnter={c.future ? () => setHover(null) : (e) => setHover({ key: c.key, date: c.date, rect: e.currentTarget.getBoundingClientRect() })}
               />
             ))}
           </div>
         ))}
       </div>
+      {hover && (
+        <DayCard anchor={hover.rect} onDismiss={() => setHover(null)}>
+          <DayHeader date={hover.date} day={activity[hover.key]} />
+          {details?.(hover.key)}
+        </DayCard>
+      )}
       <Group gap={4} justify="flex-end" c="dimmed" fz={11} aria-hidden>
         Less
         {[0, 1, 2, 3, 4].map((l) => (
@@ -92,5 +113,54 @@ export function Heatmap({ activity, goal }: { activity: Record<string, DayActivi
         More
       </Group>
     </Stack>
+  )
+}
+
+const plural = (n: number, one: string) => `${n.toLocaleString()} ${one}${n === 1 ? '' : 's'}`
+
+function DayHeader({ date, day }: { date: Date; day?: DayActivity }) {
+  const items = day?.items ?? 0
+  const acc = items ? Math.round(((day?.correct ?? 0) / items) * 100) : null
+  const isToday = dayKey(date) === dayKey()
+  return (
+    <Group gap={8} justify="space-between" wrap="nowrap" mb={items ? 6 : 0}>
+      <Text size="sm" fw={650}>
+        {isToday ? 'Today' : date.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined })}
+      </Text>
+      <Text size="xs" c="dimmed" className="tnum" style={{ whiteSpace: 'nowrap' }}>
+        {items ? `${plural(items, 'answer')}${acc !== null ? ` · ${acc}%` : ''}${day?.newWords ? ` · ${plural(day.newWords, 'new word')}` : ''}` : 'No study'}
+      </Text>
+    </Group>
+  )
+}
+
+/** A floating card above (or, near the top of the screen, below) the hovered cell. */
+function DayCard({ anchor, onDismiss, children }: { anchor: DOMRect; onDismiss: () => void; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const { width, height } = el.getBoundingClientRect()
+    const margin = 8
+    const above = anchor.top - height - 6
+    const top = above >= margin ? above : anchor.bottom + 6
+    const left = Math.min(Math.max(margin, anchor.left + anchor.width / 2 - width / 2), window.innerWidth - width - margin)
+    setPos((p) => (p && p.top === top && p.left === left ? p : { top, left }))
+    // Content follows the anchor, so re-measuring when the anchor moves is enough.
+  }, [anchor])
+
+  // The card is pinned to the viewport, so it would drift away from the cell on scroll.
+  useEffect(() => {
+    window.addEventListener('scroll', onDismiss, { capture: true, passive: true })
+    return () => window.removeEventListener('scroll', onDismiss, { capture: true })
+  }, [onDismiss])
+
+  return createPortal(
+    <div ref={ref} className="heatmap__card" role="tooltip" style={pos ?? { top: 0, left: 0, visibility: 'hidden' }}>
+      {children}
+    </div>,
+    document.body,
   )
 }

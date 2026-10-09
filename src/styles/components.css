@@ -399,6 +399,23 @@ input[type='range'] {
   height: 13px;
   border-radius: 3px;
 }
+.heatmap__cell.is-hover {
+  outline: 1.5px solid var(--text-3);
+  outline-offset: 1px;
+}
+.heatmap__card {
+  position: fixed;
+  z-index: 400;
+  width: max-content;
+  min-width: 200px;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
 
 /* ───────────── Shelves: rows of cards that scroll sideways ───────────── */
 .shelf {

@@ -37,7 +37,7 @@ import { computeWeakSpots } from '../weak/weak'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
-import { ContinueRows, useContinue } from '../history/Activity'
+import { ContinueRows, useContinue, useDayDetails } from '../history/Activity'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -46,6 +46,7 @@ export default function TodayPage() {
   const today = state.activity[dayKey()] ?? { items: 0, correct: 0, newWords: 0 }
   const streak = computeStreak(state.activity)
   const goal = state.settings.dailyGoal
+  const dayDetails = useDayDetails()
   const due = useMemo(() => dueCardIds(state.cards, state.customWords).length, [state.cards, state.customWords])
   const fresh = newAvailableToday(state)
   const grammarDue = dueLessons(state.lessons)
@@ -282,7 +283,7 @@ export default function TodayPage() {
           <Stat label="Total answers" value={totalItems.toLocaleString()} />
         </SimpleGrid>
         <Card mt="sm">
-          <Heatmap activity={state.activity} goal={goal} />
+          <Heatmap activity={state.activity} goal={goal} details={dayDetails} />
         </Card>
       </Box>
     </Container>

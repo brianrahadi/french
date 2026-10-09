@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Anchor, Box, Group, Progress, Stack, Text, UnstyledButton } from '@mantine/core'
 import { BookOpen, BookOpenText, Headphones, Layers, MessagesSquare, Mic, NotebookPen, PenLine, Play } from 'lucide-react'
-import { useStore } from '../../lib/store'
+import { useStore, type StudySkill } from '../../lib/store'
 import { dayKey } from '../../lib/date'
 import { loadSession } from '../session/saved'
 import { remaining } from '../session/run'
@@ -122,5 +122,88 @@ export function SidebarActivity() {
         </Box>
       )}
     </Stack>
+  )
+}
+
+const DAY_MAX = 6
+
+const SKILL_NAME: Record<StudySkill, string> = {
+  vocabulary: 'Vocabulary',
+  grammar: 'Grammar',
+  reading: 'Reading',
+  writing: 'Writing',
+  listening: 'Listening',
+  speaking: 'Speaking',
+}
+
+/**
+ * What you did on a given day, for the progress heatmap's hover card. Falls back
+ * to the per-skill counts for days whose records have since been overwritten.
+ */
+export function useDayDetails(): (day: string) => React.ReactNode {
+  const history = useHistory()
+  const { activity } = useStore()
+  const byDay = useMemo(() => {
+    const m = new Map<string, HistoryEntry[]>()
+    for (const e of history) {
+      const list = m.get(e.day)
+      if (list) list.push(e)
+      else m.set(e.day, [e])
+    }
+    return m
+  }, [history])
+
+  return useCallback(
+    (day: string) => {
+      const entries = byDay.get(day) ?? []
+      if (entries.length) {
+        // Oldest first reads as the day's story.
+        const shown = [...entries].reverse().slice(0, DAY_MAX)
+        return (
+          <Stack gap={3}>
+            {shown.map((e) => {
+              const Icon = KIND_ICON[e.kind]
+              const right = e.score !== undefined ? `${e.score}%` : short(e.detail)
+              return (
+                <Group key={e.id} gap={8} wrap="nowrap">
+                  <Box c="dimmed" style={{ flexShrink: 0, display: 'flex' }}>
+                    <Icon size={13} aria-hidden />
+                  </Box>
+                  <Text size="xs" lineClamp={1} style={{ flex: 1 }}>
+                    {e.title}
+                    {e.detail && !right ? <Text span c="dimmed" size="xs">{` · ${e.detail}`}</Text> : null}
+                  </Text>
+                  {right && (
+                    <Text size="xs" c="dimmed" className="tnum" style={{ flexShrink: 0 }}>
+                      {right}
+                    </Text>
+                  )}
+                </Group>
+              )
+            })}
+            {entries.length > DAY_MAX && (
+              <Text size="xs" c="dimmed">
+                +{entries.length - DAY_MAX} more
+              </Text>
+            )}
+          </Stack>
+        )
+      }
+      const skills = Object.entries(activity[day]?.skills ?? {}).filter(([, n]) => n) as [StudySkill, number][]
+      if (!skills.length) return null
+      return (
+        <Stack gap={3}>
+          {skills.map(([k, n]) => (
+            <Group key={k} gap={8} justify="space-between" wrap="nowrap">
+              <Text size="xs">{SKILL_NAME[k]}</Text>
+              <Text size="xs" c="dimmed" className="tnum">
+                {n}
+              </Text>
+            </Group>
+          ))}
+        </Stack>
+      )
+    },
+    [byDay, activity],
   )
 }
