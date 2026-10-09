@@ -39,7 +39,6 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 
 **Audio course — hands-free, Pimsleur-style**
 - 44 audio lessons in one course from A1 to B2 (12 at A1, 12 at A2, 12 at B1, 8 at B2): a short dialogue, then each phrase modelled, built up from the end and asked for again at growing intervals, a role play where you take one part, and the dialogue once more. About 12–15 minutes each; earlier lessons are reviewed at the start of the next.
-- Read by studio-quality neural voices — a narrator, and a woman’s and a man’s voice for the two speakers — recorded once with `npm run audio` (see “Recording the audio lessons”). They play like a podcast: with the screen locked, from headset and lock-screen controls, and offline once played. Lines not recorded yet use the browser’s voice.
 
 **Speaking — read aloud, listen & repeat**
 - Say a sentence; speech recognition shows which words came across clearly, and you can play your recording next to the native model. Missed words get a pronunciation tip (u vs ou, nasal vowels, the French r…).
@@ -93,16 +92,6 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Text-to-speech in French via the Web Speech API — pick the best voice in Settings (on macOS, download an *Enhanced* or *Premium* French voice).
 - Light and dark themes, responsive down to phone size, installable as a PWA and works offline.
 - Progress lives in your browser (localStorage) and works offline. **Sign in with Google** to sync it across your phone and computer (optional — see below), or export/import a JSON backup in Settings.
-
-## Recording the audio lessons
-
-The audio lessons sound far better with real recordings than with the browser’s voice. `npm run audio` records every line once (≈4,500 short clips, ≈175,000 characters) into `public/audio/`, which ships with the site:
-
-1. Get a key. **Azure AI Speech** is the default: in the Azure portal create a *Speech service* on the free (F0) tier — 500,000 characters a month, so the whole course costs nothing. Put `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` in `.env.local`. (Or use OpenAI: `OPENAI_API_KEY`, then `npm run audio -- --provider openai`, a few dollars for the course.)
-2. `npm run audio -- --dry-run` shows what’s missing; `npm run audio` records it. On Azure’s free tier it’s throttled to 20 requests a minute, so the first run takes a few hours (a paid tier: minutes). Stop it any time; running it again carries on.
-3. Commit `public/audio/` (≈75 MB).
-
-After editing or adding a lesson, run `npm run audio` again: only changed lines are recorded. `--prune` deletes recordings nothing uses any more. Voices can be changed in `.env.local` (`AZURE_VOICE_EN`, `AZURE_VOICE_FR_F`, `AZURE_VOICE_FR_M`; defaults Ava, Denise and Henri); changing a voice re-records its lines.
 
 ## AI features — bring your own key
 

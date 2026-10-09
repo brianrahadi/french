@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ActionIcon, Anchor, Badge, Button, Card, Container, Group, Progress, SegmentedControl, Stack, Text, ThemeIcon, Title } from '@mantine/core'
 import { ArrowRight, AudioLines, Check, Eye, EyeOff, Headphones, Mic, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react'
@@ -10,8 +10,7 @@ import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { say, speechSupported, stopSpeaking } from '../../lib/speech'
 import { frTypo } from '../../lib/words'
-import { buildScript, clipKey, minutesOf, scriptSeconds, turnSeconds, type Step } from './script'
-import { LessonAudio, useLessonClips } from './clips'
+import { buildScript, minutesOf, scriptSeconds, turnSeconds, type Step } from './script'
 
 const PAUSES = [
   { label: 'Short', factor: 0.75 },
@@ -72,16 +71,6 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
 
   const step = steps[Math.min(i, steps.length - 1)]
 
-  // Studio recordings, when this lesson has them; otherwise the browser's voice.
-  const clips = useLessonClips(lesson.id)
-  const studio = !!clips
-  const canPlay = studio || speechSupported
-  const audioRef = useRef<LessonAudio | null>(null)
-  audioRef.current ??= new LessonAudio()
-  const audio = audioRef.current
-  useEffect(() => () => audio.dispose(), [audio])
-  const fileOf = (st: Step | undefined) => (st && (st.kind === 'en' || st.kind === 'fr') ? clips?.[clipKey(st)] : undefined)
-
   // Play the current step, then move on.
   useEffect(() => {
     if (!playing || i >= steps.length) return
@@ -96,47 +85,19 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
       logActivityBulk(steps.filter((s) => s.kind === 'turn' && !s.repeat).length, 0, 'listening')
     }
     let timer: ReturnType<typeof setTimeout> | undefined
-    const speakIt = () =>
-      st.kind === 'en'
-        ? say(st.text, { lang: 'en', rate: 1 })
-        : st.kind === 'fr'
-          ? say(st.text, { lang: 'fr', voiceURI, speaker: st.voice, rate: st.slow ? rate * 0.75 : rate })
-          : Promise.resolve()
-    if (st.kind === 'en' || st.kind === 'fr') {
-      const file = clips?.[clipKey(st)]
-      // The recording is already slow where it should be; the speed setting applies to French.
-      if (file) void audio.play(file, st.kind === 'fr' ? rate : 1).then(advance, () => {
-          if (!cancelled) void speakIt().then(advance)
-        })
-      else void speakIt().then(advance)
-      // Fetch the next few lines while this one plays.
-      if (clips) {
-        const ahead: string[] = []
-        for (let k = i + 1; k < steps.length && ahead.length < 6; k++) {
-          const f = fileOf(steps[k])
-          if (f) ahead.push(f)
-        }
-        audio.prefetch(ahead)
-      }
-    } else {
-      const seconds = st.kind === 'turn' ? turnSeconds(st.answer, pause, st.repeat) : st.seconds
-      if (clips) void audio.silence(seconds).then(advance)
-      else timer = setTimeout(advance, seconds * 1000)
-    }
+    if (st.kind === 'en') void say(st.text, { lang: 'en', rate: 1 }).then(advance)
+    else if (st.kind === 'fr') void say(st.text, { lang: 'fr', voiceURI, speaker: st.voice, rate: st.slow ? rate * 0.75 : rate }).then(advance)
+    else timer = setTimeout(advance, (st.kind === 'turn' ? turnSeconds(st.answer, pause, st.repeat) : st.seconds) * 1000)
     return () => {
       cancelled = true
       if (timer) clearTimeout(timer)
-      audio.release()
     }
-  }, [playing, i, steps, clips, audio, voiceURI, rate, pause, lesson.id, saveAudio, logActivityBulk])
+  }, [playing, i, steps, voiceURI, rate, pause, lesson.id, saveAudio, logActivityBulk])
 
   // Stop talking when paused or when leaving the page.
   useEffect(() => {
-    if (!playing) {
-      stopSpeaking()
-      audio.stop()
-    }
-  }, [playing, audio])
+    if (!playing) stopSpeaking()
+  }, [playing])
   useEffect(() => () => stopSpeaking(), [])
 
   // Remember where you are (at the start of each item, so resuming makes sense).
@@ -145,10 +106,9 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
     if (at > 0 && !finished) saveAudio(lesson.id, at, steps.length)
   }, [at, finished, lesson.id, steps.length, saveAudio])
 
-  // Keep the screen on while the browser's voice is speaking: it stops when the
-  // phone locks. Recordings keep playing with the screen off.
+  // Keep the screen on while playing: speech stops when the phone locks.
   useEffect(() => {
-    if (!playing || studio || !('wakeLock' in navigator)) return
+    if (!playing || !('wakeLock' in navigator)) return
     let lock: WakeLockSentinel | undefined
     let gone = false
     navigator.wakeLock
@@ -159,7 +119,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
       gone = true
       void lock?.release()
     }
-  }, [playing, studio])
+  }, [playing])
 
   const go = (k: number) => {
     setFinished(false)
@@ -171,8 +131,6 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
     go(k < 0 ? steps.length - 1 : k)
   }
   const toggle = () => {
-    // Inside the tap, so the browser lets the lesson play from here on.
-    if (!playing && studio) audio.unlock()
     if (finished) {
       go(0)
       setPlaying(true)
@@ -185,13 +143,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
     const ms = navigator.mediaSession
     ms.metadata = new MediaMetadata({ title: `${lesson.title} — ${lesson.titleEn}`, artist: 'Petit à petit', album: 'Audio lessons' })
     const handlers: [MediaSessionAction, () => void][] = [
-      [
-        'play',
-        () => {
-          if (studio) audio.unlock()
-          setPlaying(true)
-        },
-      ],
+      ['play', () => setPlaying(true)],
       ['pause', () => setPlaying(false)],
       ['previoustrack', back],
       ['nexttrack', forward],
@@ -241,7 +193,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
         </Group>
       </PageHeader>
 
-      {clips === null && !speechSupported && <Callout kind="warn">This browser can’t read text aloud, so this lesson doesn’t work here. Try Chrome, Edge or Safari.</Callout>}
+      {!speechSupported && <Callout kind="warn">This browser can’t read text aloud, so audio lessons don’t work here. Try Chrome, Edge or Safari.</Callout>}
 
       <Card mih={230} aria-live="polite">
         <Stack gap="sm" style={{ flex: 1 }}>
@@ -298,8 +250,7 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
           <Button
             miw={150}
             onClick={toggle}
-            disabled={!canPlay}
-            loading={clips === undefined}
+            disabled={!speechSupported}
             leftSection={playing ? <Pause size={18} aria-hidden /> : finished ? <RotateCcw size={18} aria-hidden /> : <Play size={18} aria-hidden />}
           >
             {playing ? 'Pause' : finished ? 'Play again' : i > 0 ? 'Resume' : 'Start'}
@@ -326,11 +277,6 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
             {finished ? 'done' : `${minutesOf(left)} min left`}
           </Text>
         </Group>
-        {clips === null && speechSupported && (
-          <Text size="xs" c="dimmed" mt="xs">
-            Read by your device’s voice: this lesson hasn’t been recorded yet.
-          </Text>
-        )}
       </Card>
 
       <Group justify="space-between" mt="md">
