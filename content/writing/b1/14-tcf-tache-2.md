@@ -3,7 +3,7 @@ id: tcf-tache-2
 title: TCF writing, task 2 (telling an experience)
 titleFr: TCF – Tâche 2 : raconter une expérience
 focus: narrating in the past with feelings and opinions
-lessons: pc-vs-imparfait, relative-pronouns, plus-que-parfait
+lessons: pc-vs-imparfait, linking-ideas, relative-pronouns
 words: 120-150
 ---
 

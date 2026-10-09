@@ -4,7 +4,7 @@ title: Talking about the news
 titleFr: Discuter de l’actualité
 icon: newspaper
 aiName: Mathieu
-lessons: subjonctif, reported-speech, relative-pronouns
+lessons: giving-opinion, subjonctif, reported-speech
 ---
 
 ## Setting

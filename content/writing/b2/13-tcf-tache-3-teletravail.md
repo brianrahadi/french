@@ -3,7 +3,7 @@ id: tcf-tache-3-teletravail
 title: TCF writing, task 3 (two points of view)
 titleFr: TCF – Tâche 3 : le télétravail en débat
 focus: comparing two viewpoints, then giving your own
-lessons: connectors, nuancing, subjonctif-vs-indicatif
+lessons: giving-opinion, connectors, nuancing
 words: 120-180
 ---
 

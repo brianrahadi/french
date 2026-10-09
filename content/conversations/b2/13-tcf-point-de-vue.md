@@ -4,7 +4,7 @@ title: TCF speaking, task 3 (giving your opinion)
 titleFr: TCF – Tâche 3 : l’expression d’un point de vue
 icon: newspaper
 aiName: Nathalie
-lessons: connectors, subjonctif-vs-indicatif, nuancing
+lessons: giving-opinion, connectors, nuancing
 ---
 
 ## Setting
