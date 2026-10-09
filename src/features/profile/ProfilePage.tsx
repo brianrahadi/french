@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { ActionIcon, Box, Button, Card, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
 import { BarChart, RadarChart } from '@mantine/charts'
 import { Link } from 'react-router'
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Map as MapIcon } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, History, Map as MapIcon } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { SyncAccount } from '../../components/SyncAccount'
 import { useStore, STUDY_SKILLS, type StudySkill } from '../../lib/store'
@@ -73,10 +73,15 @@ export default function ProfilePage() {
         eyebrow="Profil"
         title={user?.name ?? 'Profile'}
         actions={
-          // On phones the roadmap isn't in the bottom bar, so it lives here.
-          <Button component={Link} to="/roadmap" variant="default" size="sm" leftSection={<MapIcon size={16} aria-hidden />} hiddenFrom="sm">
-            Roadmap
-          </Button>
+          <>
+            <Button component={Link} to="/history" variant="default" size="sm" leftSection={<History size={16} aria-hidden />}>
+              History
+            </Button>
+            {/* On phones the roadmap isn't in the bottom bar, so it lives here. */}
+            <Button component={Link} to="/roadmap" variant="default" size="sm" leftSection={<MapIcon size={16} aria-hidden />} hiddenFrom="sm">
+              Roadmap
+            </Button>
+          </>
         }
       />
       <SyncAccount />

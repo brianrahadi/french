@@ -435,3 +435,13 @@ input[type='range'] {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Compact link rows (sidebar Continue / Recent, History). */
+.nav-row {
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 120ms;
+}
+.nav-row:hover {
+  background: var(--mantine-color-default-hover);
+}
