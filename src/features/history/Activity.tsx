@@ -111,7 +111,7 @@ export function SidebarActivity() {
                 {recent
                   .filter((e) => e.day === d)
                   .map((e) => (
-                    <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : e.detail} />
+                    <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : e.detail && e.detail.length <= 12 ? e.detail : undefined} />
                   ))}
               </Box>
             ))}

@@ -38,6 +38,7 @@ import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
 import { useSync } from '../../lib/sync/engine'
+import { ContinueRows, useContinue } from '../history/Activity'
 
 export default function TodayPage() {
   useDocumentTitle('')
@@ -69,6 +70,8 @@ export default function TodayPage() {
   const signedIn = !!syncUser
   const syncLabel = signedIn ? (syncState === 'synced' ? 'Synced' : syncState) : 'Not signed in'
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
+  // On phones there's no sidebar, so what's left half-way shows here (the session card covers the session).
+  const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, 3)
 
   return (
     <Container size={960} py="xl">
@@ -186,6 +189,22 @@ export default function TodayPage() {
           )}
         </Group>
       </Card>
+
+      {cont.length > 0 && (
+        <Box component="section" aria-labelledby="continue-title" mt={28} hiddenFrom="sm">
+          <Group justify="space-between" gap="sm" mb="sm">
+            <Title order={2} size="h4" id="continue-title">
+              Continue
+            </Title>
+            <Anchor component={Link} to="/history" size="sm" fw={600}>
+              History
+            </Anchor>
+          </Group>
+          <Card padding="xs">
+            <ContinueRows items={cont} />
+          </Card>
+        </Box>
+      )}
 
       <Box component="section" mt={28}>
         <Title order={2} size="h4" mb="sm">

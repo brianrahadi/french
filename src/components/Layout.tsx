@@ -6,6 +6,7 @@ import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
 import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
+import { SidebarActivity } from '../features/history/Activity'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -90,6 +91,7 @@ export function Layout() {
         </AppShell.Section>
         <AppShell.Section grow component={ScrollArea}>
           <Stack gap={2}>{NAV.map(link)}</Stack>
+          <SidebarActivity />
         </AppShell.Section>
         <AppShell.Section>
           {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
