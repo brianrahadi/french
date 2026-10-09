@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { initialState } from '../../lib/store'
 import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
-import { buildHistory, continueItems, dayLabel } from './history'
+import { buildHistory, continueItems, dayLabel, recentGroups, type HistoryEntry } from './history'
 
 const base = { ...initialState }
 const at = (d: string, h = 10) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00`).toISOString()
@@ -60,4 +60,20 @@ it('labels days', () => {
   expect(dayLabel('2026-10-08', now)).toBe('Today')
   expect(dayLabel('2026-10-07', now)).toBe('Yesterday')
   expect(dayLabel('2026-10-01', now)).toMatch(/Oct/)
+})
+
+describe('recentGroups', () => {
+  const e = (day: string): HistoryEntry => ({ id: day, kind: 'grammar', title: day, at: `${day}T10:00:00`, day, to: '/' })
+  it('buckets into Today, Past week, then by month', () => {
+    const now = new Date('2026-10-09T15:00:00')
+    const days = ['2026-10-09', '2026-10-09', '2026-10-08', '2026-10-03', '2026-10-02', '2026-10-01', '2026-09-20', '2026-09-01', '2025-12-31']
+    const g = recentGroups(days.map(e), now)
+    expect(g.map((x) => [x.label, x.entries.length])).toEqual([
+      ['Today', 2],
+      ['Past week', 2],
+      ['Oct', 2],
+      ['Sept', 2],
+      ['Dec 2025', 1],
+    ])
+  })
 })

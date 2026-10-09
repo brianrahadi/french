@@ -3,10 +3,9 @@ import { Link, useLocation } from 'react-router'
 import { Anchor, Box, Group, Progress, Stack, Text, UnstyledButton } from '@mantine/core'
 import { BookOpen, BookOpenText, Headphones, Layers, MessagesSquare, Mic, NotebookPen, PenLine, Play } from 'lucide-react'
 import { useStore, type StudySkill } from '../../lib/store'
-import { dayKey } from '../../lib/date'
 import { loadSession } from '../session/saved'
 import { remaining } from '../session/run'
-import { buildHistory, continueItems, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
+import { buildHistory, continueItems, recentGroups, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
 
 export const KIND_ICON: Record<HistoryKind | 'session', React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
   session: Play,
@@ -84,20 +83,25 @@ export function ContinueRows({ items }: { items: ContinueItem[] }) {
   )
 }
 
-const RECENT = 5
+/** How many past items the sidebar lists before pointing to History. */
+const RECENT = 30
 
 const short = (t?: string) => (t && t.length <= 10 ? t : undefined)
 
-/** The sidebar's lower half, one line per item: what you left half-way, and what you did today. */
+const subheading = (text: string) => (
+  <Text size="xs" c="dimmed" px="xs" mt={6} mb={2}>
+    {text}
+  </Text>
+)
+
+/** The sidebar's lower half, one line per item: what you left half-way, and what you did recently. */
 export function SidebarActivity() {
   const cont = useContinue().slice(0, 3)
-  const today = dayKey()
   // Something already under Continue isn't listed twice.
   const open = new Set(cont.map((c) => c.to))
-  const recent = useHistory()
-    .filter((e) => e.day === today && !open.has(e.to))
-    .slice(0, RECENT)
-  if (!cont.length && !recent.length) return null
+  const history = useHistory().filter((e) => !open.has(e.to))
+  const groups = recentGroups(history.slice(0, RECENT))
+  if (!cont.length && !groups.length) return null
   return (
     <Stack gap="sm" mt="md">
       {cont.length > 0 && (
@@ -108,16 +112,21 @@ export function SidebarActivity() {
           ))}
         </Box>
       )}
-      {recent.length > 0 && (
-        <Box component="section" aria-label="Done today">
+      {groups.length > 0 && (
+        <Box component="section" aria-label="Recent">
           <Group justify="space-between" pr="xs">
-            {heading('Done today')}
+            {heading('Recent')}
             <Anchor component={Link} to="/history" size="xs" mb={4}>
               All
             </Anchor>
           </Group>
-          {recent.map((e) => (
-            <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : short(e.detail)} />
+          {groups.map((g) => (
+            <Box key={g.label} role="group" aria-label={g.label}>
+              {subheading(g.label)}
+              {g.entries.map((e) => (
+                <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : short(e.detail)} />
+              ))}
+            </Box>
           ))}
         </Box>
       )}

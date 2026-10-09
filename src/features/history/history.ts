@@ -8,7 +8,7 @@ import { STORY_BY_ID } from '../../data/stories'
 import { AUDIO_BY_ID } from '../../data/audio'
 import { TEXT_BY_ID } from '../../data/texts'
 import { SCENARIO_BY_ID } from '../../data/scenarios'
-import { dayKey } from '../../lib/date'
+import { addDays, dayKey } from '../../lib/date'
 import type { State } from '../../lib/store'
 
 export type HistoryKind = 'grammar' | 'vocab' | 'verbs' | 'listening' | 'speaking' | 'reading' | 'writing' | 'talk'
@@ -180,4 +180,29 @@ export function dayLabel(day: string, now = new Date()): string {
   if (day === dayKey(y)) return 'Yesterday'
   const d = new Date(`${day}T12:00:00`)
   return d.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) })
+}
+
+const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+
+/**
+ * Entries (newest first) bucketed for the sidebar: Today, Past week (the six days
+ * before), then one group per calendar month ("Oct", "Sept", "Dec 2025").
+ */
+export function recentGroups(entries: HistoryEntry[], now = new Date()): { label: string; entries: HistoryEntry[] }[] {
+  const today = dayKey(now)
+  const weekStart = dayKey(addDays(now, -6))
+  const out: { label: string; entries: HistoryEntry[] }[] = []
+  for (const e of entries) {
+    let label: string
+    if (e.day >= today) label = 'Today'
+    else if (e.day >= weekStart) label = 'Past week'
+    else {
+      const [y, m] = e.day.split('-').map(Number)
+      label = MONTH[m - 1] + (y !== now.getFullYear() ? ` ${y}` : '')
+    }
+    const last = out[out.length - 1]
+    if (last?.label === label) last.entries.push(e)
+    else out.push({ label, entries: [e] })
+  }
+  return out
 }
