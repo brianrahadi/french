@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ActionIcon, Anchor, Avatar, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
 import {
   ArrowRight,
   BookOpen,
@@ -37,7 +37,6 @@ import { computeWeakSpots } from '../weak/weak'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
-import { useSync } from '../../lib/sync/engine'
 import { ContinueRows, useContinue } from '../history/Activity'
 
 export default function TodayPage() {
@@ -65,10 +64,6 @@ export default function TodayPage() {
   const hasSession = !!saved || plan.items.length > 0
   const weak = useMemo(() => computeWeakSpots(state), [state])
   const weakCount = weak.total + weak.fixables.length
-  const syncState = useSync((s) => s.state)
-  const syncUser = useSync((s) => s.user)
-  const signedIn = !!syncUser
-  const syncLabel = signedIn ? (syncState === 'synced' ? 'Synced' : syncState) : 'Not signed in'
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
   // On phones there's no sidebar, so what's left half-way shows here (the session card covers the session).
   const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, 3)
@@ -92,9 +87,6 @@ export default function TodayPage() {
                 <span className="tnum">{streak}</span> day{streak > 1 ? 's' : ''}
               </Badge>
             )}
-            <ActionIcon component={Link} to="/profile" variant="default" size="lg" radius="xl" hiddenFrom="sm" aria-label={`Profile · ${syncLabel}`} title={syncLabel}>
-              <Avatar src={syncUser?.avatar} name={syncUser?.name} size={30} radius="xl" imageProps={{ referrerPolicy: 'no-referrer' }} />
-            </ActionIcon>
             <ActionIcon component={Link} to="/settings" variant="default" size="lg" hiddenFrom="sm" aria-label="Settings">
               <Settings size={19} aria-hidden />
             </ActionIcon>

@@ -1,6 +1,6 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
-import { Dumbbell, House, Layers, LibraryBig, Map as MapIcon, Settings } from 'lucide-react'
+import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, Settings } from 'lucide-react'
 import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
@@ -36,6 +36,9 @@ const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
   { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
 ]
+
+// Phones have no sidebar footer, so Profile (with History and Roadmap behind it) is the bottom bar's fifth tab.
+const PHONE_PROFILE: NavItem & { also?: string[] } = { to: '/profile', label: 'Profile', short: 'Profile', icon: CircleUserRound, also: ['/history', '/roadmap'] }
 
 const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
 
@@ -106,7 +109,7 @@ export function Layout() {
 
       <AppShell.Footer bg="var(--nav-bg)" aria-label="Main navigation" component="nav" hiddenFrom="sm">
         <Group grow h="100%" gap={0} px={4}>
-          {NAV.map((item) => {
+          {[...NAV, PHONE_PROFILE].map((item) => {
             const { to, short, icon: Icon } = item
             const on = active(item)
             const n = badge(to)
