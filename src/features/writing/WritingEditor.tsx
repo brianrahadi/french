@@ -185,7 +185,7 @@ export default function WritingEditor() {
             <Title order={1} id="task-title" fz={28} fw={600} className="fr" lang="fr">
               {prompt!.titleFr}
             </Title>
-            <Text fz={16} c="dimmed" mt={6}>
+            <Text fz={16} c="dimmed" mt={6} style={{ whiteSpace: 'pre-line' }}>
               {prompt!.task}
             </Text>
             <Group gap={6} mt={10}>

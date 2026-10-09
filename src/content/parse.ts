@@ -151,10 +151,10 @@ function sections(doc: MdDocument): { heading: string; line: number; blocks: MdB
 
 const key = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
 
-function paragraphs(blocks: MdBlock[], what: string, line: number): string {
+function paragraphs(blocks: MdBlock[], what: string, line: number, sep = ' '): string {
   if (!blocks.length) fail(`Add the ${what}.`, line)
   for (const b of blocks) if (b.kind !== 'paragraph') fail(`Only plain text is expected for the ${what}.`, b.line)
-  return blocks.map((b) => (b as { text: string }).text).join(' ')
+  return blocks.map((b) => (b as { text: string }).text).join(sep)
 }
 
 // ───────────── Grammar lessons ─────────────
@@ -640,7 +640,8 @@ export function parseWriting(doc: MdDocument, level: Level): WritingPrompt {
     level,
     titleFr: m.titleFr.value,
     title: m.title.value,
-    task: paragraphs(parts[0].blocks, 'task (what to write, before "## Phrases")', 1),
+    // Several paragraphs (e.g. the two documents of a TCF task 3) stay apart.
+    task: paragraphs(parts[0].blocks, 'task (what to write, before "## Phrases")', 1, '\n\n'),
     focus: m.focus.value,
     lessons: commaList(m.lessons),
     words: [Number(w![1]), Number(w![2])],
