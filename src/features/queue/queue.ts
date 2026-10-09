@@ -249,7 +249,7 @@ export function explainSession(plan: MixedPlan, s: SessionSource, now = new Date
       }
       case 'intro': {
         const w = findWord(it.wordId, s.customWords)
-        return { n, kind: 'new', title: w ? `${w.fr} (${w.en})` : it.wordId, reason: `Next in your new-word queue (#${queuePos.get(it.wordId) ?? '?'}), from ${w ? (DECK_BY_ID[w.deck]?.title ?? 'My words') : 'your decks'}` }
+        return { n, kind: 'new', title: w ? `${w.fr} · ${w.en}` : it.wordId, reason: `Next in your new-word queue (#${queuePos.get(it.wordId) ?? '?'}), from ${w ? (DECK_BY_ID[w.deck]?.title ?? 'My words') : 'your decks'}` }
       }
       case 'grammar': {
         const l = LESSON_BY_ID[it.lessonId]
@@ -273,7 +273,7 @@ export function explainSession(plan: MixedPlan, s: SessionSource, now = new Date
       case 'listen':
       case 'say': {
         const x = sentenceById(it.sentenceId)
-        return { n, kind: it.kind, title: x?.fr ?? it.sentenceId, reason: 'A sentence built from words you know' }
+        return { n, kind: it.kind, title: x?.fr ?? it.sentenceId, reason: it.kind === 'listen' ? 'Dictation at your level, ones you haven’t heard (or missed) first' : 'Read-aloud at your level, ones you haven’t said (or missed) first' }
       }
     }
   })

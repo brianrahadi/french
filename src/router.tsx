@@ -52,6 +52,7 @@ export const router = createBrowserRouter(
         { path: 'talk', element: <Navigate to="/library#talk" replace /> },
         { path: 'profile', lazy: page(() => import('./features/profile/ProfilePage')) },
         { path: 'history', lazy: page(() => import('./features/history/HistoryPage')) },
+        { path: 'queue', lazy: page(() => import('./features/queue/QueuePage')) },
         { path: 'settings', lazy: page(() => import('./features/settings/SettingsPage')) },
         { path: 'privacy', lazy: page(() => import('./features/privacy/PrivacyPage')) },
         { path: '*', Component: NotFound },
