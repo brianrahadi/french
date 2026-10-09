@@ -58,8 +58,10 @@
   --sidebar-w: 248px;
   --content-w: 920px;
   /* Page widths (Container size). Wide: dashboards and shelves; narrow: reading and forms. */
-  --page-w: 82rem;
+  --page-w: 78rem;
   --page-w-narrow: 55rem;
+  /* Side margin of pages: grows with the window, from 1rem on phones to 4rem on wide screens. */
+  --page-gutter: clamp(1rem, 4vw, 4rem);
   --bottom-nav-h: 64px;
 }
 

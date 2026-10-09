@@ -570,3 +570,8 @@ input[type='range'] {
   transition-timing-function: var(--ease);
   overflow: hidden;
 }
+
+/* Pages keep a margin on both sides that grows with the window. */
+#main .mantine-Container-root {
+  padding-inline: var(--page-gutter);
+}
