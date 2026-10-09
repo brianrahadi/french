@@ -14,15 +14,8 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 
 ## What’s inside
 
-**Roadmap — 52 weeks to DELF B2, one lesson a day**
-- *Roadmap* lays out five phases (A1 → A2 → B1 → B2 → exam block), each with what it uses in the app and its exit test. Pick the Monday you start and your starting level (A2 starts at week 13, B1 at 25, B2 at 39).
-- Every week has one grammar focus linked to the app’s lessons, a theme, a writing task and a role-play. Travel, holiday and deload weeks keep the habit with no new material.
-- **Today** shows the day’s lesson in order: the mixed session first, then the weekday’s job (Mon new grammar · Tue listening · Wed writing · Thu consolidation · Fri conversation · Sat a long session · Sun review). About 75 min on weekdays, 2 h on Saturday, 1 h on Sunday.
-- Everything happens in the app: role-plays twice a week, and from B2 a **DELF B2 oral exam** role-play every Friday; timed writing (`?timed=60`) in the exam block. Blocks tick themselves off when you do them (a lesson, a writing, a conversation, dictation, a story, a text, an audio lesson, words added), and can also be ticked by hand. *Rough day* swaps in a 25-minute minimum.
-- Each phase's **exit test is measured from your progress**, area by area (grammar, listening, reading, writing, speaking, review, study time): everything the app has at that level done (every lesson, story, audio lesson, graded text, writing prompt and role-play), plus the volume the phase's daily lessons add up to (A1: 20 corrected writings, 15 finished conversations, 200 dictation sentences, 8 extra texts, 800 words and 92 hours of study, and so on). Today shows how far along each area is; the Library, Grammar, Dictation, Speaking and Vocabulary pages show their own lines.
-- When the week's writing prompt or role-play is already done, the plan suggests the next one at your level you haven't done, so following it clears everything.
-- **Study time** is counted while a study page is open and in use (input or audio in the last two minutes), per area and per device, and synced. It's compared with what the plan asks for on the Roadmap, Today and each section; the Profile shows it per day and per area. Days before tracking started are estimated from what you did.
-- The plan and ticked blocks sync with the rest of your progress. What's still to build is in [`docs/roadmap-next.md`](docs/roadmap-next.md).
+**Roadmap — level by level to TCF B2**
+- *Roadmap* lists each level (A1–B2, grouped into the CEFR bands) with a one-line goal, its grammar lessons (ticked once mastered) and links to the rest of that level's content, then the TCF B2 format and target scores.
 
 **Today’s session — one mixed daily session**
 - Press **Start** (or `Enter`) on Today to get everything that’s due in one queue: vocabulary reviews, a few new words, spaced reviews of grammar lessons, practice from lessons you’ve studied, a short adaptive conjugation drill, two dictation sentences and a couple of your own past mistakes to fix.
@@ -195,11 +188,10 @@ src/
     sync/         Supabase sign-in and sync (engine) and item-by-item merging (merge)
     mistakes.ts   records mistakes from every kind of practice
     speech.ts     French text-to-speech
-    studyTime.ts  study time per area, day and device; useStudyTimer.ts counts it while you study
     recognition.ts microphone: speech recognition, recording, level meter
     ai/           providers (Claude, OpenAI, Gemini, OpenRouter, OpenAI-compatible),
                   client (streaming, JSON, fallbacks), writing feedback
-  features/       today, roadmap (52-week plan, daily lesson, exit tests by area), session (daily + weak-spot sessions), vocab, grammar,
+  features/       today, roadmap (level-by-level guide), session (daily + weak-spot sessions), vocab, grammar,
                   conjugation, verbs, listening, speaking, reading, talk,
                   writing, weak, practice, privacy, settings
   components/     shared UI (feedback sheet, accent bar, dialogs, AI setup…)
