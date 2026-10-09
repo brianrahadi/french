@@ -23,6 +23,8 @@ export interface Settings {
   directions: Directions
   autoplay: boolean
   voiceURI: string | null
+  /** English voice for the audio lessons' narrator. */
+  voiceURIEn: string | null
   rate: number
   strictAccents: boolean
   theme: Theme
@@ -155,7 +157,7 @@ export interface SyncMeta {
 }
 
 /** Settings that belong to one device (voice, speed, theme) and are never synced. */
-export const DEVICE_SETTINGS = ['voiceURI', 'rate', 'autoplay', 'theme', 'palette', 'size', 'navCollapsed'] as const
+export const DEVICE_SETTINGS = ['voiceURI', 'voiceURIEn', 'rate', 'autoplay', 'theme', 'palette', 'size', 'navCollapsed'] as const
 
 export interface AudioProgress {
   /** Step to resume from. */
@@ -281,6 +283,7 @@ export const DEFAULT_SETTINGS: Settings = {
   directions: 'both',
   autoplay: true,
   voiceURI: null,
+  voiceURIEn: null,
   rate: 0.95,
   strictAccents: false,
   theme: 'system',

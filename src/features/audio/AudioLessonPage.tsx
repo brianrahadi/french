@@ -8,7 +8,7 @@ import { Callout, Empty, LevelBadge, ProgressBar } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
-import { say, speechSupported, stopSpeaking } from '../../lib/speech'
+import { GOOD_VOICE, say, speechSupported, stopSpeaking, useFrenchVoices, voiceQuality, voiceTip } from '../../lib/speech'
 import { frTypo } from '../../lib/words'
 import { buildScript, minutesOf, scriptSeconds, turnSeconds, type Step } from './script'
 
@@ -54,6 +54,7 @@ function anchor(steps: Step[], i: number): number {
 
 function Player({ lesson }: { lesson: AudioLessonDef }) {
   const voiceURI = useStore((s) => s.settings.voiceURI)
+  const voiceURIEn = useStore((s) => s.settings.voiceURIEn)
   const rate = useStore((s) => s.settings.rate)
   const saved = useStore((s) => s.audio?.[lesson.id])
   const saveAudio = useStore((s) => s.saveAudio)
@@ -85,14 +86,18 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
       logActivityBulk(steps.filter((s) => s.kind === 'turn' && !s.repeat).length, 0, 'listening')
     }
     let timer: ReturnType<typeof setTimeout> | undefined
-    if (st.kind === 'en') void say(st.text, { lang: 'en', rate: 1 }).then(advance)
-    else if (st.kind === 'fr') void say(st.text, { lang: 'fr', voiceURI, speaker: st.voice, rate: st.slow ? rate * 0.75 : rate }).then(advance)
+    // A short breath between lines, as a speaker would leave: speech engines add almost none.
+    const breathe = () => {
+      if (!cancelled) timer = setTimeout(advance, 220)
+    }
+    if (st.kind === 'en') void say(st.text, { lang: 'en', voiceURIEn, rate: 1 }).then(breathe)
+    else if (st.kind === 'fr') void say(st.text, { lang: 'fr', voiceURI, gender: st.voice, rate: st.slow ? rate * 0.8 : rate }).then(breathe)
     else timer = setTimeout(advance, (st.kind === 'turn' ? turnSeconds(st.answer, pause, st.repeat) : st.seconds) * 1000)
     return () => {
       cancelled = true
       if (timer) clearTimeout(timer)
     }
-  }, [playing, i, steps, voiceURI, rate, pause, lesson.id, saveAudio, logActivityBulk])
+  }, [playing, i, steps, voiceURI, voiceURIEn, rate, pause, lesson.id, saveAudio, logActivityBulk])
 
   // Stop talking when paused or when leaving the page.
   useEffect(() => {
@@ -164,6 +169,12 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
     }
   })
 
+  // The lessons are only as good as the device's French voice: say how to get a better one.
+  const frVoices = useFrenchVoices()
+  const weakVoice = useMemo(() => {
+    const fr = frVoices.find((v) => v.voiceURI === voiceURI) ?? frVoices[0]
+    return !!fr && voiceQuality(fr) < GOOD_VOICE
+  }, [voiceURI, frVoices])
   const total = useMemo(() => scriptSeconds(steps, pause), [steps, pause])
   const left = useMemo(() => scriptSeconds(steps.slice(i), pause), [steps, i, pause])
   const progress = finished ? 1 : i / steps.length
@@ -278,6 +289,16 @@ function Player({ lesson }: { lesson: AudioLessonDef }) {
           </Text>
         </Group>
       </Card>
+
+      {weakVoice && speechSupported && (
+        <Text size="sm" c="dimmed" mt="sm">
+          {voiceTip('French')}{' '}
+          <Anchor component={Link} to="/settings" inherit>
+            Choose voices in Settings
+          </Anchor>
+          .
+        </Text>
+      )}
 
       <Group justify="space-between" mt="md">
         {finished && next ? (

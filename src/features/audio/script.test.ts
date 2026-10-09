@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { AUDIO_LESSONS } from '../../data/audio'
-import { buildScript, scriptSeconds } from './script'
+import { buildScript, genderOf, scriptSeconds, voicesFor } from './script'
 
 describe('audio lessons', () => {
   it('has a course in order with unique ids', () => {
@@ -35,5 +35,18 @@ describe('audio lessons', () => {
   it('reviews earlier lessons first', () => {
     const { parts } = buildScript(AUDIO_LESSONS[1], 2, AUDIO_LESSONS.slice(0, 1))
     expect(parts[1]).toBe('Warm-up')
+  })
+
+  it('gives the two speakers a woman’s and a man’s voice, matched to their names', () => {
+    expect(genderOf('Mme Girard')).toBe('f')
+    expect(genderOf('M. Leroy')).toBe('m')
+    expect(genderOf('Léa')).toBe('f')
+    expect(genderOf('Alex')).toBeUndefined()
+    const v = voicesFor(['Marc', 'Alex'])
+    expect([v('Marc'), v('Alex')]).toEqual(['m', 'f'])
+    const w = voicesFor(['Alex', 'Julie'])
+    expect([w('Alex'), w('Julie')]).toEqual(['m', 'f'])
+    const x = voicesFor(['Alex', 'Docteur'])
+    expect([x('Alex'), x('Docteur')]).toEqual(['f', 'm'])
   })
 })

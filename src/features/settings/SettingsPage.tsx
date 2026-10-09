@@ -31,7 +31,7 @@ import { Kbd } from '../../components/ui'
 import { toast } from '../../components/Toast'
 import { exportData, useStore, type Directions, type Theme, type UiSize } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
-import { speak, speechSupported, useFrenchVoices } from '../../lib/speech'
+import { say, speak, speechSupported, useEnglishVoices, useFrenchVoices, voiceTip } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
 import { AiSetup } from '../../components/AiSetup'
 import { useSync } from '../../lib/sync/engine'
@@ -150,6 +150,7 @@ export default function SettingsPage() {
   const resetAll = useStore((s) => s.resetAll)
   const signedIn = !!useSync((s) => s.user)
   const voices = useFrenchVoices()
+  const voicesEn = useEnglishVoices()
   const fileRef = useRef<HTMLInputElement>(null)
   const [confirmReset, setConfirmReset] = useState(false)
 
@@ -276,7 +277,7 @@ export default function SettingsPage() {
         <Group align="flex-end" gap="xs" wrap="nowrap">
           <NativeSelect
             label="French voice"
-            description={voices.length ? 'Tip: on macOS, download an “Enhanced” or “Premium” French voice in System Settings → Accessibility → Spoken Content.' : 'No French voice found on this device.'}
+            description={voices.length ? voiceTip('French') : 'No French voice found on this device.'}
             value={settings.voiceURI ?? ''}
             onChange={(e) => update({ voiceURI: e.currentTarget.value || null })}
             disabled={!voices.length}
@@ -290,6 +291,28 @@ export default function SettingsPage() {
               size="input-sm"
               onClick={() => speak('Bonjour ! On apprend le français petit à petit.', { voiceURI: settings.voiceURI, rate: settings.rate })}
               aria-label="Test voice"
+            >
+              <Volume2 size={18} aria-hidden />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        <Group align="flex-end" gap="xs" wrap="nowrap">
+          <NativeSelect
+            label="English voice"
+            description="The narrator in the audio lessons."
+            value={settings.voiceURIEn ?? ''}
+            onChange={(e) => update({ voiceURIEn: e.currentTarget.value || null })}
+            disabled={!voicesEn.length}
+            data={[{ value: '', label: 'Best available' }, ...voicesEn.map((v) => ({ value: v.voiceURI, label: `${v.name} (${v.lang})` }))]}
+            style={{ flex: 1 }}
+            maw={420}
+          />
+          <Tooltip label="Test voice">
+            <ActionIcon
+              variant="default"
+              size="input-sm"
+              onClick={() => void say('Here’s how to say “I’d like a coffee”.', { lang: 'en', voiceURIEn: settings.voiceURIEn })}
+              aria-label="Test English voice"
             >
               <Volume2 size={18} aria-hidden />
             </ActionIcon>

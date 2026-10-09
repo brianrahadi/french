@@ -12,8 +12,8 @@ import type { AudioLessonDef } from '../../data/types'
 export type Step =
   /** The English narrator. */
   | { kind: 'en'; text: string; part: number }
-  /** A French speaker (0 or 1); `slow` for modelling a new phrase. */
-  | { kind: 'fr'; text: string; part: number; voice?: 0 | 1; slow?: boolean }
+  /** French: a dialogue speaker's voice (a woman's or a man's), or the main voice; `slow` for modelling a new phrase. */
+  | { kind: 'fr'; text: string; part: number; voice?: 'f' | 'm'; slow?: boolean }
   /** The learner's turn: say `answer` out loud. `cue` is what was asked. */
   | { kind: 'turn'; answer: string; cue: string; part: number; repeat?: boolean }
   /** A short silence. */
@@ -26,6 +26,29 @@ export interface Script {
 
 /** Recall intervals, counted in newly taught phrases. */
 const RECALL_AFTER = [1, 3, 6]
+
+/** Names in the dialogues, so each speaker gets a voice that fits. */
+const WOMEN = new Set('alice amélie anna camille chloé claire emma hélène inès julie karine léa lucie manon margaux margot marie nadia nathalie sarah sophie zoé'.split(' '))
+const MEN = new Set('antoine bertrand hugo julien karim lucas marc mathieu paul pierre thomas'.split(' '))
+
+export function genderOf(name: string): 'f' | 'm' | undefined {
+  if (/^(mme|madame|mlle)\b/i.test(name)) return 'f'
+  if (/^(m\.|monsieur)(\s|$)/i.test(name)) return 'm'
+  const first = name.toLowerCase().split(/\s/)[0]
+  return WOMEN.has(first) ? 'f' : MEN.has(first) ? 'm' : undefined
+}
+
+/**
+ * A voice for each of the two speakers: one woman's and one man's, so they're
+ * easy to tell apart, matched to the names we know (Alex can be either).
+ */
+export function voicesFor(speakers: string[]): (who: string) => 'f' | 'm' {
+  const [a, b] = speakers
+  const ga = genderOf(a)
+  const gb = genderOf(b ?? '')
+  const va: 'f' | 'm' = ga ?? (gb === 'f' ? 'm' : 'f')
+  return (who) => (who === a ? va : va === 'f' ? 'm' : 'f')
+}
 
 const ASK = [(en: string) => `How do you say “${en}”?`, (en: string) => `Say “${en}”.`, (en: string) => `Do you remember how to say “${en}”?`, (en: string) => `What’s “${en}” in French?`]
 const NEW = [(en: string) => `Here’s how to say “${en}”.`, (en: string) => `Now, “${en}”.`, (en: string) => `Listen to how to say “${en}”.`, (en: string) => `Here’s a new one: “${en}”.`]
@@ -40,7 +63,7 @@ export function buildScript(lesson: AudioLessonDef, number: number, earlier: Aud
     part = parts.length - 1
   }
   const en = (text: string) => steps.push({ kind: 'en', text, part })
-  const fr = (text: string, o: { voice?: 0 | 1; slow?: boolean } = {}) => steps.push({ kind: 'fr', text, part, ...o })
+  const fr = (text: string, o: { voice?: 'f' | 'm'; slow?: boolean } = {}) => steps.push({ kind: 'fr', text, part, ...o })
   const gap = (seconds = 0.6) => steps.push({ kind: 'gap', seconds, part })
   const turn = (answer: string, cue: string, repeat = false) => steps.push({ kind: 'turn', answer, cue, part, repeat })
   /** Ask, pause, give the answer, and let the learner repeat it once more. */
@@ -52,7 +75,7 @@ export function buildScript(lesson: AudioLessonDef, number: number, earlier: Aud
     turn(p.fr, 'Repeat', true)
   }
   const speakers = [...new Set(lesson.dialogue.map((d) => d.who))]
-  const voiceOf = (who: string) => (speakers.indexOf(who) === 0 ? 0 : 1)
+  const voiceOf = voicesFor(speakers)
   const conversation = () => {
     for (const d of lesson.dialogue) {
       fr(d.fr, { voice: voiceOf(d.who) })
