@@ -349,3 +349,57 @@
   max-width: calc(100vw - 32px);
   text-align: center;
 }
+
+/* ───────────── Practice: quick-play cards ───────────── */
+.qp-preview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 6.5rem;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.qp-big {
+  font-size: 1.375rem;
+  line-height: 1.35;
+}
+.qp-gap {
+  display: inline-block;
+  width: 5.5em;
+  height: 1.05em;
+  vertical-align: -0.2em;
+  border-bottom: 2px solid var(--primary);
+}
+.qp-blanks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  min-width: 0;
+}
+.qp-blank {
+  display: inline-block;
+  height: 0.9rem;
+  border-radius: 4px;
+  background: var(--surface-3);
+  border-bottom: 2px solid var(--border-strong);
+}
+.qp-weak {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.qp-weak .qp-fix {
+  margin-top: 6px;
+  padding: 0;
+  background: none;
+}
+.qp-ref {
+  transition: border-color 0.15s;
+}
+.qp-ref:hover {
+  border-color: var(--border-strong);
+}
