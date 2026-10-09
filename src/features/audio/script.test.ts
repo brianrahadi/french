@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { AUDIO_LESSONS } from '../../data/audio'
-import { buildScript, scriptSeconds } from './script'
+import { buildScript, clipKey, genderOf, scriptSeconds, voicesFor } from './script'
 
 describe('audio lessons', () => {
   it('has a course in order with unique ids', () => {
@@ -35,5 +35,22 @@ describe('audio lessons', () => {
   it('reviews earlier lessons first', () => {
     const { parts } = buildScript(AUDIO_LESSONS[1], 2, AUDIO_LESSONS.slice(0, 1))
     expect(parts[1]).toBe('Warm-up')
+  })
+
+  it('gives each speaker a voice that fits their name', () => {
+    expect(genderOf('Mme Girard')).toBe('f')
+    expect(genderOf('M. Leroy')).toBe('m')
+    expect(genderOf('Léa')).toBe('f')
+    expect(genderOf('Alex')).toBeUndefined()
+    const v = voicesFor(['Marc', 'Alex'])
+    expect([v('Marc'), v('Alex')]).toEqual([1, 0])
+    const w = voicesFor(['Alex', 'Julie'])
+    expect([w('Alex'), w('Julie')]).toEqual([1, 0])
+  })
+
+  it('names each spoken line by voice, speed and text', () => {
+    expect(clipKey({ kind: 'en', text: 'Repeat.', part: 0 })).toBe('en:Repeat.')
+    expect(clipKey({ kind: 'fr', text: 'voilà', part: 0 })).toBe('fr0:voilà')
+    expect(clipKey({ kind: 'fr', text: 'voilà', part: 0, voice: 1, slow: true })).toBe('fr1s:voilà')
   })
 })

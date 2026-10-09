@@ -38,6 +38,20 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: `${base}index.html`,
+        // Audio lesson recordings aren't precached (they're large); each is kept once played.
+        navigateFallbackDenylist: [/\/audio\/(clips|lessons)\//],
+        runtimeCaching: [
+          {
+            urlPattern: /\/audio\/(clips\/[^/]+|silence)\.mp3$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'audio-clips', expiration: { maxEntries: 6000 }, cacheableResponse: { statuses: [200] } },
+          },
+          {
+            urlPattern: /\/audio\/lessons\/[^/]+\.json$/,
+            handler: 'NetworkFirst',
+            options: { cacheName: 'audio-lessons', networkTimeoutSeconds: 4, cacheableResponse: { statuses: [200] } },
+          },
+        ],
       },
     }),
   ],
