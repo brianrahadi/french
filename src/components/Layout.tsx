@@ -28,10 +28,9 @@ function useBadges() {
 
 type NavItem = { to: string; label: string; short: string; icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>; end?: boolean }
 
-// Five places: what to do today, the plan behind it, content to study, your words, and drills.
+// Four places: what to do today, content to study, your words, and drills. The roadmap sits with Profile.
 const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/', label: 'Today', short: 'Today', icon: House, end: true },
-  { to: '/roadmap', label: 'Roadmap', short: 'Plan', icon: MapIcon },
   { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/listening/story', '/audio', '/talk', '/writing'] },
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
   { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
@@ -93,6 +92,7 @@ export function Layout() {
           <Stack gap={2}>{NAV.map(link)}</Stack>
         </AppShell.Section>
         <AppShell.Section>
+          {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
           <ProfileLink active={isActive(pathname, '/profile')} />
           {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
         </AppShell.Section>

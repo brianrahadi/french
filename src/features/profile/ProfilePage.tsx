@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { ActionIcon, Box, Card, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
+import { ActionIcon, Box, Button, Card, Container, Group, SegmentedControl, SimpleGrid, Stack, Text, Title, Tooltip, useComputedColorScheme } from '@mantine/core'
 import { BarChart, RadarChart } from '@mantine/charts'
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router'
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Map as MapIcon } from 'lucide-react'
 import { PageHeader } from '../../components/PageHeader'
 import { SyncAccount } from '../../components/SyncAccount'
 import { useStore, STUDY_SKILLS, type StudySkill } from '../../lib/store'
@@ -68,7 +69,16 @@ export default function ProfilePage() {
 
   return (
     <Container size={960} py="xl">
-      <PageHeader eyebrow="Profil" title={user?.name ?? 'Profile'} />
+      <PageHeader
+        eyebrow="Profil"
+        title={user?.name ?? 'Profile'}
+        actions={
+          // On phones the roadmap isn't in the bottom bar, so it lives here.
+          <Button component={Link} to="/roadmap" variant="default" size="sm" leftSection={<MapIcon size={16} aria-hidden />} hiddenFrom="sm">
+            Roadmap
+          </Button>
+        }
+      />
       <SyncAccount />
 
       <Title order={2} size="h3" mt="xl" mb="sm">
