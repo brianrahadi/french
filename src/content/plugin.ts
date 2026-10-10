@@ -4,7 +4,8 @@
  * server overlay and in `npm run build`.
  */
 import type { Plugin } from 'vite'
-import { ContentError, describePath, parseContent, parseDeckRows } from './parse.ts'
+import { bookMeta, ContentError, describePath, parseContent, parseDeckRows } from './parse.ts'
+import type { BookDef } from '../data/types.ts'
 import { parseMarkdown } from './markdown.ts'
 
 /** Expands compact deck rows into words (resolved from the project root). */
@@ -30,7 +31,9 @@ export function contentPlugin(): Plugin {
           const args = JSON.stringify([d.id, d.level, d.title, d.titleFr, d.rows, d.group])
           return { code: `import { deck } from ${JSON.stringify(BUILD)}\nexport default deck(...JSON.parse(${JSON.stringify(args)}))`, map: null }
         }
-        const data = parseContent(source, id)
+        const parsed = parseContent(source, id)
+        // Books: `?meta` imports leave out the chapter text, which is loaded only when you open the book.
+        const data = where.kind === 'books' && /[?&]meta\b/.test(id) ? bookMeta(parsed as BookDef) : parsed
         return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(data))})`, map: null }
       } catch (e) {
         if (e instanceof ContentError)

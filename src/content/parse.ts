@@ -10,6 +10,9 @@ import {
   SCENARIO_ICONS,
   type AudioLessonDef,
   type Block,
+  type BookDef,
+  type BookMeta,
+  type BookParagraph,
   type Deck,
   type Exercise,
   type Lesson,
@@ -28,9 +31,9 @@ import { ContentError, parseMarkdown, type Field, type ListItem, type MdBlock, t
 
 export { ContentError }
 
-export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'pronunciation', 'audio'] as const
+export const CONTENT_KINDS = ['grammar', 'vocab', 'reading', 'books', 'stories', 'conversations', 'writing', 'pronunciation', 'audio'] as const
 export type ContentKind = (typeof CONTENT_KINDS)[number]
-const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'stories', 'conversations', 'writing', 'audio']
+const LEVELED: ContentKind[] = ['grammar', 'vocab', 'reading', 'books', 'stories', 'conversations', 'writing', 'audio']
 const LEVEL_DIRS: Record<string, Level> = { a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2' }
 /** Vocabulary decks that aren't sorted by level or theme (the level comes from their front matter). */
 export const FREQUENCY_DIR = 'top5000'
@@ -68,7 +71,7 @@ export function describePath(path: string): ContentPath | null {
 }
 
 /** Parses one content file (by its path) into app data. */
-export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | StoryDef | Scenario | WritingPrompt | SoundSet | AudioLessonDef {
+export function parseContent(source: string, path: string): Lesson | Deck | ReaderTextDef | BookDef | StoryDef | Scenario | WritingPrompt | SoundSet | AudioLessonDef {
   const where = describePath(path)
   if (!where) throw new ContentError('This file is not in a content folder the app knows about.', 1)
   const doc = parseMarkdown(source)
@@ -80,6 +83,8 @@ export function parseContent(source: string, path: string): Lesson | Deck | Read
       return parseDeck(doc, level, where.group)
     case 'reading':
       return parseText(doc, level)
+    case 'books':
+      return parseBook(doc, level)
     case 'stories':
       return parseStory(doc, level)
     case 'conversations':
@@ -462,6 +467,74 @@ export function parseText(doc: MdDocument, level: Level): ReaderTextDef {
   if (!paragraphs.length) fail('The text is empty.', 1)
   if (!paragraphs[paragraphs.length - 1].en) fail('The last paragraph needs its English translation ("> …").', doc.blocks[doc.blocks.length - 1].line)
   return { id: readId(m.id), level, title: m.title.value, titleEn: m.titleEn.value, topic: m.topic.value, paragraphs }
+}
+
+// ───────────── Books ─────────────
+
+/** Running words, for reading time. */
+export const wordCount = (s: string) => s.split(/\s+/).filter((w) => /\p{L}|\p{N}/u.test(w)).length
+
+/**
+ * A book: "## Chapter title" headings, French paragraphs, optionally each
+ * followed by its English translation on a "> " line, and "### " sub-headings
+ * for numbered parts inside a chapter.
+ */
+export function parseBook(doc: MdDocument, level: Level): BookDef {
+  const m = readMeta(doc, ['id', 'title', 'titleEn', 'author', 'year', 'kind', 'summary'], ['source'])
+  const kind = m.kind.value as BookDef['kind']
+  if (kind !== 'adapted' && kind !== 'original') fail('"kind" is either adapted (retold for the level) or original (the author’s own text).', m.kind.line)
+  const chapters: BookDef['chapters'] = []
+  let last: BookParagraph | undefined
+  for (const b of doc.blocks) {
+    const ch = chapters[chapters.length - 1]
+    if (b.kind === 'heading' && b.depth === 2) {
+      if (ch && !ch.paragraphs.some((p) => !p.sub)) fail('This chapter has no text.', b.line)
+      chapters.push({ title: b.text, paragraphs: [], words: 0 })
+      last = undefined
+      continue
+    }
+    if (!ch) fail('Start the book with a "## Chapter title" heading.', b.line)
+    if (b.kind === 'heading' && b.depth === 3) {
+      ch.paragraphs.push({ fr: b.text, sub: true })
+      last = undefined
+    } else if (b.kind === 'paragraph') {
+      last = { fr: b.text }
+      ch.paragraphs.push(last)
+      ch.words += wordCount(b.text)
+    } else if (b.kind === 'quote' && !b.alert) {
+      if (!last || last.en) return fail('A "> " translation must follow a French paragraph.', b.line)
+      last.en = b.text
+    } else fail('A chapter is French paragraphs (each optionally followed by a "> " English line) and "### " sub-headings.', b.line)
+  }
+  if (!chapters.length) fail('The book has no chapters: start each one with "## Chapter title".', 1)
+  const last_ = chapters[chapters.length - 1]
+  if (!last_.paragraphs.some((p) => !p.sub)) fail(`The chapter "${last_.title}" has no text.`, doc.blocks[doc.blocks.length - 1].line)
+  const text = chapters.flatMap((c) => c.paragraphs.filter((p) => !p.sub))
+  const withEn = text.filter((p) => p.en).length
+  if (withEn && withEn < text.length) {
+    const missing = doc.blocks.find((b, i) => b.kind === 'paragraph' && doc.blocks[i + 1]?.kind !== 'quote')
+    fail('Translate every paragraph or none: this one has no "> " English line.', missing?.line ?? 1)
+  }
+  if (kind === 'adapted' && !withEn) fail('Adapted books need an English translation ("> …") after each paragraph.', 1)
+  return {
+    id: readId(m.id),
+    level,
+    title: m.title.value,
+    titleEn: m.titleEn.value,
+    author: m.author.value,
+    year: m.year.value,
+    kind,
+    summary: m.summary.value,
+    ...(m.source && { source: m.source.value }),
+    chapters,
+    words: chapters.reduce((n, c) => n + c.words, 0),
+    translated: withEn > 0,
+  }
+}
+
+/** A book without its text, for lists (see the ?meta import in data/books.ts). */
+export function bookMeta(b: BookDef): BookMeta {
+  return { ...b, chapters: b.chapters.map((c) => ({ title: c.title, words: c.words })) }
 }
 
 // ───────────── Listening stories ─────────────

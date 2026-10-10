@@ -144,6 +144,29 @@ describe('other content files', () => {
     expect(sounds).toMatchObject({ tip: 'Gargle gently.', sentences: [{ fr: 'Rue.', en: 'Street.' }] })
   })
 
+  it('parse books: chapters, translations and sub-headings', () => {
+    const head = (kind: string) => `---\nid: b\ntitle: Livre\ntitleEn: Book\nauthor: A. Auteur\nyear: 1880\nkind: ${kind}\nsummary: About.\n---\n\n`
+    const book = parseContent(`${head('adapted')}## Un\n\nIl part.\n\n> He leaves.\n\n## Deux\n\n### I\n\nIl revient vite.\n\n> He comes back fast.\n`, '/content/books/a2/01-b.md')
+    expect(book).toMatchObject({
+      level: 'A2',
+      kind: 'adapted',
+      translated: true,
+      words: 5,
+      chapters: [
+        { title: 'Un', words: 2, paragraphs: [{ fr: 'Il part.', en: 'He leaves.' }] },
+        { title: 'Deux', words: 3, paragraphs: [{ fr: 'I', sub: true }, { fr: 'Il revient vite.', en: 'He comes back fast.' }] },
+      ],
+    })
+    const original = parseContent(`${head('original')}## Un\n\nIl part.\n\nIl revient.\n`, '/content/books/b2/01-b.md')
+    expect(original).toMatchObject({ kind: 'original', translated: false })
+
+    expect(error(`${head('adapted')}## Un\n\nIl part.\n`, '/content/books/a1/b.md')).toMatch(/Adapted books need an English translation/)
+    expect(error(`${head('original')}## Un\n\nIl part.\n\n> He leaves.\n\nIl revient.\n`, '/content/books/b1/b.md')).toMatch(/Translate every paragraph or none/)
+    expect(error(`${head('original')}Il part.\n`, '/content/books/b1/b.md')).toMatch(/^11: Start the book with a "## Chapter title" heading/)
+    expect(error(`${head('novel')}## Un\n\nIl part.\n`, '/content/books/b1/b.md')).toMatch(/"kind" is either adapted/)
+    expect(error(`${head('original')}## Un\n\n## Deux\n\nIl part.\n`, '/content/books/b1/b.md')).toMatch(/This chapter has no text/)
+  })
+
   it('explain mistakes in them too', () => {
     expect(error(`---\nid: a1-x\ntitle: X\ntitleFr: X\n---\n\n| French | English | Type |\n|---|---|---|\n| chat | cat | n |\n`, '/content/vocab/a1/x.md')).toMatch(/^9: "n" isn't a word type/)
     expect(error(`---\nid: t\ntitle: T\ntitleEn: T\ntopic: X\n---\n\nUn.\n\nDeux.\n\n> Two.\n`, '/content/reading/a1/t.md')).toMatch(/^10: Add the English translation of the paragraph above/)

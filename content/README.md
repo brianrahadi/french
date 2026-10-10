@@ -8,6 +8,7 @@ content/
   vocab/          a1/ a2/ b1/ b2/   themed word decks (one table per deck)
                   top5000/          the 5000 most frequent words, 100 per deck
   reading/        a1/ a2/ b1/ b2/   graded texts with translations
+  books/          a1/ a2/ b1/ b2/   books in chapters: classics retold for a level, or public-domain originals
   stories/        a1/ a2/ b1/ b2/   listening stories (1–2 min) + questions
   audio/          a1/ a2/ b1/ b2/   Pimsleur-style audio lessons (one course, in file order)
   conversations/  a1/ a2/ b1/ b2/   AI role-plays
@@ -200,6 +201,43 @@ Nous avons visité la vieille ville et nous avons très bien mangé.
 
 > We visited the old town and ate very well.
 ```
+
+---
+
+## Books — `books/<level>/NN-name.md`
+
+A whole book in one file. Each `## ` heading starts a chapter (one sitting: a few minutes for retold books, up to about 25 minutes for originals). Inside a chapter, `### ` marks a numbered part or section title.
+
+- **`kind: adapted`** — a classic retold in graded French for the folder's level. Every paragraph is followed by its English translation on a `>` line, like a reading text.
+- **`kind: original`** — the author's own text, which must be in the public domain (published before 1929, author dead for more than 70 years). Leave out translations (learners can ask the AI for one) and give the edition in `source`.
+
+```markdown
+---
+id: la-belle-et-la-bete
+title: La Belle et la Bête
+titleEn: Beauty and the Beast
+author: Jeanne-Marie Leprince de Beaumont
+year: 1756
+kind: adapted
+summary: One or two English sentences about the book, shown on its page.
+---
+
+## Le marchand et ses filles
+
+Il était une fois un marchand très riche.
+
+> Once upon a time there was a very rich merchant.
+
+## La rose
+
+### I
+
+Le marchand cueille une rose…
+
+> The merchant picks a rose…
+```
+
+Optional field: `source` (a Project Gutenberg link, e.g. `https://www.gutenberg.org/ebooks/4650`). Progress is saved by chapter number, so once people are reading a book, add chapters at the end rather than splitting or reordering them.
 
 ---
 

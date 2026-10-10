@@ -177,6 +177,46 @@ export interface ReaderTextDef {
   paragraphs: { fr: string; en: string }[] // French paragraph + natural English translation
 }
 
+// ───────────── Books ─────────────
+
+/** A paragraph of a book chapter. `sub` marks a sub-heading inside the chapter (a numbered part, a section title). */
+export interface BookParagraph {
+  fr: string
+  /** English translation (adapted books have one for every paragraph). */
+  en?: string
+  sub?: true
+}
+
+export interface BookChapter {
+  title: string
+  paragraphs: BookParagraph[]
+}
+
+/** What lists and progress need: no chapter text, so the shelf stays light. */
+export interface BookMeta {
+  id: string // kebab-case, e.g. 'candide'
+  level: Level
+  title: string // French title
+  titleEn: string
+  author: string
+  /** First published, e.g. "1759". */
+  year: string
+  /** Retold in graded French for this level, or the author's own words. */
+  kind: 'adapted' | 'original'
+  /** One or two English sentences: what the book is about. */
+  summary: string
+  /** Where an original text comes from (Project Gutenberg URL). */
+  source?: string
+  chapters: { title: string; words: number }[]
+  words: number
+  /** Every paragraph has an English translation. */
+  translated: boolean
+}
+
+export interface BookDef extends Omit<BookMeta, 'chapters'> {
+  chapters: (BookChapter & { words: number })[]
+}
+
 // ───────────── Conversation ─────────────
 
 export const SCENARIO_ICONS = [
