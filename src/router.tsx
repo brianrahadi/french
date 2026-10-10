@@ -41,6 +41,7 @@ export const router = createBrowserRouter(
         { path: 'writing/new', lazy: page(() => import('./features/writing/WritingEditor')) },
         { path: 'writing/:id', lazy: page(() => import('./features/writing/WritingResult')) },
         { path: 'practice', lazy: page(() => import('./features/practice/PracticeHub')) },
+        { path: 'practice/:section', lazy: page(() => import('./features/library/LibrarySectionPage')) },
         { path: 'weak', lazy: page(() => import('./features/weak/WeakPage')) },
         { path: 'audio', element: <Navigate to="/library#audio" replace /> },
         { path: 'audio/:id', lazy: page(() => import('./features/audio/AudioLessonPage')) },

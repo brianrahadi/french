@@ -20,11 +20,10 @@ const latest = (...xs: (string | undefined)[]) => xs.filter((x): x is string => 
 
 export const lessonNo = (id: string) => LESSONS.findIndex((l) => l.id === id) + 1
 
-/** What you're in the middle of, and what you've finished, newest first. */
+/** What you're in the middle of, and what you've finished, newest first (things you read, hear and study; your own writing and conversations are in practiceEntries). */
 export function libraryEntries(s: State, askDelete: (id: string) => void): { continuing: Entry[]; done: Entry[] } {
   const stories = s.stories ?? {}
   const audio = s.audio ?? {}
-  const conversations = s.conversations
   const books = BOOKS.map((b) => ({ b, p: bookProgress(b, s.read, s.books?.[b.id]?.chapter), place: s.books?.[b.id] }))
   const continuing: Entry[] = [
     ...books
@@ -38,9 +37,6 @@ export function libraryEntries(s: State, askDelete: (id: string) => void): { con
     ...s.texts
       .filter((t) => !s.read[t.id] && t.openedAt)
       .map((t) => ({ at: t.openedAt!, key: t.id, node: <UserTextTile key={t.id} t={t} onDelete={() => askDelete(t.id)} /> })),
-    ...conversations
-      .filter((c) => !c.feedback && c.turns.some((t) => t.role === 'me'))
-      .map((c) => ({ at: c.updatedAt, key: c.id, node: <ConversationTile key={c.id} c={c} /> })),
     ...LESSONS.filter((l) => lessonStatus(s.lessons[l.id]) === 'started').map((l) => ({
       at: s.lessons[l.id].lastAt,
       key: l.id,
@@ -56,8 +52,6 @@ export function libraryEntries(s: State, askDelete: (id: string) => void): { con
       .filter((t) => s.read[t.id])
       .map((t) => ({ at: s.read[t.id], key: t.id, node: <UserTextTile key={t.id} t={t} done onDelete={() => askDelete(t.id)} /> })),
     ...AUDIO_LESSONS.filter((l) => audio[l.id]?.done).map((l) => ({ at: audio[l.id].done!, key: l.id, node: <AudioTile key={l.id} l={l} p={audio[l.id]} /> })),
-    ...conversations.filter((c) => c.feedback).map((c) => ({ at: c.updatedAt, key: c.id, node: <ConversationTile key={c.id} c={c} /> })),
-    ...s.writings.map((w) => ({ at: w.createdAt, key: w.id, node: <WritingTile key={w.id} w={w} /> })),
     ...LESSONS.filter((l) => lessonStatus(s.lessons[l.id]) === 'mastered').map((l) => ({
       at: s.lessons[l.id].lastAt,
       key: l.id,
@@ -66,4 +60,14 @@ export function libraryEntries(s: State, askDelete: (id: string) => void): { con
   ].sort((a, b) => b.at.localeCompare(a.at))
 
   return { continuing, done }
+}
+
+/** Your conversations (finished or not) and corrected writing, newest first: the Practice tab's history. */
+export function practiceEntries(s: State): Entry[] {
+  return [
+    ...s.conversations
+      .filter((c) => c.feedback || c.turns.some((t) => t.role === 'me'))
+      .map((c) => ({ at: c.updatedAt, key: c.id, node: <ConversationTile key={c.id} c={c} /> })),
+    ...s.writings.map((w) => ({ at: w.createdAt, key: w.id, node: <WritingTile key={w.id} w={w} /> })),
+  ].sort((a, b) => b.at.localeCompare(a.at))
 }

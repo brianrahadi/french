@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Navigate, useParams } from 'react-router'
+import { Navigate, useLocation, useParams } from 'react-router'
 import { Container, Group, Switch, Text } from '@mantine/core'
 import { ClipboardPaste, Feather, MessagesSquare, PencilLine, WandSparkles } from 'lucide-react'
 import { AUDIO_LESSONS } from '../../data/audio'
@@ -22,22 +22,28 @@ import { BookTile } from '../books/shared'
 import { ScenarioTile } from '../talk/TalkTiles'
 import { PromptTile } from '../writing/tiles'
 import { useLibraryDialogs } from './dialogs'
-import { libraryEntries } from './entries'
+import { libraryEntries, practiceEntries } from './entries'
 
-export type SectionId = 'continue' | 'audio' | 'stories' | 'texts' | 'books' | 'talk' | 'writing' | 'completed'
+export type SectionId = 'continue' | 'audio' | 'stories' | 'texts' | 'books' | 'completed' | 'talk' | 'writing' | 'history'
 
-const META: Record<SectionId, { title: string; eyebrow: string }> = {
-  continue: { title: 'Continue', eyebrow: 'En cours' },
-  audio: { title: 'Audio course', eyebrow: 'Cours audio' },
-  stories: { title: 'Mini stories', eyebrow: 'Histoires' },
-  texts: { title: 'Graded texts', eyebrow: 'Lecture' },
-  books: { title: 'Books', eyebrow: 'Livres' },
-  talk: { title: 'Conversations', eyebrow: 'Conversation' },
-  writing: { title: 'Writing', eyebrow: 'Écriture' },
-  completed: { title: 'Completed', eyebrow: 'Terminé' },
+/** Which tab a section belongs to: things to take in (Library) or things to produce (Practice). */
+export type Area = 'library' | 'practice'
+
+const META: Record<SectionId, { title: string; eyebrow: string; area: Area }> = {
+  continue: { title: 'Continue', eyebrow: 'En cours', area: 'library' },
+  audio: { title: 'Audio course', eyebrow: 'Cours audio', area: 'library' },
+  stories: { title: 'Mini stories', eyebrow: 'Histoires', area: 'library' },
+  texts: { title: 'Graded texts', eyebrow: 'Lecture', area: 'library' },
+  books: { title: 'Books', eyebrow: 'Livres', area: 'library' },
+  completed: { title: 'Completed', eyebrow: 'Terminé', area: 'library' },
+  talk: { title: 'Conversations', eyebrow: 'Conversation', area: 'practice' },
+  writing: { title: 'Writing', eyebrow: 'Écriture', area: 'practice' },
+  history: { title: 'Your history', eyebrow: 'Historique', area: 'practice' },
 }
 
 export const isSection = (x: string | undefined): x is SectionId => !!x && x in META
+/** The tab a section lives in, e.g. 'practice' for 'talk'. */
+export const sectionArea = (x: SectionId): Area => META[x].area
 
 interface Item {
   key: string
@@ -46,23 +52,30 @@ interface Item {
   node: ReactNode
 }
 
-/** One kind of Library content, every level, folded by level: a vertical list instead of a sideways shelf. */
+/**
+ * One kind of Library or Practice content, every level, folded by level: a
+ * vertical list instead of a sideways shelf. Serves /library/:section and /practice/:section.
+ */
 export default function LibrarySectionPage() {
   const { section } = useParams()
+  const { pathname } = useLocation()
+  const area: Area = pathname.startsWith('/practice') ? 'practice' : 'library'
   const s = useStore()
   const level = useCurrentLevel()
   const d = useLibraryDialogs(level)
   const [hideDone, setHideDone] = useState(false)
   const meta = isSection(section) ? META[section] : undefined
-  useDocumentTitle(meta?.title ?? 'Library')
-  if (!isSection(section) || !meta) return <Navigate to="/library" replace />
+  useDocumentTitle(meta?.title ?? (area === 'practice' ? 'Practice' : 'Library'))
+  if (!isSection(section) || !meta) return <Navigate to={`/${area}`} replace />
+  // Old links like /library/talk land in the right tab.
+  if (meta.area !== area) return <Navigate to={`/${meta.area}/${section}`} replace />
 
-  const back = { to: '/library', label: 'Library' }
+  const back = area === 'practice' ? { to: '/practice', label: 'Practice' } : { to: '/library', label: 'Library' }
 
-  // Continue and Completed are flat lists, newest first.
-  if (section === 'continue' || section === 'completed') {
+  // Continue, Completed and your history are flat lists, newest first.
+  if (section === 'continue' || section === 'completed' || section === 'history') {
     const { continuing, done } = libraryEntries(s, d.askDelete)
-    const list = section === 'continue' ? continuing : done
+    const list = section === 'continue' ? continuing : section === 'completed' ? done : practiceEntries(s)
     return (
       <Container size="var(--page-w)" py="xl">
         <PageHeader back={back} eyebrow={meta.eyebrow} title={meta.title} subtitle={`${list.length} item${list.length === 1 ? '' : 's'}`} />
@@ -137,7 +150,7 @@ export default function LibrarySectionPage() {
         back={back}
         eyebrow={meta.eyebrow}
         title={meta.title}
-        subtitle={`${doneCount} of ${items.length} done`}
+        subtitle={`${items.length - doneCount} left · ${doneCount} of ${items.length} done`}
         actions={<Switch checked={hideDone} onChange={(e) => setHideDone(e.currentTarget.checked)} label="Hide done" />}
       />
       {actions && <TileGrid>{actions}</TileGrid>}
