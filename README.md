@@ -14,6 +14,12 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 
 ## What’s inside
 
+**Finding your way — four tabs**
+- **Today**: the daily session and what to do next. **Vocabulary**: your decks and flashcards.
+- **Library** is what you take in: *Continue* at the top, then *Courses* (grammar, audio), *Listen* (mini stories) and *Read* (graded texts, books, your own texts), and *Completed* at the bottom.
+- **Practice** is what you produce: *Weak spots* across the top, then *Speak* (conversations, pronunciation), *Write* (writing, conjugation) and *Listen and review* (dictation, grammar reviews due), with *Your history* of conversations and corrected writing below. Verb tables and tricky sounds sit in its header. Its badge counts grammar reviews due plus weak spots.
+- Every shelf and card has an icon and colour for its kind (lesson, audio, story, text, book, conversation, writing, deck…), so mixed rows like Continue read at a glance.
+
 **Roadmap — level by level to TCF B2**
 - *Roadmap* lists each level (A1–B2, grouped into the CEFR bands) with a one-line goal, its grammar lessons (ticked once mastered) and links to the rest of that level's content, then the TCF B2 format and target scores.
 
