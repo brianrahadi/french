@@ -99,7 +99,7 @@ export function buildHistory(s: HistorySource): HistoryEntry[] {
   }
   // Finished conversations whose transcript has been pruned.
   for (const [id, r] of Object.entries(s.talkLog ?? {}))
-    if (!seen.has(id)) add({ id: `talk:${id}`, kind: 'talk', title: SCENARIO_BY_ID[r.scenarioId]?.title ?? (r.scenarioId === 'free' ? 'Free conversation' : 'Conversation'), score: r.score, at: r.at, to: '/library#talk' })
+    if (!seen.has(id)) add({ id: `talk:${id}`, kind: 'talk', title: SCENARIO_BY_ID[r.scenarioId]?.title ?? (r.scenarioId === 'free' ? 'Free conversation' : 'Conversation'), score: r.score, at: r.at, to: '/practice#talk' })
 
   for (const [id, x] of Object.entries(s.stories ?? {}))
     if (x?.at) add({ id: `story:${id}`, kind: 'listening', title: STORY_BY_ID[id]?.title ?? 'Story', detail: 'Story', score: x.last, at: x.at, to: STORY_BY_ID[id] ? `/listening/story/${id}` : '/library#stories' })

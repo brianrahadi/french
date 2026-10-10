@@ -1,16 +1,20 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { ActionIcon, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
-import { ArrowRight, BookOpen, Headphones, Mic, PenLine, Play, SlidersHorizontal, Table2, Target, Volume2 } from 'lucide-react'
-import { VERBS, hasTense } from '../../data/verbs'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
+import { AudioLines, BookOpen, Headphones, MessagesSquare, Mic, NotebookPen, PenLine, Play, SlidersHorizontal, Table2, Target, Volume2 } from 'lucide-react'
+import { hasTense } from '../../data/verbs'
 import { LESSONS } from '../../data/grammar'
-import { TENSE_BY_ID, conjugate, pronounFor, tablePronoun, type Tense } from '../../lib/conjugate'
+import { SCENARIOS } from '../../data/scenarios'
+import { TENSE_BY_ID, conjugate, pronounFor, type Tense } from '../../lib/conjugate'
 import { PageHeader } from '../../components/PageHeader'
+import { Shelf } from '../../components/Shelf'
 import { SpeakButton } from '../../components/SpeakButton'
 import { Kbd, LevelBadge } from '../../components/ui'
 import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
-import { useCurrentLevel } from '../../lib/level'
+import { useCurrentLevel, withinLevel } from '../../lib/level'
+import { useAiConfig } from '../../lib/ai'
 import { speechSupported } from '../../lib/speech'
 import { micSupported, recognitionSupported } from '../../lib/recognition'
 import { displayFr, frTypo } from '../../lib/words'
@@ -19,6 +23,11 @@ import { buildWeakPlan } from '../session/plan'
 import { computeWeakSpots } from '../weak/weak'
 import { poolFor as verbPool } from '../conjugation/drill'
 import { pickSentences, poolFor as sentencePool, type SentenceSource } from '../listening/sentences'
+import { useStartConversation } from '../talk/start'
+import { suggestPrompt } from '../writing/tiles'
+import { useLibraryDialogs } from '../library/dialogs'
+import { practiceEntries } from '../library/entries'
+import { isSection } from '../library/LibrarySectionPage'
 
 const DICTATION_N = 10
 const SPEAKING_N = 8
@@ -27,15 +36,31 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const pct = (x: number) => `${Math.round(x * 100)}%`
 
 /**
- * Quick play: one card per drill showing what it trains, a sample of what
- * you'll get, the settings it will use, and a Play button that starts it straight away.
- * Sized so all six fit on a laptop screen; the drill's own page (Options) has the full set-up.
+ * Everything you produce, grouped by skill: speak (conversations,
+ * pronunciation), write (writing, conjugation), listen and review (dictation,
+ * grammar reviews), with Weak spots across the top. Each card shows what it
+ * trains, a sample of what you'll get and a Play button that starts it straight
+ * away; its own page (Options / See all) has the full set-up or list.
+ * Things to read, hear and study live in the Library.
  */
 export default function PracticeHub() {
   useDocumentTitle('Practice')
   const navigate = useNavigate()
   const s = useStore()
   const level = useCurrentLevel()
+  const ai = useAiConfig()
+  const startTalk = useStartConversation()
+  const d = useLibraryDialogs(level)
+  const { hash } = useLocation()
+  const phone = useMediaQuery('(max-width: 48em)')
+
+  // /practice#talk etc. scrolls to that card; on a phone a section with its own page opens that page.
+  useEffect(() => {
+    const id = hash.slice(1)
+    if (!id) return
+    if (phone && isSection(id)) navigate(`/practice/${id}`, { replace: true })
+    else document.getElementById(id)?.scrollIntoView({ block: 'start' })
+  }, [hash, phone, navigate])
 
   // ── Weak spots ──
   const weak = useMemo(() => computeWeakSpots(s), [s])
@@ -72,24 +97,41 @@ export default function PracticeHub() {
   // ── Grammar ──
   const due = dueLessons(s.lessons)
   const up = nextUp(s.lessons)
-  const lesson = due[0] ?? up
   const mastered = LESSONS.filter((l) => ['mastered', 'due'].includes(lessonStatus(s.lessons[l.id]))).length
 
-  // ── Verb tables: a glimpse of one table ──
-  const [table] = useState(() => {
-    const v = pick(VERBS.filter((x) => x.essential)) ?? VERBS[0]
-    return { inf: v.inf, en: v.en, cells: conjugate(v, 'present').map((c) => ({ pr: tablePronoun('present', c.person, c.display, v.inf), form: c.display })) }
+  // ── Conversations: pick up an unfinished one, or a situation you haven't done at your level ──
+  const talked = new Set(s.conversations.filter((c) => c.feedback).map((c) => c.scenarioId))
+  for (const r of Object.values(s.talkLog ?? {})) talked.add(r.scenarioId)
+  const ongoing = s.conversations
+    .filter((c) => !c.feedback && !c.ended && c.turns.some((t) => t.role === 'me'))
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0]
+  const [scenario] = useState(() => {
+    const fresh = SCENARIOS.filter((x) => !talked.has(x.id))
+    return pick(fresh.filter((x) => x.level === level)) ?? pick(fresh.filter((x) => withinLevel(x.level, level))) ?? fresh[0]
   })
+  const finishedTalks = s.conversations.filter((c) => c.feedback).length
+
+  // ── Writing: the prompt that fits what you've just learned ──
+  const written = new Set(s.writings.map((w) => w.promptId))
+  const prompt = suggestPrompt(s.lessons, written, level)
+
+  // ── Your history: conversations and corrected writing ──
+  const history = practiceEntries(s)
 
   const go = {
     weak: () => weakPlan.items.length && navigate('/session?mode=weak'),
-    conj: () => canConj && navigate(`/conjugation/drill?seed=${Date.now()}`),
-    grammar: () => (due.length ? navigate(`/grammar/${due[0].id}/practice`) : up && navigate(`/grammar/${up.id}`)),
-    dict: () => speechSupported && navigate(`/listening/session?src=${encodeURIComponent(src)}&n=${DICTATION_N}`),
+    talk: () => {
+      if (!ai) return navigate('/settings#ai')
+      if (ongoing) return navigate(`/talk/${ongoing.id}`)
+      if (scenario) navigate(`/talk/${startTalk({ scenarioId: scenario.id, level: scenario.level })}`)
+    },
     say: (mode: 'read' | 'repeat' = 'read') => micSupported && navigate(`/speaking/session?src=${encodeURIComponent(src)}&mode=${mode}&n=${SPEAKING_N}`),
-    verbs: () => navigate('/verbs'),
+    write: () => navigate(`/writing/new?prompt=${prompt ? prompt.id : 'free'}`),
+    conj: () => canConj && navigate(`/conjugation/drill?seed=${Date.now()}`),
+    dict: () => speechSupported && navigate(`/listening/session?src=${encodeURIComponent(src)}&n=${DICTATION_N}`),
+    grammar: () => due.length && navigate(`/grammar/${due[0].id}/practice`),
   }
-  useHotkeys({ '1': go.weak, '2': go.conj, '3': go.grammar, '4': go.dict, '5': () => go.say(), '6': go.verbs })
+  useHotkeys({ '1': go.weak, '2': go.talk, '3': () => go.say(), '4': go.write, '5': go.conj, '6': go.dict, '7': go.grammar })
 
   const weakRows = [
     ...weak.lessons.map((l) => {
@@ -132,10 +174,24 @@ export default function PracticeHub() {
 
   return (
     <Container size="var(--page-w)" py="xl">
-      <PageHeader eyebrow="S’entraîner" title="Practice" />
+      <PageHeader
+        eyebrow="S’entraîner"
+        title="Practice"
+        actions={
+          <>
+            <Button component={Link} to="/verbs" variant="default" leftSection={<Table2 size={16} aria-hidden />}>
+              Verb tables
+            </Button>
+            <Button component={Link} to="/speaking#sounds" variant="default" leftSection={<AudioLines size={16} aria-hidden />}>
+              Tricky sounds
+            </Button>
+          </>
+        }
+      />
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
         <QuickCard
+          wide
+          anchor="weak"
           hotkey="1"
           icon={<Target size={20} aria-hidden />}
           color="pink"
@@ -174,157 +230,245 @@ export default function PracticeHub() {
           options={{ to: '/weak', label: 'All weak spots' }}
         />
 
-        <QuickCard
-          hotkey="2"
-          icon={<PenLine size={20} aria-hidden />}
-          title="Conjugation"
-          fr="Conjugaison"
-          trains="Type the right verb form until endings and irregular stems are automatic."
-          preview={
-            conjSample ? (
-              <>
-                <Text className="fr qp-big" lang="fr">
-                  {conjSample.pronoun && <span>{conjSample.pronoun} </span>}
-                  {blank}
-                </Text>
-                <Text size="sm" c="dimmed" truncate>
-                  <span className="fr" lang="fr">
-                    {conjSample.inf}
-                  </span>{' '}
-                  ({conjSample.en}) · {TENSE_BY_ID[conjSample.tense].label}
-                </Text>
-              </>
-            ) : (
-              <Text size="sm" c="dimmed">
-                Pick at least one tense in Options.
-              </Text>
-            )
-          }
-          chips={[
-            conf.tenses.length > 0 && TENSE_BY_ID[conf.tenses[0] as Tense]?.label + (conf.tenses.length > 1 ? ` +${conf.tenses.length - 1}` : ''),
-            plural(verbs.length, 'verb'),
-          ]}
-          stat={conjAcc === null ? undefined : `${pct(conjAcc)} right`}
-          play={{ label: `Play ${conf.length} questions`, onClick: go.conj, disabled: !canConj }}
-          options={{ to: '/conjugation' }}
-        />
-
-        <QuickCard
-          hotkey="3"
-          icon={<BookOpen size={20} aria-hidden />}
-          color="violet"
-          title="Grammar"
-          fr="Grammaire"
-          trains={due.length ? 'Spaced reviews of rules you’ve passed, so they don’t fade.' : 'No reviews due — learn the next rule in the course.'}
-          preview={
-            lesson ? (
-              <>
-                <Group gap={8} mb={2}>
-                  <LevelBadge level={lesson.level} />
-                  <Text size="xs" fw={600} c="dimmed" tt="uppercase" lts={0.4}>
-                    {due.length ? 'Review due' : s.lessons[lesson.id] ? 'Continue' : 'Up next'}
+      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md" mt="lg">
+        <SkillGroup title="Speak" fr="Parler">
+          <QuickCard
+            anchor="talk"
+            hotkey="2"
+            icon={<MessagesSquare size={20} aria-hidden />}
+            color="orange"
+            title="Conversations"
+            fr="Jeux de rôle"
+            trains="Role-play a real situation with an AI partner, then get corrections."
+            preview={
+              ongoing ? (
+                <>
+                  <Text size="xs" fw={600} c="dimmed" tt="uppercase" lts={0.4} mb={2}>
+                    Continue
                   </Text>
+                  <Text className="fr qp-big" lang="fr" lineClamp={1}>
+                    {frTypo(ongoing.title)}
+                  </Text>
+                </>
+              ) : scenario ? (
+                <>
+                  <Text className="fr qp-big" lang="fr" lineClamp={1}>
+                    {frTypo(scenario.titleFr)}
+                  </Text>
+                  <Text size="sm" c="dimmed" truncate>
+                    {scenario.title} · with {scenario.aiName}
+                  </Text>
+                </>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  You’ve done every situation. Chat freely, or redo one from the list.
+                </Text>
+              )
+            }
+            chips={ongoing ? [ongoing.level, 'In progress'] : scenario ? [scenario.level, plural(scenario.goals.length, 'goal')] : []}
+            stat={finishedTalks ? `${finishedTalks} finished` : undefined}
+            play={{ label: !ai ? 'Connect an AI' : ongoing ? 'Continue' : 'Start', onClick: go.talk, disabled: !!ai && !ongoing && !scenario }}
+            alt={{ label: 'Free chat', onClick: d.openFreeTalk }}
+            options={{ to: '/practice/talk', label: 'All conversations' }}
+          />
+          <QuickCard
+            anchor="speaking"
+            hotkey="3"
+            icon={<Mic size={20} aria-hidden />}
+            color="green"
+            title="Pronunciation"
+            fr="Prononciation"
+            trains="Say it out loud and see what came across — u/ou, nasals, the r."
+            preview={
+              saySample ? (
+                <>
+                  <Text className="fr qp-big" lang="fr" lineClamp={1}>
+                    {frTypo(saySample.fr)}
+                  </Text>
+                  <Text size="sm" c="dimmed" truncate>
+                    {saySample.en}
+                  </Text>
+                </>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  No sentences for this level yet.
+                </Text>
+              )
+            }
+            chips={[srcLabel, plural(SPEAKING_N, 'sentence')]}
+            stat={!micSupported ? 'No microphone' : spoken.length ? `avg ${avg(spoken.map((x) => x.best))}%` : undefined}
+            play={{ label: 'Read aloud', onClick: () => go.say('read'), disabled: !micSupported || !saySample }}
+            alt={{ label: 'Listen & repeat', onClick: () => go.say('repeat'), disabled: !micSupported || !saySample || !speechSupported }}
+            options={{ to: '/speaking' }}
+          />
+        </SkillGroup>
+        <SkillGroup title="Write" fr="Écrire">
+          <QuickCard
+            anchor="writing"
+            hotkey="4"
+            icon={<NotebookPen size={20} aria-hidden />}
+            color="indigo"
+            title="Writing"
+            fr="Écriture"
+            trains="Write a short text and get every mistake corrected and explained."
+            preview={
+              prompt ? (
+                <>
+                  <Text className="fr qp-big" lang="fr" lineClamp={1}>
+                    {frTypo(prompt.titleFr)}
+                  </Text>
+                  <Text size="sm" c="dimmed" truncate>
+                    {prompt.focus}
+                  </Text>
+                </>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  You’ve written every prompt. Write freely, or set your own topic.
+                </Text>
+              )
+            }
+            chips={prompt ? [prompt.level, `${prompt.words[0]}–${prompt.words[1]} words`] : []}
+            stat={s.writings.length ? `${s.writings.length} corrected` : undefined}
+            play={{ label: prompt ? 'Write' : 'Free writing', onClick: go.write }}
+            alt={prompt ? { label: 'Free writing', onClick: () => navigate('/writing/new?prompt=free') } : undefined}
+            options={{ to: '/practice/writing', label: 'All writing prompts' }}
+          />
+          <QuickCard
+            anchor="conjugation"
+            hotkey="5"
+            icon={<PenLine size={20} aria-hidden />}
+            title="Conjugation"
+            fr="Conjugaison"
+            trains="Type the right verb form until endings and irregular stems are automatic."
+            preview={
+              conjSample ? (
+                <>
+                  <Text className="fr qp-big" lang="fr">
+                    {conjSample.pronoun && <span>{conjSample.pronoun} </span>}
+                    {blank}
+                  </Text>
+                  <Text size="sm" c="dimmed" truncate>
+                    <span className="fr" lang="fr">
+                      {conjSample.inf}
+                    </span>{' '}
+                    ({conjSample.en}) · {TENSE_BY_ID[conjSample.tense].label}
+                  </Text>
+                </>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  Pick at least one tense in Options.
+                </Text>
+              )
+            }
+            chips={[
+              conf.tenses.length > 0 && TENSE_BY_ID[conf.tenses[0] as Tense]?.label + (conf.tenses.length > 1 ? ` +${conf.tenses.length - 1}` : ''),
+              plural(verbs.length, 'verb'),
+            ]}
+            stat={conjAcc === null ? undefined : `${pct(conjAcc)} right`}
+            play={{ label: `Play ${conf.length} questions`, onClick: go.conj, disabled: !canConj }}
+            options={{ to: '/conjugation' }}
+          />
+        </SkillGroup>
+        <SkillGroup title="Listen and review" fr="Écouter, réviser">
+          <QuickCard
+            anchor="dictation"
+            hotkey="6"
+            icon={<Headphones size={20} aria-hidden />}
+            color="cyan"
+            title="Dictation"
+            fr="Dictée"
+            trains="Hear a sentence, type it — liaisons, silent endings, word boundaries."
+            preview={
+              dictSample ? (
+                <Group gap="sm" wrap="nowrap" align="center">
+                  {speechSupported ? <SpeakButton text={dictSample.fr} size="sm" /> : <Volume2 size={20} aria-hidden />}
+                  <div className="qp-blanks" aria-label="A hidden sentence">
+                    {dictSample.fr.split(/\s+/).map((w, i) => (
+                      <span key={i} className="qp-blank" style={{ width: `${Math.max(1.2, w.replace(/[.,!?;:»«]/g, '').length * 0.5)}em` }} />
+                    ))}
+                  </div>
                 </Group>
-                <Text fw={600} lineClamp={2} lh={1.3}>
-                  {lesson.title}
+              ) : (
+                <Text size="sm" c="dimmed">
+                  No sentences for this level yet.
                 </Text>
-              </>
-            ) : (
-              <Text size="sm" c="dimmed">
-                Every lesson is mastered and nothing is due. Bravo !
-              </Text>
-            )
-          }
-          chips={due.length ? [plural(due.length, 'review') + ' due'] : up ? [`${up.minutes} min`, plural(up.goals.length, 'goal')] : []}
-          stat={`${mastered}/${LESSONS.length} mastered`}
-          play={{ label: due.length ? 'Play review' : up ? 'Open lesson' : 'All done', onClick: go.grammar, disabled: !lesson }}
-          options={{ to: '/grammar', label: 'All lessons' }}
-        />
-
-        <QuickCard
-          hotkey="4"
-          icon={<Headphones size={20} aria-hidden />}
-          color="cyan"
-          title="Dictation"
-          fr="Dictée"
-          trains="Hear a sentence, type it — liaisons, silent endings, word boundaries."
-          preview={
-            dictSample ? (
-              <Group gap="sm" wrap="nowrap" align="center">
-                {speechSupported ? <SpeakButton text={dictSample.fr} size="sm" /> : <Volume2 size={20} aria-hidden />}
-                <div className="qp-blanks" aria-label="A hidden sentence">
-                  {dictSample.fr.split(/\s+/).map((w, i) => (
-                    <span key={i} className="qp-blank" style={{ width: `${Math.max(1.2, w.replace(/[.,!?;:»«]/g, '').length * 0.5)}em` }} />
-                  ))}
-                </div>
-              </Group>
-            ) : (
-              <Text size="sm" c="dimmed">
-                No sentences for this level yet.
-              </Text>
-            )
-          }
-          chips={[srcLabel, plural(DICTATION_N, 'sentence')]}
-          stat={!speechSupported ? 'No voice here' : listened.length ? `avg ${avg(listened.map((x) => x.last))}%` : undefined}
-          play={{ label: `Play ${DICTATION_N} sentences`, onClick: go.dict, disabled: !speechSupported || !dictSample }}
-          options={{ to: '/dictation' }}
-        />
-
-        <QuickCard
-          hotkey="5"
-          icon={<Mic size={20} aria-hidden />}
-          color="green"
-          title="Speaking"
-          fr="Expression orale"
-          trains="Say it out loud and see what came across — u/ou, nasals, the r."
-          preview={
-            saySample ? (
-              <>
-                <Text className="fr qp-big" lang="fr" lineClamp={1}>
-                  {frTypo(saySample.fr)}
-                </Text>
-                <Text size="sm" c="dimmed" truncate>
-                  {saySample.en}
-                </Text>
-              </>
-            ) : (
-              <Text size="sm" c="dimmed">
-                No sentences for this level yet.
-              </Text>
-            )
-          }
-          chips={[srcLabel, plural(SPEAKING_N, 'sentence')]}
-          stat={!micSupported ? 'No microphone' : spoken.length ? `avg ${avg(spoken.map((x) => x.best))}%` : undefined}
-          play={{ label: 'Read aloud', onClick: () => go.say('read'), disabled: !micSupported || !saySample }}
-          alt={{ label: 'Listen & repeat', onClick: () => go.say('repeat'), disabled: !micSupported || !saySample || !speechSupported }}
-          options={{ to: '/speaking' }}
-        />
-
-        <QuickCard
-          hotkey="6"
-          icon={<Table2 size={20} aria-hidden />}
-          color="gray"
-          title="Verb tables"
-          fr="Tableaux de conjugaison"
-          trains="Look up any verb in every tense when a form won’t come."
-          preview={
-            <div className="qp-table fr" lang="fr">
-              {table.cells.map((c) => (
-                <Text key={c.pr} size="sm" truncate>
-                  <Text span c="dimmed" inherit>
-                    {c.pr}{' '}
+              )
+            }
+            chips={[srcLabel, plural(DICTATION_N, 'sentence')]}
+            stat={!speechSupported ? 'No voice here' : listened.length ? `avg ${avg(listened.map((x) => x.last))}%` : undefined}
+            play={{ label: `Play ${DICTATION_N} sentences`, onClick: go.dict, disabled: !speechSupported || !dictSample }}
+            options={{ to: '/dictation' }}
+          />
+          <QuickCard
+            anchor="grammar"
+            hotkey="7"
+            icon={<BookOpen size={20} aria-hidden />}
+            color="violet"
+            title="Grammar reviews"
+            fr="Révisions"
+            trains="Spaced reviews of rules you’ve passed, so they don’t fade."
+            preview={
+              due.length ? (
+                <>
+                  <Group gap={8} mb={2}>
+                    <LevelBadge level={due[0].level} />
+                    <Text size="xs" fw={600} c="dimmed" tt="uppercase" lts={0.4}>
+                      Review due
+                    </Text>
+                  </Group>
+                  <Text fw={600} lineClamp={2} lh={1.3}>
+                    {due[0].title}
                   </Text>
-                  {c.form}
+                </>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  Nothing due.{' '}
+                  {up ? (
+                    <>
+                      Next in the course:{' '}
+                      <Anchor component={Link} to={`/grammar/${up.id}`} inherit>
+                        {up.title}
+                      </Anchor>
+                    </>
+                  ) : (
+                    'Every lesson is mastered. Bravo !'
+                  )}
                 </Text>
-              ))}
-            </div>
-          }
-          chips={[`${table.inf} · présent`]}
-          stat={plural(VERBS.length, 'verb')}
-          play={{ label: 'Open tables', onClick: go.verbs, icon: <ArrowRight size={16} aria-hidden />, iconRight: true }}
-        />
+              )
+            }
+            chips={due.length ? [plural(due.length, 'review') + ' due'] : []}
+            stat={`${mastered}/${LESSONS.length} mastered`}
+            play={{ label: due.length ? 'Play review' : 'Nothing due', onClick: go.grammar, disabled: !due.length }}
+            options={{ to: '/grammar', label: 'Grammar course' }}
+          />
+        </SkillGroup>
       </SimpleGrid>
+
+      {history.length > 0 && (
+        <Shelf id="history" title="Your history" count={history.length} hint="Your conversations and corrected writing, newest first." to="/practice/history">
+          {history.slice(0, 12).map((e) => e.node)}
+        </Shelf>
+      )}
+
+      {d.dialogs}
     </Container>
+  )
+}
+
+/** A column of cards for one skill, with its name on top. */
+function SkillGroup({ title, fr, children }: { title: string; fr: string; children: ReactNode }) {
+  return (
+    <Stack gap="sm" component="section" aria-label={title}>
+      <Group gap={8} align="baseline">
+        <Title order={2} fz="md" fw={650}>
+          {title}
+        </Title>
+        <Text size="sm" c="dimmed" className="fr" lang="fr">
+          {fr}
+        </Text>
+      </Group>
+      {children}
+    </Stack>
   )
 }
 
@@ -337,6 +481,8 @@ interface Action {
 }
 
 function QuickCard({
+  anchor,
+  wide,
   hotkey,
   icon,
   color,
@@ -350,6 +496,10 @@ function QuickCard({
   alt,
   options,
 }: {
+  /** Id for links like /practice#talk. */
+  anchor?: string
+  /** Full width: laid out in a row on wider screens (Weak spots). */
+  wide?: boolean
   hotkey: string
   icon: ReactNode
   color?: MantineColor
@@ -371,84 +521,111 @@ function QuickCard({
       <Kbd>{hotkey}</Kbd>
     </Box>
   )
-  return (
-    <Card component="section" aria-labelledby={id} padding="md" className="qp-card">
-      <Stack gap={8} h="100%">
-        <Group wrap="nowrap" gap="sm">
-          <ThemeIcon variant="light" color={color} size={38} radius="md">
-            {icon}
-          </ThemeIcon>
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Title order={2} id={id} fz="lg" fw={650} lh={1.2}>
-              {title}
-            </Title>
-            <Text size="xs" c="dimmed" className="fr" lang="fr" truncate>
-              {fr}
-            </Text>
-          </Box>
-          {options && (
-            <ActionIcon
-              component={Link}
-              to={options.to}
-              variant="subtle"
-              color="gray"
-              size="lg"
-              aria-label={options.label ?? `${title} options`}
-              title={options.label ?? 'Options'}
-            >
-              <SlidersHorizontal size={18} aria-hidden />
-            </ActionIcon>
-          )}
-        </Group>
-
-        <Text size="sm" lh={1.4} lineClamp={2}>
-          {trains}
-        </Text>
-
-        <div className="qp-preview">{preview}</div>
-
-        <Group gap={6} justify="space-between" wrap="nowrap">
-          <Group gap={4} wrap="nowrap" style={{ minWidth: 0, overflow: 'hidden' }}>
-            {shown.map((c) => (
-              <Badge key={c} variant="default" tt="none" fw={500} size="sm" style={{ flexShrink: 0 }}>
-                {c}
-              </Badge>
-            ))}
-          </Group>
-          {stat && (
-            <Text size="xs" c="dimmed" className="tnum" style={{ flexShrink: 0 }}>
-              {stat}
-            </Text>
-          )}
-        </Group>
-
-        <Group gap="xs" mt="auto">
-          <Button
-            color={color}
-            px={alt ? 12 : undefined}
-            variant={color === 'gray' ? 'default' : 'filled'}
-            onClick={play.onClick}
-            disabled={play.disabled}
-            leftSection={play.iconRight ? undefined : (play.icon ?? <Play size={16} aria-hidden />)}
-            rightSection={
-              play.iconRight ? (
-                <Group gap={6} wrap="nowrap">
-                  {play.icon}
-                  {key}
-                </Group>
-              ) : (
-                key
-              )
-            }
+  const parts = {
+    head: (
+      <Group wrap="nowrap" gap="sm">
+        <ThemeIcon variant="light" color={color} size={38} radius="md">
+          {icon}
+        </ThemeIcon>
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Title order={wide ? 2 : 3} id={id} fz="lg" fw={650} lh={1.2}>
+            {title}
+          </Title>
+          <Text size="xs" c="dimmed" className="fr" lang="fr" truncate>
+            {fr}
+          </Text>
+        </Box>
+        {options && (
+          <ActionIcon
+            component={Link}
+            to={options.to}
+            variant="subtle"
+            color="gray"
+            size="lg"
+            aria-label={options.label ?? `${title} options`}
+            title={options.label ?? 'Options'}
           >
-            {play.label}
-          </Button>
-          {alt && (
-            <Button variant="default" px={12} onClick={alt.onClick} disabled={alt.disabled}>
-              {alt.label}
-            </Button>
-          )}
+            <SlidersHorizontal size={18} aria-hidden />
+          </ActionIcon>
+        )}
+      </Group>
+    ),
+    trains: (
+      <Text size="sm" lh={1.4} lineClamp={2}>
+        {trains}
+      </Text>
+    ),
+    preview: <div className="qp-preview">{preview}</div>,
+    chips: (
+      <Group gap={6} justify="space-between" wrap="nowrap">
+        <Group gap={4} wrap="nowrap" style={{ minWidth: 0, overflow: 'hidden' }}>
+          {shown.map((c) => (
+            <Badge key={c} variant="default" tt="none" fw={500} size="sm" style={{ flexShrink: 0 }}>
+              {c}
+            </Badge>
+          ))}
         </Group>
+        {stat && (
+          <Text size="xs" c="dimmed" className="tnum" style={{ flexShrink: 0 }}>
+            {stat}
+          </Text>
+        )}
+      </Group>
+    ),
+    buttons: (
+      <Group gap="xs" mt="auto">
+        <Button
+          color={color}
+          px={alt ? 12 : undefined}
+          variant={color === 'gray' ? 'default' : 'filled'}
+          onClick={play.onClick}
+          disabled={play.disabled}
+          leftSection={play.iconRight ? undefined : (play.icon ?? <Play size={16} aria-hidden />)}
+          rightSection={
+            play.iconRight ? (
+              <Group gap={6} wrap="nowrap">
+                {play.icon}
+                {key}
+              </Group>
+            ) : (
+              key
+            )
+          }
+        >
+          {play.label}
+        </Button>
+        {alt && (
+          <Button variant="default" px={12} onClick={alt.onClick} disabled={alt.disabled}>
+            {alt.label}
+          </Button>
+        )}
+      </Group>
+    ),
+  }
+  if (wide)
+    return (
+      <Card component="section" aria-labelledby={id} id={anchor} padding="md" className="qp-card" style={{ scrollMarginTop: 16 }}>
+        <Group gap="lg" align="stretch" wrap="wrap">
+          <Stack gap={8} style={{ flex: '1 1 280px', minWidth: 0 }}>
+            {parts.head}
+            {parts.trains}
+            {parts.chips}
+          </Stack>
+          <Stack gap={8} justify="space-between" style={{ flex: '1 1 280px', minWidth: 0 }}>
+            {parts.preview}
+            {parts.buttons}
+          </Stack>
+        </Group>
+      </Card>
+    )
+  return (
+    <Card component="section" aria-labelledby={id} id={anchor} padding="md" className="qp-card" style={{ scrollMarginTop: 16 }}>
+      <Stack gap={8} h="100%">
+        {parts.head}
+        {parts.trains}
+        {parts.preview}
+        {parts.chips}
+        {parts.buttons}
       </Stack>
     </Card>
   )

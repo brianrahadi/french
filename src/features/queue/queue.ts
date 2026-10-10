@@ -92,7 +92,7 @@ export function levelSummary(level: Level, s: LevelSource): LevelSummary {
   const startedTalk = new Set(s.conversations.filter((c) => c.turns.some((t) => t.role === 'me')).map((c) => c.scenarioId))
   for (const x of SCENARIOS.filter((y) => y.level === level)) {
     const best = talked.get(x.id)
-    rows.push({ id: `talk:${x.id}`, kind: 'roleplay', title: x.title, sub: 'Finish for a score', status: best !== undefined ? 'done' : startedTalk.has(x.id) ? 'started' : 'todo', have: best !== undefined ? pct(best) : undefined, counts: false, to: '/library#talk' })
+    rows.push({ id: `talk:${x.id}`, kind: 'roleplay', title: x.title, sub: 'Finish for a score', status: best !== undefined ? 'done' : startedTalk.has(x.id) ? 'started' : 'todo', have: best !== undefined ? pct(best) : undefined, counts: false, to: '/practice#talk' })
   }
   const written = new Map<string, number>()
   for (const w of s.writings) written.set(w.promptId, Math.max(written.get(w.promptId) ?? 0, w.feedback?.score ?? 0))

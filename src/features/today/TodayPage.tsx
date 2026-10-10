@@ -178,7 +178,7 @@ export default function TodayPage() {
               Next lesson
             </Button>
           ) : (
-            <Button component={Link} to="/library#writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
+            <Button component={Link} to="/practice#writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
               Write
             </Button>
           )}
@@ -240,7 +240,7 @@ export default function TodayPage() {
             />
           ) : (
             <ActionCard
-              to="/library#talk"
+              to="/practice#talk"
               icon={<MessagesSquare size={22} aria-hidden />}
               tone="amber"
               title="Conversation"
@@ -265,12 +265,12 @@ export default function TodayPage() {
           <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
           <SkillTile to="/library#texts" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
           <SkillTile
-            to="/library#writing"
+            to="/practice#writing"
             icon={<NotebookPen size={20} aria-hidden />}
             label="Write"
             meta={state.writings.length ? `${state.writings.length} corrected` : 'With corrections'}
           />
-          <SkillTile to="/library#talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
+          <SkillTile to="/practice#talk" icon={<MessagesSquare size={20} aria-hidden />} label="Talk" meta="Role-play" />
         </SimpleGrid>
       </Box>
 

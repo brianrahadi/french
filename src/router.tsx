@@ -36,8 +36,8 @@ export const router = createBrowserRouter(
         { path: 'verbs/:inf', lazy: page(() => import('./features/verbs/VerbDetailPage')) },
         { path: 'library', lazy: page(() => import('./features/library/LibraryPage')) },
         { path: 'library/:section', lazy: page(() => import('./features/library/LibrarySectionPage')) },
-        // Old content homes now live as rows in the Library.
-        { path: 'writing', element: <Navigate to="/library#writing" replace /> },
+        // Old content homes now live as rows in the Library, or as cards in Practice.
+        { path: 'writing', element: <Navigate to="/practice#writing" replace /> },
         { path: 'writing/new', lazy: page(() => import('./features/writing/WritingEditor')) },
         { path: 'writing/:id', lazy: page(() => import('./features/writing/WritingResult')) },
         { path: 'practice', lazy: page(() => import('./features/practice/PracticeHub')) },
@@ -54,7 +54,7 @@ export const router = createBrowserRouter(
         { path: 'books', element: <Navigate to="/library#books" replace /> },
         { path: 'books/:id', lazy: page(() => import('./features/books/BookPage')) },
         { path: 'books/:id/:n', lazy: page(() => import('./features/books/ChapterPage')) },
-        { path: 'talk', element: <Navigate to="/library#talk" replace /> },
+        { path: 'talk', element: <Navigate to="/practice#talk" replace /> },
         { path: 'profile', lazy: page(() => import('./features/profile/ProfilePage')) },
         { path: 'profile/:id', lazy: page(() => import('./features/people/PersonPage')) },
         { path: 'people', lazy: page(() => import('./features/people/PeoplePage')) },

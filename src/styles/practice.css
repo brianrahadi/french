@@ -479,11 +479,6 @@
   text-decoration: none;
   font-weight: 600;
 }
-.qp-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 14px;
-}
 
 /* ── Reader with the vocabulary panel beside the text (below it on narrow screens) */
 .reading-wrap {

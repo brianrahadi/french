@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import { useMediaQuery } from '@mantine/hooks'
 import { Button, Container } from '@mantine/core'
-import { ClipboardPaste, Feather, MessagesSquare, PencilLine, WandSparkles } from 'lucide-react'
+import { ClipboardPaste, WandSparkles } from 'lucide-react'
 import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
 import { STORIES } from '../../data/stories'
 import { BUILTIN_TEXTS } from '../../data/texts'
 import { BOOKS, bookProgress } from '../../data/books'
-import { SCENARIOS } from '../../data/scenarios'
-import { WRITING_PROMPTS } from '../../data/writing'
 import { LEVELS, type Level } from '../../data/types'
 import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
@@ -25,16 +23,14 @@ import { AudioTile } from '../audio/AudioTile'
 import { StoryTile } from '../listening/StoryTile'
 import { GradedTile, UserTextTile } from '../reading/texts'
 import { BookTile } from '../books/shared'
-import { ScenarioTile } from '../talk/TalkTiles'
-import { PromptTile, suggestPrompt } from '../writing/tiles'
 import { useLibraryDialogs } from './dialogs'
 import { libraryEntries, lessonNo } from './entries'
-import { isSection } from './LibrarySectionPage'
+import { isSection, sectionArea } from './LibrarySectionPage'
 
 /**
- * Everything to study, LingQ-style: one row per kind of content (courses,
- * stories, texts, conversations, writing), what you're in the middle of at the
- * top and what you've finished at the bottom.
+ * Everything to take in, LingQ-style: one row per kind of content (courses,
+ * stories, texts, books), what you're in the middle of at the top and what
+ * you've finished at the bottom. Conversations and writing are in Practice.
  */
 export default function LibraryPage() {
   useDocumentTitle('Library')
@@ -53,7 +49,9 @@ export default function LibraryPage() {
   useEffect(() => {
     const id = hash.slice(1)
     if (!id) return
-    if (phone && isSection(id) && !params.get('generate')) navigate(`/library/${id}`, { replace: true })
+    // Conversations and writing moved to Practice; old links follow them there.
+    if (isSection(id) && sectionArea(id) === 'practice') navigate(`/practice#${id}`, { replace: true })
+    else if (phone && isSection(id) && !params.get('generate')) navigate(`/library/${id}`, { replace: true })
     else if (phone && id === 'grammar') navigate('/grammar', { replace: true })
     else document.getElementById(id)?.scrollIntoView({ block: 'start' })
   }, [hash, phone, navigate, params])
@@ -65,8 +63,6 @@ export default function LibraryPage() {
 
   const stories = s.stories ?? {}
   const audio = s.audio ?? {}
-  const written = new Set(s.writings.map((w) => w.promptId))
-  const talked = new Set(s.conversations.filter((c) => c.feedback).map((c) => c.scenarioId))
   const { continuing, done } = libraryEntries(s, d.askDelete)
 
   // ── Rows of things to start
@@ -85,9 +81,6 @@ export default function LibraryPage() {
     const started = (x: typeof a) => (s.books?.[x.id] || bookState(x.id).done ? 0 : 1)
     return started(a) - started(b) || byLevel(a, b)
   })
-  const scenarios = SCENARIOS.filter((x) => !talked.has(x.id) && shown(x.level)).sort(byLevel)
-  const suggested = suggestPrompt(s.lessons, written, level)
-  const prompts = WRITING_PROMPTS.filter((p) => !written.has(p.id) && p !== suggested && shown(p.level)).sort(byLevel)
 
   return (
     <Container size="var(--page-w)" py="xl">
@@ -160,22 +153,6 @@ export default function LibraryPage() {
           <ActionTile icon={<ClipboardPaste size={18} aria-hidden />} title="Paste a text" sub="An article, a song, a message…" onClick={d.openPaste} />
         </Shelf>
       )}
-
-      <Shelf id="talk" title="Conversations" count={scenarios.length} to="/library/talk">
-        <ActionTile icon={<MessagesSquare size={18} aria-hidden />} title="Free conversation" sub="Chat about anything with Camille" onClick={d.openFreeTalk} />
-        {scenarios.map((x) => (
-          <ScenarioTile key={x.id} s={x} />
-        ))}
-      </Shelf>
-
-      <Shelf id="writing" title="Writing" count={prompts.length + (suggested ? 1 : 0)} to="/library/writing">
-        {suggested && <PromptTile p={suggested} suggested />}
-        <ActionTile icon={<Feather size={18} aria-hidden />} title="Free writing" sub="A diary entry, a message, anything" to="/writing/new?prompt=free" />
-        {prompts.map((p) => (
-          <PromptTile key={p.id} p={p} />
-        ))}
-        <ActionTile icon={<PencilLine size={18} aria-hidden />} title="Your own topic" sub="Set the task yourself" to="/writing/new?prompt=custom" />
-      </Shelf>
 
       {done.length > 0 && (
         <Shelf id="completed" title="Completed" count={done.length} to="/library/completed">

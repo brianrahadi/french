@@ -94,7 +94,7 @@ export default function RoadmapPage() {
             <Anchor component={Link} to="/writing/new?prompt=free&timed=60" size="sm">
               Timed writing (60 min)
             </Anchor>
-            <Anchor component={Link} to="/library#talk" size="sm">
+            <Anchor component={Link} to="/practice#talk" size="sm">
               Conversations
             </Anchor>
             <Anchor component={Link} to="/weak" size="sm">
@@ -116,8 +116,8 @@ function LevelItem({ level }: { level: Level }) {
     [count(at(STORIES), 'story', 'stories'), '/library#stories'],
     [count(at(BUILTIN_TEXTS), 'graded text'), '/library#texts'],
     [count(at(AUDIO_LESSONS), 'audio lesson'), '/library#audio'],
-    [count(at(SCENARIOS), 'role-play'), '/library#talk'],
-    [count(at(WRITING_PROMPTS), 'writing prompt'), '/library#writing'],
+    [count(at(SCENARIOS), 'role-play'), '/practice#talk'],
+    [count(at(WRITING_PROMPTS), 'writing prompt'), '/practice#writing'],
     ...(level === 'A1' ? ([[count(SOUND_SETS.length, 'pronunciation set'), '/speaking']] as [string, string][]) : []),
   ]
 

@@ -82,10 +82,10 @@ export default function TalkChatRoute() {
   if (!c)
     return (
       <Container size="var(--page-w-narrow)" py="xl">
-        <PageHeader back={{ to: '/library#talk', label: 'Library' }} title="Conversation" />
+        <PageHeader back={{ to: '/practice#talk', label: 'Practice' }} title="Conversation" />
         <Empty icon={<Flag size={30} />} title="This conversation isn’t here any more">
           It may have been deleted.{' '}
-          <Anchor component={Link} to="/library#talk" inherit>
+          <Anchor component={Link} to="/practice#talk" inherit>
             Start a new one
           </Anchor>
         </Empty>
@@ -252,7 +252,7 @@ function TalkChat({ c }: { c: Conversation }) {
   return (
     <div className="chat">
       <Group component="header" gap={8} wrap="nowrap" px="md" py={10} bg="var(--surface)" style={{ borderBottom: '1px solid var(--border)' }}>
-        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/library#talk')} aria-label="Back to conversations">
+        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate('/practice#talk')} aria-label="Back to conversations">
           <ArrowLeft size={20} aria-hidden />
         </ActionIcon>
         <Stack gap={0} flex={1} miw={0} lh={1.25}>
@@ -869,7 +869,7 @@ function FeedbackPanel({
         <Button onClick={onAgain} leftSection={<RotateCcw size={16} aria-hidden />}>
           Practice again
         </Button>
-        <Button component={Link} to="/library#talk" variant="default">
+        <Button component={Link} to="/practice#talk" variant="default">
           Other situations
         </Button>
       </Group>

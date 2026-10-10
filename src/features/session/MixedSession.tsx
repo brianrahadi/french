@@ -367,7 +367,7 @@ function NothingToDo({ mode }: { mode: 'daily' | 'weak' }) {
               Learn: {up.title}
             </Button>
           )}
-          <Button component={Link} to="/library#writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
+          <Button component={Link} to="/practice#writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
             Write
           </Button>
         </Group>
@@ -437,7 +437,7 @@ function Summary({ run, plan, startedAt }: { run: Run; plan: MixedPlan; startedA
             Next lesson
           </Button>
         )}
-        <Button component={Link} to="/library#writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
+        <Button component={Link} to="/practice#writing" size="lg" variant="default" leftSection={<NotebookPen size={17} aria-hidden />}>
           Write
         </Button>
         <Button component={Link} to={home} size="lg" rightSection={<Kbd>↵</Kbd>}>
