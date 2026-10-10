@@ -69,6 +69,7 @@ export function toDoc(s: State): SyncDoc {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
+    books: s.books ?? {},
     talkLog: s.talkLog ?? {},
     sync: s.sync,
   }
@@ -243,6 +244,7 @@ export function mergeDocs(local: SyncDoc, remote: SyncDoc, now = new Date()): Sy
       .sort(newestFirst((t) => t.createdAt))
       .slice(0, 150),
     read: byKey(local.read, remote.read, (x, y) => later(x, y)),
+    books: byKey(local.books ?? {}, remote.books ?? {}, (x, y) => newest(x, y, x.at, y.at)),
     talkLog: Object.fromEntries(
       Object.entries(byKey(local.talkLog ?? {}, remote.talkLog ?? {}, (x, y) => newest(x, y, x.at, y.at))).filter(([id]) => !gone(`talk:${id}`)),
     ),

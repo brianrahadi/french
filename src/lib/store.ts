@@ -136,6 +136,8 @@ export interface State {
   texts: ReaderText[]
   /** Built-in or saved texts the learner finished: id → dayKey. */
   read: Record<string, string>
+  /** The chapter you last opened in each book (finished chapters are in `read`). */
+  books: Record<string, BookPlace>
   /** Every finished conversation, kept as a short record after old transcripts are pruned. */
   talkLog: Record<string, TalkRecord>
   /** Bookkeeping that lets progress from several devices be merged. */
@@ -169,6 +171,13 @@ export interface SyncMeta {
 
 /** Settings that belong to one device (voice, speed, theme) and are never synced. */
 export const DEVICE_SETTINGS = ['voiceURI', 'voiceURIEn', 'rate', 'autoplay', 'theme', 'palette', 'size', 'navCollapsed'] as const
+
+/** Where you are in a book. */
+export interface BookPlace {
+  /** 1-based chapter. */
+  chapter: number
+  at: string
+}
 
 export interface AudioProgress {
   /** Step to resume from. */
@@ -242,6 +251,8 @@ interface Actions {
   updateText: (id: string, patch: Partial<ReaderText>) => void
   deleteText: (id: string) => void
   markRead: (id: string) => void
+  /** Remember the chapter of a book you're reading. */
+  openBookChapter: (bookId: string, chapter: number) => void
   addWriting: (e: WritingEntry) => void
   deleteWriting: (id: string) => void
   logActivityBulk: (items: number, correct: number, skill?: StudySkill) => void
@@ -337,6 +348,7 @@ export const initialState: State = {
   conversations: [],
   texts: [],
   read: {},
+  books: {},
   talkLog: {},
   sync: { epoch: '', epochAt: '', changed: {}, deleted: {}, devices: {} },
 }
@@ -468,6 +480,8 @@ export const useStore = create<State & Actions>()(
       deleteText: (id) => set((s) => ({ texts: s.texts.filter((t) => t.id !== id), ...tombstone(s, [`text:${id}`]) })),
 
       markRead: (id) => set((s) => ({ read: { ...s.read, [id]: dayKey() } })),
+
+      openBookChapter: (bookId, chapter) => set((s) => ({ books: { ...(s.books ?? {}), [bookId]: { chapter, at: new Date().toISOString() } } })),
 
       addWriting: (e) => set((s) => ({ writings: [e, ...s.writings.filter((w) => w.id !== e.id)].slice(0, 200) })),
 
@@ -784,6 +798,7 @@ export function exportData(): string {
     conversations: s.conversations,
     texts: s.texts,
     read: s.read,
+    books: s.books,
     talkLog: s.talkLog,
     sync: s.sync,
   }

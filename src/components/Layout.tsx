@@ -36,7 +36,7 @@ type NavItem = { to: string; label: string; short: string; icon: React.Component
 // Four places: what to do today, content to study, your words, and drills. The roadmap sits with Profile.
 const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/', label: 'Today', short: 'Today', icon: House, end: true },
-  { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/listening/story', '/audio', '/talk', '/writing'] },
+  { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/books', '/listening/story', '/audio', '/talk', '/writing'] },
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
   { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
 ]

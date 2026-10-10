@@ -136,6 +136,65 @@
   font-size: 0.72em;
   line-height: 1.55;
 }
+/* A numbered part inside a book chapter ("II", "I. Le départ"). */
+.reader-sub {
+  margin: 1.6em 0 0.8em;
+  font-family: var(--font-fr);
+  font-size: 0.9em;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  text-align: center;
+}
+
+/* ── A book's chapter list */
+.book-chapters {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+.book-ch {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 120ms;
+}
+.book-ch:hover {
+  background: var(--mantine-color-default-hover);
+}
+.book-ch--here {
+  background: var(--primary-soft);
+}
+.book-ch__n {
+  flex: 0 0 1.75rem;
+  display: inline-flex;
+  justify-content: flex-end;
+  color: var(--text-3);
+  font-size: 0.85rem;
+}
+.book-ch__n svg {
+  color: var(--success-strong);
+  align-self: center;
+}
+.book-ch__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+.book-ch__meta {
+  flex-shrink: 0;
+}
+.book-ch--here .book-ch__meta {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
 .rd-sentence {
   border-radius: 4px;
   transition: background 0.2s;
