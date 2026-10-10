@@ -12,8 +12,8 @@ export function useLibraryDialogs(level: Level, initialGenerate?: string | null)
   const dialogs = (
     <>
       <PasteDialog open={paste} onClose={() => setPaste(false)} />
-      <GenerateDialog key={generate ?? 'closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? level} />
-      <FreeTalkDialog key={freeTalk ? 'open' : 'closed'} open={freeTalk} onClose={() => setFreeTalk(false)} defaultLevel={level} />
+      <GenerateDialog key={generate ?? 'generate-closed'} open={!!generate} onClose={() => setGenerate(null)} defaultLevel={generate ?? level} />
+      <FreeTalkDialog key={freeTalk ? 'talk-open' : 'talk-closed'} open={freeTalk} onClose={() => setFreeTalk(false)} defaultLevel={level} />
       <DeleteTextDialog id={deleting} onClose={() => setDeleting(null)} />
     </>
   )
