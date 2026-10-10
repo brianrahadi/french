@@ -40,14 +40,11 @@ export function loadBook(id: string): Promise<BookDef> {
 
 /** The book's full text once loaded; `error` if it couldn't be (e.g. offline before it was cached). */
 export function useBookText(id: string): { book?: BookDef; error?: string } {
-  const [state, setState] = useState<{ id: string; book?: BookDef; error?: string }>(() => ({ id, book: loaded.get(id) }))
+  const [state, setState] = useState<{ id: string; book?: BookDef; error?: string }>({ id })
+  const cached = loaded.get(id)
   useEffect(() => {
-    if (loaded.has(id)) {
-      setState({ id, book: loaded.get(id) })
-      return
-    }
+    if (loaded.has(id)) return
     let live = true
-    setState({ id })
     loadBook(id).then(
       (book) => live && setState({ id, book }),
       (e: unknown) => live && setState({ id, error: e instanceof Error ? e.message : 'The book couldn’t be loaded.' }),
@@ -56,7 +53,8 @@ export function useBookText(id: string): { book?: BookDef; error?: string } {
       live = false
     }
   }, [id])
-  return state.id === id ? state : { book: loaded.get(id) }
+  if (cached) return { book: cached }
+  return state.id === id ? state : {}
 }
 
 // ── Progress: each finished chapter is a "read" entry, so it syncs and counts as reading.
