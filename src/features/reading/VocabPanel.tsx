@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ActionIcon, Box, Button, Card, Group, SegmentedControl, Switch, Text, UnstyledButton } from '@mantine/core'
-import { Check, EyeOff, Plus, RotateCcw } from 'lucide-react'
+import { Check, EyeOff, PanelRightClose, Plus, RotateCcw } from 'lucide-react'
 import { GenderTag } from '../../components/ui'
 import { toast } from '../../components/Toast'
 import { useStore } from '../../lib/store'
@@ -27,12 +27,15 @@ export function VocabPanel({
   onFocus,
   highlight,
   onHighlight,
+  onHide,
 }: {
   view: TextVocabView
   focus: string | null
   onFocus: (wordId: string | null) => void
   highlight: boolean
   onHighlight: (on: boolean) => void
+  /** Hide the sidebar (it comes back from the Vocabulary button). */
+  onHide: () => void
 }) {
   const introduceWord = useStore((s) => s.introduceWord)
   const markWordsKnown = useStore((s) => s.markWordsKnown)
@@ -98,9 +101,14 @@ export function VocabPanel({
         <Text fw={650} id="vocab-panel-title">
           Vocabulary
         </Text>
-        <Text size="sm" c="dimmed" className="tnum">
-          {total} word{total === 1 ? '' : 's'}
-        </Text>
+        <Group gap={4} wrap="nowrap">
+          <Text size="sm" c="dimmed" className="tnum">
+            {total} word{total === 1 ? '' : 's'}
+          </Text>
+          <ActionIcon variant="subtle" color="gray" size="sm" onClick={onHide} aria-label="Hide vocabulary" title="Hide vocabulary">
+            <PanelRightClose size={16} aria-hidden />
+          </ActionIcon>
+        </Group>
       </Group>
 
       <Group gap={10} align="baseline" mt={6}>

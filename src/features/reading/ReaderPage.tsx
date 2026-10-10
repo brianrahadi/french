@@ -19,7 +19,8 @@ import { translateParagraphs } from './ai'
 import { WordCheck } from './WordCheck'
 import { useWordsToCheck } from './useWordsToCheck'
 import { VocabPanel } from './VocabPanel'
-import { useHighlightPref, useTextVocab, type TextVocabMarks } from './vocabStatus'
+import { VocabToggle } from './VocabToggle'
+import { knownPercent, useHighlightPref, usePanelPref, useTextVocab, type TextVocabMarks } from './vocabStatus'
 
 interface Doc {
   id: string
@@ -135,7 +136,9 @@ function Reader({ doc }: { doc: Doc }) {
     () => ({ idFor: vocab.idFor, status: vocab.status, highlight, focus, onOpen: setFocus }),
     [vocab.idFor, vocab.status, highlight, focus],
   )
-  const withPanel = vocab.words.length > 0 || vocab.hidden > 0
+  const hasVocab = vocab.words.length > 0 || vocab.hidden > 0
+  const [panelOpen, setPanelOpen] = usePanelPref()
+  const withPanel = hasVocab && panelOpen
 
   const toggleTranslation = async () => {
     if (showEn) return setShowEn(false)
@@ -280,6 +283,7 @@ function Reader({ doc }: { doc: Doc }) {
               >
                 {showEn ? 'Hide translation' : 'Translation'}
               </Button>
+              {hasVocab && <VocabToggle open={panelOpen} onChange={setPanelOpen} known={knownPercent(vocab)} />}
               <SegmentedControl
                 ml="auto"
                 size="xs"
@@ -303,14 +307,14 @@ function Reader({ doc }: { doc: Doc }) {
 
             <Text size="sm" c="dimmed" mb={18}>
               Tap a word for its meaning.
-              {withPanel && highlight && ' Blue words are new, yellow ones you’re learning.'}
+              {hasVocab && highlight && ' Blue words are new, yellow ones you’re learning.'}
             </Text>
 
             <article className="reader-body fr" lang="fr" style={{ fontSize: SIZES[size].size }}>
               {doc.paragraphs.map((p, i) => (
                 <div key={i} className="reader-para">
                   <p>
-                    <LookupText text={p} source={`text:${doc.id}`} activeSentence={active ?? undefined} sentenceOffset={offsets[i]} vocab={withPanel ? marks : undefined} />
+                    <LookupText text={p} source={`text:${doc.id}`} activeSentence={active ?? undefined} sentenceOffset={offsets[i]} vocab={hasVocab ? marks : undefined} />
                   </p>
                   {showEn && doc.translation?.[i] && (
                     <p className="reader-en" lang="en">
@@ -358,7 +362,9 @@ function Reader({ doc }: { doc: Doc }) {
               </Card>
             )}
         </div>
-          {withPanel && <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} />}
+          {withPanel && (
+            <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} onHide={() => setPanelOpen(false)} />
+          )}
     </div>
       </div>
     </Container>

@@ -15,7 +15,8 @@ import { speak, speechSupported, stopSpeaking } from '../../lib/speech'
 import { frTypo } from '../../lib/words'
 import { LookupText } from '../reading/LookupText'
 import { VocabPanel } from '../reading/VocabPanel'
-import { useHighlightPref, useTextVocab, type TextVocabMarks } from '../reading/vocabStatus'
+import { VocabToggle } from '../reading/VocabToggle'
+import { knownPercent, useHighlightPref, usePanelPref, useTextVocab, type TextVocabMarks } from '../reading/vocabStatus'
 
 const SPEEDS = [
   { label: 'Slow', factor: 0.8 },
@@ -70,7 +71,9 @@ function Story({ story }: { story: StoryDef }) {
     () => ({ idFor: vocab.idFor, status: vocab.status, highlight, focus, onOpen: setFocus }),
     [vocab.idFor, vocab.status, highlight, focus],
   )
-  const withPanel = showText && (vocab.words.length > 0 || vocab.hidden > 0)
+  const hasVocab = vocab.words.length > 0 || vocab.hidden > 0
+  const [panelOpen, setPanelOpen] = usePanelPref()
+  const withPanel = showText && hasVocab && panelOpen
 
   // Sentences in order, with the index where each paragraph starts.
   const { sentences, offsets } = useMemo(() => {
@@ -336,9 +339,12 @@ function Story({ story }: { story: StoryDef }) {
                   <Title order={2} size="h5" c="dimmed" tt="uppercase">
                     Transcript
                   </Title>
-                  <Button variant="subtle" size="xs" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
-                    {showEn ? 'Hide translation' : 'Show translation'}
-                  </Button>
+                  <Group gap={6}>
+                    <Button variant="subtle" size="xs" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
+                      {showEn ? 'Hide translation' : 'Show translation'}
+                    </Button>
+                    {hasVocab && <VocabToggle open={panelOpen} onChange={setPanelOpen} known={knownPercent(vocab)} />}
+                  </Group>
                 </Group>
                 <Text size="sm" c="dimmed" mb="sm">
                   Tap any word to see what it means and add it to your flashcards.
@@ -352,7 +358,7 @@ function Story({ story }: { story: StoryDef }) {
                           source={`story:${story.id}`}
                           activeSentence={playing ? current : undefined}
                           sentenceOffset={offsets[i]}
-                          vocab={withPanel ? marks : undefined}
+                          vocab={hasVocab ? marks : undefined}
                         />
                       </p>
                       {showEn && (
@@ -366,7 +372,9 @@ function Story({ story }: { story: StoryDef }) {
               </Box>
             )}
         </div>
-          {withPanel && <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} />}
+          {withPanel && (
+            <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} onHide={() => setPanelOpen(false)} />
+          )}
     </div>
       </div>
     </Container>

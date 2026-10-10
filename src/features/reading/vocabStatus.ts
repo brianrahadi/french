@@ -54,13 +54,11 @@ export function useTextVocab(paragraphs: string[]): TextVocabView {
   }, [all, ignored, cards])
 }
 
-const HIGHLIGHT_KEY = 'petit-a-petit-reader-highlight'
-
-/** Whether new and learning words are coloured in the text (per device). */
-export function useHighlightPref(): [boolean, (v: boolean) => void] {
+/** An on/off preference remembered on this device (on unless switched off). */
+function useDeviceFlag(key: string): [boolean, (v: boolean) => void] {
   const [on, setOn] = useState(() => {
     try {
-      return localStorage.getItem(HIGHLIGHT_KEY) !== '0'
+      return localStorage.getItem(key) !== '0'
     } catch {
       return true
     }
@@ -68,12 +66,23 @@ export function useHighlightPref(): [boolean, (v: boolean) => void] {
   const set = (v: boolean) => {
     setOn(v)
     try {
-      localStorage.setItem(HIGHLIGHT_KEY, v ? '1' : '0')
+      localStorage.setItem(key, v ? '1' : '0')
     } catch {
       /* ignore */
     }
   }
   return [on, set]
+}
+
+/** Whether new and learning words are coloured in the text (per device). */
+export const useHighlightPref = () => useDeviceFlag('petit-a-petit-reader-highlight')
+
+/** Whether the vocabulary sidebar is shown beside texts and transcripts (per device). */
+export const usePanelPref = () => useDeviceFlag('petit-a-petit-reader-panel')
+
+/** Share of the text's words that are known, 0–100. */
+export function knownPercent(view: TextVocabView): number {
+  return view.words.length ? Math.round((view.words.filter((w) => w.status === 'known').length / view.words.length) * 100) : 0
 }
 
 /** What LookupText needs to colour and focus words. */
