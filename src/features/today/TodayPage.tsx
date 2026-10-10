@@ -262,8 +262,8 @@ export default function TodayPage() {
         </Group>
         <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="sm">
           <SkillTile to="/library#stories" icon={<Headphones size={20} aria-hidden />} label="Listen" meta="Mini stories" />
-          <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
           <SkillTile to="/library#texts" icon={<BookOpenText size={20} aria-hidden />} label="Read" meta="Graded texts" />
+          <SkillTile to="/speaking" icon={<Mic size={20} aria-hidden />} label="Speak" meta="Pronunciation" />
           <SkillTile
             to="/practice#writing"
             icon={<NotebookPen size={20} aria-hidden />}

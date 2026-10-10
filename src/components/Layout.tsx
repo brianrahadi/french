@@ -33,12 +33,12 @@ function useBadges() {
 
 type NavItem = { to: string; label: string; short: string; icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>; end?: boolean }
 
-// Four places: what to do today, content to study, your words, and drills. The roadmap sits with Profile.
+// Four places: what to do today, things to take in (Library), your words, and things you produce (Practice). The roadmap sits with Profile.
 const NAV: (NavItem & { also?: string[] })[] = [
   { to: '/', label: 'Today', short: 'Today', icon: House, end: true },
-  { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/books', '/listening/story', '/audio', '/talk', '/writing'] },
+  { to: '/library', label: 'Library', short: 'Library', icon: LibraryBig, also: ['/grammar', '/reading', '/books', '/listening/story', '/audio'] },
   { to: '/vocab', label: 'Vocabulary', short: 'Words', icon: Layers },
-  { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session'] },
+  { to: '/practice', label: 'Practice', short: 'Practice', icon: Dumbbell, also: ['/weak', '/conjugation', '/verbs', '/speaking', '/dictation', '/listening/session', '/talk', '/writing'] },
 ]
 
 // Phones have no sidebar footer, so Profile (with History and Roadmap behind it) is the bottom bar's fifth tab.
@@ -63,9 +63,11 @@ export function Layout() {
   const toggleNav = () => updateSettings({ navCollapsed: !collapsed })
   useHotkeys([['mod+B', toggleNav]])
   const active = (item: (typeof NAV)[number]) => isActive(pathname, item.to, item.end) || (item.also ?? []).some((p) => isActive(pathname, p))
-  const badge = (to: string) => (to === '/vocab' ? due : to === '/library' ? grammar : to === '/practice' ? weak : 0)
-  const soft = (to: string) => to === '/practice'
-  const label = (to: string) => (to === '/vocab' ? 'due' : to === '/library' ? 'grammar reviews due' : 'weak spots')
+  // Practice carries both grammar reviews (due: a solid badge) and weak spots (a soft one when nothing is due).
+  const badge = (to: string) => (to === '/vocab' ? due : to === '/practice' ? grammar + weak : 0)
+  const soft = (to: string) => to === '/practice' && grammar === 0
+  const label = (to: string) =>
+    to === '/vocab' ? 'due' : grammar && weak ? `to practise (${grammar} grammar reviews, ${weak} weak spots)` : grammar ? 'grammar reviews due' : 'weak spots'
 
   const link = (item: (typeof NAV)[number]) => {
     const { to, label: text, icon: Icon } = item
