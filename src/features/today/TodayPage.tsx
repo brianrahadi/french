@@ -36,7 +36,7 @@ import { computeWeakSpots } from '../weak/weak'
 import { speechSupported } from '../../lib/speech'
 import { recognitionSupported } from '../../lib/recognition'
 import { SyncPrompt } from '../../components/SyncAccount'
-import { ContinueRows, useContinue } from '../history/Activity'
+import { CONTINUE_PREVIEW, ContinueRows, useContinue } from '../history/Activity'
 import { ProgressCard } from './ProgressCard'
 
 export default function TodayPage() {
@@ -64,7 +64,7 @@ export default function TodayPage() {
   const weakCount = weak.total + weak.fixables.length
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
   // On phones there's no sidebar, so what's left half-way shows here (the session card covers the session).
-  const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, 3)
+  const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, CONTINUE_PREVIEW)
 
   return (
     <Container size="var(--page-w)" py="xl">

@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Anchor, Box, Group, Progress, Stack, Text, UnstyledButton } from '@mantine/core'
+import { Box, Group, Progress, Stack, Text, UnstyledButton } from '@mantine/core'
 import { BookOpen, BookOpenText, Headphones, Layers, MessagesSquare, Mic, NotebookPen, PenLine, Play } from 'lucide-react'
 import { useStore, type StudySkill } from '../../lib/store'
 import { loadSession } from '../session/saved'
 import { remaining } from '../session/run'
-import { buildHistory, continueItems, recentGroups, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
+import { buildHistory, continueItems, type ContinueItem, type HistoryEntry, type HistoryKind } from './history'
 
 export const KIND_ICON: Record<HistoryKind | 'session', React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
   session: Play,
@@ -83,53 +83,23 @@ export function ContinueRows({ items }: { items: ContinueItem[] }) {
   )
 }
 
-/** The sidebar keeps to the last seven days; History has the rest. */
-const SIDEBAR_GROUPS = new Set(['Today', 'Past week'])
-
 const short = (t?: string) => (t && t.length <= 10 ? t : undefined)
 
-const subheading = (text: string) => (
-  <Text size="xs" c="dimmed" px="xs" mt={6} mb={2}>
-    {text}
-  </Text>
-)
+/** How many half-finished items the sidebar and Today preview under Continue. */
+export const CONTINUE_PREVIEW = 5
 
-/** The sidebar's lower half, one line per item: what you left half-way, and what you did recently. */
+/** The sidebar's lower half: what you left half-way. Past activity lives on History (via Profile). */
 export function SidebarActivity() {
-  const cont = useContinue().slice(0, 3)
-  // Something already under Continue isn't listed twice.
-  const open = new Set(cont.map((c) => c.to))
-  const history = useHistory().filter((e) => !open.has(e.to))
-  const groups = recentGroups(history).filter((g) => SIDEBAR_GROUPS.has(g.label))
-  if (!cont.length && !groups.length) return null
+  const cont = useContinue().slice(0, CONTINUE_PREVIEW)
+  if (!cont.length) return null
   return (
     <Stack gap="sm" mt="md">
-      {cont.length > 0 && (
-        <Box component="section" aria-label="Continue">
-          {heading('Continue')}
-          {cont.map((c) => (
-            <Row key={c.id} to={c.to} kind={c.kind} title={c.title} right={c.progress !== undefined ? `${Math.round(c.progress * 100)}%` : short(c.detail)} />
-          ))}
-        </Box>
-      )}
-      {groups.length > 0 && (
-        <Box component="section" aria-label="Recent">
-          <Group justify="space-between" pr="xs">
-            {heading('Recent')}
-            <Anchor component={Link} to="/history" size="xs" mb={4}>
-              See all
-            </Anchor>
-          </Group>
-          {groups.map((g) => (
-            <Box key={g.label} role="group" aria-label={g.label}>
-              {subheading(g.label)}
-              {g.entries.map((e) => (
-                <Row key={e.id} to={e.to} kind={e.kind} title={e.title} right={e.score !== undefined ? `${e.score}%` : short(e.detail)} />
-              ))}
-            </Box>
-          ))}
-        </Box>
-      )}
+      <Box component="section" aria-label="Continue">
+        {heading('Continue')}
+        {cont.map((c) => (
+          <Row key={c.id} to={c.to} kind={c.kind} title={c.title} right={c.progress !== undefined ? `${Math.round(c.progress * 100)}%` : short(c.detail)} />
+        ))}
+      </Box>
     </Stack>
   )
 }
