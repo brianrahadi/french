@@ -58,6 +58,7 @@ export const router = createBrowserRouter(
         { path: 'queue', lazy: page(() => import('./features/queue/QueuePage')) },
         { path: 'settings', lazy: page(() => import('./features/settings/SettingsPage')) },
         { path: 'privacy', lazy: page(() => import('./features/privacy/PrivacyPage')) },
+        { path: 'admin', lazy: page(() => import('./features/admin/AdminPage')) },
         { path: '*', Component: NotFound },
       ],
     },

@@ -37,8 +37,9 @@ export default function PrivacyPage() {
           <List.Item>Signing in is optional and only used to sync your progress between your devices.</List.Item>
           <List.Item>Google shares your name, email address and profile picture with the app, which it uses to show who is signed in.</List.Item>
           <List.Item>
-            Your progress is stored in a database hosted by Supabase. Access rules mean only your signed-in account can read or
-            change it. AI keys, voice, speed and theme are never uploaded.
+            Your progress is stored in a database hosted by Supabase. Access rules mean only your signed-in account can change
+            it, and only you and the app’s owner can read it. The owner sees your name, email, when you joined and a summary of
+            your progress, to keep the app running and improve it. AI keys, voice, speed and theme are never uploaded.
           </List.Item>
           <List.Item>Signing out keeps your progress on that device.</List.Item>
         </List>

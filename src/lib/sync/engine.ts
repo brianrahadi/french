@@ -93,7 +93,8 @@ function keepStorage() {
 
 const status = (patch: Partial<SyncStatus>) => useSync.setState(patch)
 
-async function getClient(): Promise<SupabaseClient> {
+/** The Supabase client (loaded on first use). */
+export async function getClient(): Promise<SupabaseClient> {
   client ??= await connect()
   return client
 }

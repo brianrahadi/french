@@ -1,7 +1,7 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { ActionIcon, AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, Tooltip, UnstyledButton } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
-import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, PanelLeftClose, PanelLeftOpen, Settings, Users } from 'lucide-react'
+import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, Users } from 'lucide-react'
 import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
@@ -9,7 +9,8 @@ import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
 import { RAIL_W, railLink, SIDEBAR_SHORTCUT } from './rail'
 import { SidebarActivity } from '../features/history/Activity'
-import { syncConfigured } from '../lib/sync/engine'
+import { syncConfigured, useSync } from '../lib/sync/engine'
+import { isAdminEmail } from '../features/admin/access'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -55,6 +56,7 @@ const NAV_W = 232
 export function Layout() {
   const { due, grammar, weak } = useBadges()
   const { pathname } = useLocation()
+  const admin = isAdminEmail(useSync((s) => s.user?.email))
   // The sidebar can shrink to a rail of icons (wide screens; phones use the bottom bar).
   const collapsed = useStore((s) => s.settings.navCollapsed)
   const updateSettings = useStore((s) => s.updateSettings)
@@ -145,6 +147,7 @@ export function Layout() {
         </AppShell.Section>
         <AppShell.Section>
           <Stack gap={2}>
+            {admin && link({ to: '/admin', label: 'Admin', short: 'Admin', icon: ShieldCheck })}
             {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
             {syncConfigured && link(PEOPLE)}
             <ProfileLink active={isOwnProfile(pathname)} compact={collapsed} />

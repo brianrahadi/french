@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ActionIcon, Alert, Anchor, Avatar, Box, Button, Card, Group, Indicator, Loader, NavLink, Stack, Text, ThemeIcon, Tooltip } from '@mantine/core'
 import { Link } from 'react-router'
-import { AlertTriangle, Cloud, CloudCog, CloudOff, LogIn, LogOut, RefreshCw, X } from 'lucide-react'
+import { AlertTriangle, Cloud, CloudCog, CloudOff, LogIn, LogOut, RefreshCw, ShieldCheck, X } from 'lucide-react'
 import { signInWithGoogle, signOut, syncConfigured, syncNow, useSync, type SyncState } from '../lib/sync/engine'
 import { railLink } from './rail'
+import { isAdminEmail } from '../features/admin/access'
 
 /** "just now", "3 min ago", "at 14:05" */
 function since(iso: string | null, now = Date.now()): string {
@@ -188,6 +189,11 @@ export function SyncAccount() {
           >
             Sign out
           </Button>
+          {isAdminEmail(user.email) && (
+            <Button component={Link} to="/admin" variant="subtle" size="xs" leftSection={<ShieldCheck size={15} aria-hidden />}>
+              Admin
+            </Button>
+          )}
         </Group>
       </Stack>
     </Card>

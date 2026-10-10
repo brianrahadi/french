@@ -43,6 +43,63 @@ begin
   end if;
 end $$;
 
+-- Admin dashboard (/admin): the app owner can list every learner with their
+-- progress. Only the confirmed email addresses below get an answer; anyone
+-- else gets "not allowed". Change the list here (and ADMIN_EMAILS in
+-- src/features/admin/access.ts, which only decides who sees the link).
+create or replace function public.is_admin() returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from auth.users
+    where id = (select auth.uid())
+      and email_confirmed_at is not null
+      and lower(email) in ('brian.rahadi@gmail.com')
+  );
+$$;
+
+create or replace function public.admin_users()
+returns table (
+  id uuid,
+  email text,
+  name text,
+  avatar text,
+  provider text,
+  created_at timestamptz,
+  last_sign_in_at timestamptz,
+  progress_at timestamptz,
+  version bigint,
+  device text,
+  data jsonb
+)
+language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not allowed' using errcode = '42501';
+  end if;
+  return query
+    select
+      u.id,
+      u.email::text,
+      coalesce(u.raw_user_meta_data ->> 'full_name', u.raw_user_meta_data ->> 'name'),
+      coalesce(u.raw_user_meta_data ->> 'avatar_url', u.raw_user_meta_data ->> 'picture'),
+      u.raw_app_meta_data ->> 'provider',
+      u.created_at,
+      u.last_sign_in_at,
+      p.updated_at,
+      p.version,
+      p.device,
+      p.data
+    from auth.users u
+    left join public.progress p on p.user_id = u.id
+    order by coalesce(p.updated_at, u.last_sign_in_at, u.created_at) desc;
+end;
+$$;
+
+revoke execute on function public.is_admin() from public, anon;
+revoke execute on function public.admin_users() from public, anon;
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.admin_users() to authenticated;
+
 -- ───────────── People: public profiles ─────────────
 -- One row per learner with what other signed-in learners can see on the People
 -- page: name, picture, and a summary of progress (level, study days, skill mix).

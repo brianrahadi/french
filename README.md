@@ -133,7 +133,7 @@ npm run dev        # http://localhost:5173
 With a free [Supabase](https://supabase.com) project, people can **sign in with Google** and their progress syncs between their devices. Without it, the app works exactly the same, with progress kept in the browser.
 
 **How it works**
-- Each learner has one row in a `progress` table, protected by row-level security — nobody can read anyone else’s.
+- Each learner has one row in a `progress` table, protected by row-level security — nobody can read anyone else’s, except the admin (below).
 - The app pulls when it opens, when you come back to the tab, every 30 seconds while it’s open and instantly when another device saves (realtime). It saves when you pause for a few seconds (at least every two minutes while you study non-stop) and right away when you leave the tab or switch apps. Progress is stored gzip-compressed to keep syncs light on mobile data.
 - Progress from two devices is **merged item by item**, never overwritten: each flashcard keeps its latest review, activity from each device adds up, mistakes, writings, texts and conversations from both are kept, deletions are respected, and each study setting follows whichever device changed it last. Voice, speed, theme and AI keys stay on each device (AI keys are never uploaded).
 - Saves carry a version number, so if two devices save at the same moment the second one merges and tries again instead of overwriting.
@@ -150,6 +150,10 @@ With a free [Supabase](https://supabase.com) project, people can **sign in with 
 5. **Allow the app’s addresses:** *Authentication → URL Configuration* → Site URL `https://french.brianrahadi.com/`; Redirect URLs `http://localhost:5173/**` and `https://french.brianrahadi.com/**`. The live site’s address is set in `.env.production` (`VITE_SITE_URL`): sign-in from anywhere but localhost returns there.
 6. **Connect the app:** copy `.env.example` to `.env.local` and fill in the Project URL and publishable key from *Project Settings → API Keys*. Restart `npm run dev` — *Settings → Account & sync* now shows **Continue with Google**.
 7. **For GitHub Pages:** add the same two values as repository variables (*Settings → Secrets and variables → Actions → Variables*): `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. The publishable key is meant to be public; row-level security protects the data.
+
+**Admin dashboard**
+
+Signed in as an admin, *Admin* appears in the sidebar (and under *Settings → Account & sync*) and opens `/admin`: every learner who has signed in, with their level, last study day, streak, answers, accuracy and words, plus how many learners studied each day. It reads through the `admin_users()` database function in `supabase/schema.sql`, which answers only the confirmed email addresses listed in `is_admin()` and refuses everyone else. To add or change an admin, edit that list and run the file again, and update `ADMIN_EMAILS` in `src/features/admin/access.ts` (which only decides who sees the link).
 
 ## Deploying
 
