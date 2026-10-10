@@ -158,6 +158,11 @@ export function SyncAccount() {
         )}
         <Text size="xs" c="dimmed">
           Progress saves to your account when you pause or switch apps, and updates whenever you open the app. AI keys, voice and theme stay on each device.
+          Other signed-in learners can see your name, picture and progress numbers on{' '}
+          <Anchor component={Link} to="/people" inherit>
+            People
+          </Anchor>
+          .
         </Text>
         <Group gap="sm">
           <Button

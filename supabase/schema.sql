@@ -1,6 +1,7 @@
--- Petit à petit — cloud sync.
--- One progress document per signed-in learner. Run this once in your Supabase
--- project: Dashboard → SQL Editor → New query → paste → Run.
+-- Petit à petit — cloud sync and People profiles.
+-- One progress document per signed-in learner, plus a public profile for the
+-- People page. Run this in your Supabase project: Dashboard → SQL Editor → New
+-- query → paste → Run. It's safe to run again after an update.
 
 create table if not exists public.progress (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -41,3 +42,79 @@ begin
     alter publication supabase_realtime add table public.progress;
   end if;
 end $$;
+
+-- ───────────── People: public profiles ─────────────
+-- One row per learner with what other signed-in learners can see on the People
+-- page: name, picture, and a summary of progress (level, study days, skill mix).
+-- The progress document above stays private; the app publishes this snapshot
+-- separately after each sync. Email addresses are never copied here.
+
+create table if not exists public.profiles (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  name text not null default '' check (char_length(name) <= 100),
+  avatar_url text check (char_length(avatar_url) <= 500),
+  -- false = hidden from the People page (the learner can still see their own row).
+  listed boolean not null default true,
+  -- Small numbers for the list: level, words started, last study day, streak.
+  summary jsonb check (pg_column_size(summary) < 2000),
+  -- Everything the profile page draws: level progress, sections, daily activity.
+  stats jsonb check (pg_column_size(stats) < 1000000),
+  joined_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+drop policy if exists "Profiles: signed-in learners read listed ones" on public.profiles;
+create policy "Profiles: signed-in learners read listed ones" on public.profiles
+  for select to authenticated using (listed or (select auth.uid()) = user_id);
+
+drop policy if exists "Own profile: create" on public.profiles;
+create policy "Own profile: create" on public.profiles
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Own profile: update" on public.profiles;
+create policy "Own profile: update" on public.profiles
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Own profile: delete" on public.profiles;
+create policy "Own profile: delete" on public.profiles
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+grant select, insert, update, delete on public.profiles to authenticated;
+
+-- Everyone who signs up gets a profile straight away, so they appear on the
+-- People page even before their first sync fills in their progress.
+create or replace function public.handle_new_learner()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.profiles (user_id, name, avatar_url, joined_at)
+  values (
+    new.id,
+    coalesce(nullif(new.raw_user_meta_data ->> 'full_name', ''), nullif(new.raw_user_meta_data ->> 'name', ''), 'Learner'),
+    coalesce(new.raw_user_meta_data ->> 'avatar_url', new.raw_user_meta_data ->> 'picture'),
+    new.created_at
+  )
+  on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created_profile on auth.users;
+create trigger on_auth_user_created_profile
+  after insert on auth.users
+  for each row execute function public.handle_new_learner();
+
+-- Learners who signed up before profiles existed.
+insert into public.profiles (user_id, name, avatar_url, joined_at)
+select
+  u.id,
+  coalesce(nullif(u.raw_user_meta_data ->> 'full_name', ''), nullif(u.raw_user_meta_data ->> 'name', ''), 'Learner'),
+  coalesce(u.raw_user_meta_data ->> 'avatar_url', u.raw_user_meta_data ->> 'picture'),
+  u.created_at
+from auth.users u
+on conflict (user_id) do nothing;

@@ -6,7 +6,7 @@ import { useDocumentTitle } from '../../lib/hooks'
 
 /** Who to write to with questions or to have a synced account deleted. */
 const CONTACT = 'brian.rahadi@gmail.com'
-const UPDATED = '30 September 2026'
+const UPDATED = '9 October 2026'
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -41,6 +41,24 @@ export default function PrivacyPage() {
             change it. AI keys, voice, speed and theme are never uploaded.
           </List.Item>
           <List.Item>Signing out keeps your progress on that device.</List.Item>
+        </List>
+      </Section>
+
+      <Section id="p-people" title="People">
+        <List spacing="xs" lh={1.6} maw="68ch">
+          <List.Item>
+            When you’re signed in, other signed-in learners can find you on{' '}
+            <Anchor component={Link} to="/people" inherit>
+              People
+            </Anchor>{' '}
+            and open your profile: your name and picture from Google, when you joined, and the numbers on your profile page — level,
+            how much of each level you’ve done, study days, answers, accuracy and skill mix.
+          </List.Item>
+          <List.Item>Your email address, writing, conversations, mistakes, saved texts and flashcards are never shown to other learners.</List.Item>
+          <List.Item>
+            To hide yourself, turn off <em>Show me on People</em> on the People page. Hidden profiles can’t be listed or opened by
+            anyone else.
+          </List.Item>
         </List>
       </Section>
 

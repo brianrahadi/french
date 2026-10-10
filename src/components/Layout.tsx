@@ -1,7 +1,7 @@
 import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
 import { ActionIcon, AppShell, Badge, Box, Group, Indicator, NavLink, ScrollArea, Stack, Text, ThemeIcon, Tooltip, UnstyledButton } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
-import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
+import { CircleUserRound, Dumbbell, House, Layers, LibraryBig, Map as MapIcon, PanelLeftClose, PanelLeftOpen, Settings, Users } from 'lucide-react'
 import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { dayKey, endOfDay } from '../lib/date'
@@ -9,6 +9,7 @@ import { countWeakSpots } from '../features/weak/count'
 import { ProfileLink } from './SyncAccount'
 import { RAIL_W, railLink, SIDEBAR_SHORTCUT } from './rail'
 import { SidebarActivity } from '../features/history/Activity'
+import { syncConfigured } from '../lib/sync/engine'
 
 function useBadges() {
   const cards = useStore((s) => s.cards)
@@ -40,9 +41,14 @@ const NAV: (NavItem & { also?: string[] })[] = [
 ]
 
 // Phones have no sidebar footer, so Profile (with History and Roadmap behind it) is the bottom bar's fifth tab.
-const PHONE_PROFILE: NavItem & { also?: string[] } = { to: '/profile', label: 'Profile', short: 'Profile', icon: CircleUserRound, also: ['/history', '/roadmap'] }
+const PHONE_PROFILE: NavItem & { also?: string[] } = { to: '/profile', label: 'Profile', short: 'Profile', icon: CircleUserRound, also: ['/history', '/roadmap', '/people'] }
 
-const isActive = (pathname: string, to: string, end?: boolean) => (end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`))
+// Everyone else's profiles (/profile/:id) belong to People, not to your own Profile.
+const PEOPLE: NavItem & { also?: string[] } = { to: '/people', label: 'People', short: 'People', icon: Users, also: ['/profile/'] }
+const isOwnProfile = (pathname: string) => pathname === '/profile' || pathname === '/profile/'
+
+const isActive = (pathname: string, to: string, end?: boolean) =>
+  end ? pathname === to : to.endsWith('/') ? pathname.startsWith(to) && pathname !== to : pathname === to || pathname.startsWith(`${to}/`)
 
 const NAV_W = 232
 
@@ -140,7 +146,8 @@ export function Layout() {
         <AppShell.Section>
           <Stack gap={2}>
             {link({ to: '/roadmap', label: 'Roadmap', short: 'Roadmap', icon: MapIcon })}
-            <ProfileLink active={isActive(pathname, '/profile')} compact={collapsed} />
+            {syncConfigured && link(PEOPLE)}
+            <ProfileLink active={isOwnProfile(pathname)} compact={collapsed} />
             {link({ to: '/settings', label: 'Settings', short: 'Settings', icon: Settings })}
           </Stack>
         </AppShell.Section>

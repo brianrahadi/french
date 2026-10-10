@@ -127,7 +127,10 @@ export interface Recap {
   skills: Record<StudySkill, number>
 }
 
-export function recap(s: Stats, p: Period, bySkill = skillsByDay(s)): Recap {
+export function recap(s: Stats, p: Period): Recap
+/** With the items per skill already worked out (e.g. from a shared profile), only daily activity is needed. */
+export function recap(s: Pick<State, 'activity'>, p: Period, bySkill: Record<string, Partial<Record<StudySkill, number>>>): Recap
+export function recap(s: Pick<State, 'activity'>, p: Period, bySkill = skillsByDay(s as Stats)): Recap {
   const skills = Object.fromEntries(STUDY_SKILLS.map((k) => [k, 0])) as Record<StudySkill, number>
   const activeDays: string[] = []
   let answers = 0

@@ -17,13 +17,12 @@ import { create } from 'zustand'
 import type { RealtimeChannel, SupabaseClient, User } from '@supabase/supabase-js'
 import { useStore } from '../store'
 import { DEVICE_ID } from '../device'
+import { AUTH_KEY, getClient as connect, syncConfigured } from './client'
 import { applyDoc, docKey, mergeDocs, normalizeDoc, toDoc } from './merge'
 import { pack, unpack } from './pack'
+import { schedulePublish, stopPublishing } from './profiles'
 
-const URL_ = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined
-
-export const syncConfigured = !!(URL_ && KEY)
+export { syncConfigured }
 
 export type SyncState = 'off' | 'starting' | 'signed-out' | 'syncing' | 'synced' | 'offline' | 'error'
 
@@ -31,6 +30,8 @@ export interface SyncUser {
   id: string
   email: string
   name: string
+  /** Name from the Google account, if it has one (name falls back to the email). */
+  fullName?: string
   avatar?: string
 }
 
@@ -71,9 +72,6 @@ let started = false
 /** True while the learner signs out on purpose (any other sign-out is unexpected). */
 let leaving = false
 
-/** Where Supabase keeps the session (access + refresh token) in this browser. */
-const AUTH_KEY = 'petit-a-petit-auth'
-
 /** The user in the saved session, even when its token couldn't be refreshed yet. */
 function storedUser(): User | null {
   try {
@@ -96,11 +94,7 @@ function keepStorage() {
 const status = (patch: Partial<SyncStatus>) => useSync.setState(patch)
 
 async function getClient(): Promise<SupabaseClient> {
-  if (client) return client
-  const { createClient } = await import('@supabase/supabase-js')
-  client = createClient(URL_!, KEY!, {
-    auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: AUTH_KEY },
-  })
+  client ??= await connect()
   return client
 }
 
@@ -110,6 +104,7 @@ function toUser(u: User): SyncUser {
     id: u.id,
     email: u.email ?? '',
     name: meta.full_name ?? meta.name ?? u.email ?? 'You',
+    fullName: meta.full_name ?? meta.name,
     avatar: meta.avatar_url ?? meta.picture,
   }
 }
@@ -222,6 +217,9 @@ async function write(doc: ReturnType<typeof toDoc>): Promise<void> {
 
 function done() {
   status({ state: 'synced', lastSyncAt: new Date().toISOString(), error: '' })
+  // Share the latest numbers on People (throttled; only when they changed).
+  const user = useSync.getState().user
+  if (user && user.id === userId) schedulePublish(user)
 }
 
 function fail(e: unknown) {
@@ -329,6 +327,7 @@ function signedIn(u: User) {
 
 function signedOut() {
   stopWatching()
+  stopPublishing()
   setJoined(null)
   userId = null
   status({ user: null, state: 'signed-out', lastSyncAt: null })
