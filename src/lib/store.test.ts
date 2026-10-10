@@ -84,6 +84,30 @@ describe('checking words after reading', () => {
   })
 })
 
+describe('marking many words known at once', () => {
+  it('takes them out of the new-word queue and can be undone', async () => {
+    const { newWordQueue } = await import('../features/vocab/selectors')
+    useStore.getState().introduceWord('gare-n', ['r'])
+    const startedGare = useStore.getState().cards['gare-n|r']
+    const ids = newWordQueue(useStore.getState()).slice(0, 300).map((w) => w.id)
+    const all = [...ids, 'gare-n']
+    const { cards, introduced } = useStore.getState()
+    const snaps = all.map((wordId) => ({ wordId, r: cards[`${wordId}|r`], p: cards[`${wordId}|p`], introduced: introduced[wordId] }))
+
+    useStore.getState().markWordsKnown(all)
+    const after = useStore.getState()
+    expect(ids.every((id) => after.cards[`${id}|r`] && after.introduced[id] === `${dayKey()}k`)).toBe(true)
+    expect(newWordQueue(after).some((w) => ids.includes(w.id))).toBe(false)
+
+    useStore.getState().restoreWords(snaps)
+    const undone = useStore.getState()
+    expect(ids.some((id) => undone.cards[`${id}|r`] || undone.introduced[id])).toBe(false)
+    expect(undone.cards['gare-n|r']).toEqual(startedGare)
+    expect(undone.introduced['gare-n']).toBe(dayKey())
+    expect(undone.sync.deleted[`card:${ids[0]}|r`]).toBeDefined()
+  })
+})
+
 describe('no duplicate words', () => {
   it('starts a deck word instead of adding "la gare" when "gare" is built in', async () => {
     const { customWord } = await import('./words')

@@ -76,6 +76,14 @@ export interface ConjStat {
 }
 
 /** The six skills the profile stats are split into. */
+/** A word's cards and first-seen day at one moment, so a bulk change can be undone. */
+export interface WordSnapshot {
+  wordId: string
+  r?: StoredCard
+  p?: StoredCard
+  introduced?: string
+}
+
 export type StudySkill = 'vocabulary' | 'grammar' | 'reading' | 'writing' | 'listening' | 'speaking'
 export const STUDY_SKILLS: StudySkill[] = ['vocabulary', 'grammar', 'reading', 'writing', 'listening', 'speaking']
 
@@ -254,6 +262,8 @@ interface Actions {
    * Like checkWords, a known word doesn't use up the day's new words.
    */
   markWordsKnown: (wordIds: string[]) => void
+  /** Puts words back as they were before a bulk change (the undo for markWordsKnown). */
+  restoreWords: (snapshots: WordSnapshot[]) => void
   rateCard: (id: string, grade: Grade) => StoredCard
   toggleDeck: (deckId: string) => void
   setDecksActive: (deckIds: string[], active: boolean) => void
@@ -511,6 +521,27 @@ export const useStore = create<State & Actions>()(
             if (!introduced[wordId]) introduced[wordId] = `${today}k`
           }
           return { cards, introduced }
+        }),
+
+      restoreWords: (snapshots) =>
+        set((s) => {
+          const cards = { ...s.cards }
+          const introduced = { ...s.introduced }
+          const gone: string[] = []
+          for (const snap of snapshots) {
+            for (const dir of ['r', 'p'] as const) {
+              const id = cardId(snap.wordId, dir)
+              const before = snap[dir]
+              if (before) cards[id] = before
+              else if (cards[id]) {
+                delete cards[id]
+                gone.push(`card:${id}`)
+              }
+            }
+            if (snap.introduced) introduced[snap.wordId] = snap.introduced
+            else delete introduced[snap.wordId]
+          }
+          return { cards, introduced, ...(gone.length ? tombstone(s, gone) : {}) }
         }),
 
       addCard: (wordId, dir) =>

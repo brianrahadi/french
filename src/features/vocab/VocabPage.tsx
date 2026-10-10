@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import {
   ActionIcon,
@@ -6,11 +6,14 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Container,
   Divider,
   FileButton,
   Group,
+  Menu,
   NativeSelect,
+  Paper,
   SimpleGrid,
   Stack,
   Tabs,
@@ -19,7 +22,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { Layers, ListOrdered, Play, Search, Trash2, RotateCcw, Upload, Plus } from 'lucide-react'
+import { Check, ChevronDown, Layers, ListOrdered, Play, Search, Trash2, RotateCcw, Upload, Plus, X } from 'lucide-react'
 import { DECKS, CUSTOM_DECK_ID, FREQUENCY_DECKS, FREQUENCY_DECK_IDS, FREQUENCY_ID, FREQUENCY_WORDS, THEMED_DECKS, BUILTIN_WORDS, allWords, alreadyHave, deckWords } from '../../data/vocab'
 import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
@@ -29,7 +32,10 @@ import { ActionTile, useTileWidth } from '../../components/Tile'
 import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { SpeakButton } from '../../components/SpeakButton'
 import { toast } from '../../components/Toast'
-import { useStore } from '../../lib/store'
+import { notifications } from '@mantine/notifications'
+import { useMediaQuery } from '@mantine/hooks'
+import { useStore, type WordSnapshot } from '../../lib/store'
+import { cardId } from '../../lib/srs'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { customWord, definite, findSameWord, frTypo, matchesSearch, parseImport, speakText } from '../../lib/words'
 import { relativeDay } from '../../lib/date'
@@ -353,6 +359,9 @@ function BrowseTab() {
   const customWords = useStore((s) => s.customWords)
   const resetWord = useStore((s) => s.resetWord)
   const removeCustomWord = useStore((s) => s.removeCustomWord)
+  const markWordsKnown = useStore((s) => s.markWordsKnown)
+  const restoreWords = useStore((s) => s.restoreWords)
+  const withBottomNav = useMediaQuery('(max-width: 860px)')
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<'all' | 'new' | 'learning' | 'young' | 'mature' | 'custom'>('all')
   const [sortBy, setSortBy] = useState<'due-asc' | 'due-desc' | 'strength-asc' | 'strength-desc' | 'default'>('default')
@@ -387,6 +396,87 @@ function BrowseTab() {
       }
     })
   }, [customWords, q, filter, cards, deckFilter, sortBy])
+
+  // Selection for bulk actions. Cleared when the list changes underneath it, so you only act on what you see.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set())
+  const listKey = `${q}|${filter}|${deckFilter}`
+  const [selectedFor, setSelectedFor] = useState(listKey)
+  if (selectedFor !== listKey) {
+    setSelectedFor(listKey)
+    setSelected(new Set())
+  }
+  /** The word whose box was clicked last, the start of a Shift-click range. */
+  const anchor = useRef<string | null>(null)
+  const selectedWords = useMemo(() => words.filter((w) => selected.has(w.id)), [words, selected])
+  // Known words stay as they are: rating them again would only nudge their schedule.
+  const toMark = useMemo(() => selectedWords.filter((w) => wordStatus(w.id, cards) !== 'mature'), [selectedWords, cards])
+  const allSelected = words.length > 0 && selectedWords.length === words.length
+
+  const selectFirst = (n: number) => {
+    setSelected(new Set(words.slice(0, n).map((w) => w.id)))
+    setLimit((l) => Math.max(l, Math.min(n, 1000)))
+    anchor.current = null
+  }
+  const clearSelection = () => {
+    setSelected(new Set())
+    anchor.current = null
+  }
+  /** Click a row's box; Shift-click selects (or clears) everything from the last box clicked. */
+  const toggleRow = (i: number, shift: boolean) => {
+    const id = words[i].id
+    const on = !selected.has(id)
+    const next = new Set(selected)
+    const set = (wid: string) => {
+      if (on) next.add(wid)
+      else next.delete(wid)
+    }
+    const start = shift && anchor.current ? words.findIndex((w) => w.id === anchor.current) : -1
+    if (start >= 0) {
+      const [from, to] = start < i ? [start, i] : [i, start]
+      for (const w of words.slice(from, to + 1)) set(w.id)
+    } else set(id)
+    anchor.current = id
+    setSelected(next)
+  }
+
+  const markSelectedKnown = () => {
+    if (!toMark.length) return
+    const ids = toMark.map((w) => w.id)
+    const { cards: before, introduced } = useStore.getState()
+    const snaps: WordSnapshot[] = ids.map((wordId) => ({
+      wordId,
+      r: before[cardId(wordId, 'r')],
+      p: before[cardId(wordId, 'p')],
+      introduced: introduced[wordId],
+    }))
+    markWordsKnown(ids)
+    clearSelection()
+    const n = ids.length
+    const nid = notifications.show({
+      autoClose: 8000,
+      withCloseButton: false,
+      message: (
+        <Group justify="space-between" wrap="nowrap" gap="sm">
+          <span style={{ flex: 1 }}>
+            {n.toLocaleString('en')} word{n === 1 ? '' : 's'} marked as known. They’ll come back once for a quick check in about a week.
+          </span>
+          <Button
+            size="compact-sm"
+            variant="subtle"
+            style={{ flexShrink: 0 }}
+            onClick={() => {
+              restoreWords(snaps)
+              notifications.hide(nid)
+              toast('Undone')
+            }}
+          >
+            Undo
+          </Button>
+        </Group>
+      ),
+    })
+  }
+  const FIRST_N = [50, 100, 250, 500, 1000].filter((n) => n < words.length)
 
   return (
     <Stack gap="md">
@@ -441,7 +531,7 @@ function BrowseTab() {
         </NativeSelect>
       </Group>
       <Text size="sm" c="dimmed">
-        {words.length} words
+        {words.length.toLocaleString('en')} words
       </Text>
       {words.length === 0 ? (
         <Empty icon={<Layers size={32} />} title="No words match">
@@ -449,14 +539,52 @@ function BrowseTab() {
         </Empty>
       ) : (
         <Card padding={0}>
+          <Group gap={12} px={14} py={8} wrap="nowrap" bg="var(--surface-2)" style={{ borderBottom: '1px solid var(--mantine-color-default-border)' }}>
+            <Checkbox
+              size="sm"
+              checked={allSelected}
+              indeterminate={selectedWords.length > 0 && !allSelected}
+              onChange={() => (allSelected ? clearSelection() : selectFirst(words.length))}
+              aria-label={allSelected ? 'Clear selection' : `Select all ${words.length} words`}
+            />
+            <Text size="sm" c="dimmed" style={{ flex: 1 }} className="tnum">
+              {selectedWords.length > 0
+                ? `${selectedWords.length.toLocaleString('en')} of ${words.length.toLocaleString('en')} selected`
+                : `Select all ${words.length.toLocaleString('en')}`}
+            </Text>
+            {FIRST_N.length > 0 && (
+              <Menu position="bottom-end" withinPortal>
+                <Menu.Target>
+                  <Button variant="subtle" size="compact-sm" color="gray" rightSection={<ChevronDown size={14} aria-hidden />}>
+                    Select first…
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {FIRST_N.map((n) => (
+                    <Menu.Item key={n} onClick={() => selectFirst(n)}>
+                      First {n.toLocaleString('en')}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+            )}
+          </Group>
           <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
             {words.slice(0, limit).map((w, i) => {
               const st = wordStatus(w.id, cards)
               const { nextDue, interval } = wordStats(w.id, cards)
+              const isSel = selected.has(w.id)
               return (
-                <li key={w.id}>
+                <li key={w.id} style={isSel ? { background: 'var(--mantine-primary-color-light)' } : undefined}>
                   {i > 0 && <Divider />}
                   <Group gap={12} px={14} py={9} wrap="nowrap">
+                    <Checkbox
+                      size="sm"
+                      checked={isSel}
+                      onChange={() => {}}
+                      onClick={(e) => toggleRow(i, e.shiftKey)}
+                      aria-label={`Select ${w.fr}`}
+                    />
                     <SpeakButton text={speakText(w)} size="sm" />
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={12} verticalSpacing={2} style={{ flex: 1, minWidth: 0 }}>
                       <Text fz={17} className="fr" lang="fr">
@@ -514,6 +642,50 @@ function BrowseTab() {
         <Button variant="default" onClick={() => setLimit((l) => l + 100)} style={{ alignSelf: 'center' }}>
           Show more
         </Button>
+      )}
+      {selectedWords.length > 0 && (
+        <Paper
+          pos="sticky"
+          bottom={withBottomNav ? 'calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px)' : 12}
+          py={10}
+          pr={10}
+          pl={16}
+          radius={16}
+          shadow="md"
+          role="toolbar"
+          aria-label="Selected words"
+          style={{
+            zIndex: 5,
+            background: 'color-mix(in srgb, var(--mantine-color-body) 92%, transparent)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
+          <Group justify="space-between" gap={12} wrap="nowrap">
+            <Text size="sm" fw={600} className="tnum" style={{ minWidth: 0 }}>
+              {selectedWords.length.toLocaleString('en')} selected
+              {toMark.length < selectedWords.length && (
+                <Text span size="sm" c="dimmed" fw={400}>
+                  {' '}
+                  · {(selectedWords.length - toMark.length).toLocaleString('en')} already known
+                </Text>
+              )}
+            </Text>
+            <Group gap={6} wrap="nowrap" style={{ flexShrink: 0 }}>
+              <ActionIcon variant="subtle" color="gray" size="lg" onClick={clearSelection} title="Clear selection" aria-label="Clear selection">
+                <X size={18} aria-hidden />
+              </ActionIcon>
+              <Button
+                onClick={markSelectedKnown}
+                disabled={!toMark.length}
+                leftSection={<Check size={16} aria-hidden />}
+                aria-label={toMark.length ? `Mark ${toMark.length} words as known` : undefined}
+              >
+                {toMark.length ? 'Mark as known' : 'All known'}
+              </Button>
+            </Group>
+          </Group>
+        </Paper>
       )}
     </Stack>
   )
