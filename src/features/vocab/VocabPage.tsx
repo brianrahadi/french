@@ -28,6 +28,7 @@ import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
+import { KindIcon } from '../../components/kinds'
 import { ActionTile, useTileWidth } from '../../components/Tile'
 import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { SpeakButton } from '../../components/SpeakButton'
@@ -216,7 +217,10 @@ function DeckCard({
     >
       <Stack gap={6} h="100%">
         <Group justify="space-between" wrap="nowrap">
-          {level ? <LevelBadge level={level} /> : <Badge color="gray">{title === 'My words' ? 'yours' : 'frequency'}</Badge>}
+          <Group gap={6} wrap="nowrap">
+            <KindIcon kind="vocab" size="sm" />
+            {level ? <LevelBadge level={level} /> : <Badge color="gray">{title === 'My words' ? 'yours' : 'frequency'}</Badge>}
+          </Group>
           <Switch checked={active} onChange={onToggle} label={`Include “${title}” in new words`} />
         </Group>
         <Box onClick={onView} style={{ cursor: 'pointer' }} title="View words">
@@ -308,6 +312,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
   return (
     <div>
       <Shelf
+        kind="vocab"
         title="Learning now"
         count={on.length}
         action={
@@ -321,6 +326,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
       </Shelf>
 
       <Shelf
+        kind="vocab"
         title="More decks"
         count={off.length}
         action={
@@ -338,7 +344,7 @@ function DecksTab({ onView }: { onView: (id: string) => void }) {
       </Shelf>
 
       {done.length > 0 && (
-        <Shelf title="All words started" count={done.length}>
+        <Shelf kind="vocab" title="All words started" count={done.length}>
           {done.map(card)}
         </Shelf>
       )}

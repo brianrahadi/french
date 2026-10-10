@@ -445,7 +445,7 @@ export default function PracticeHub() {
       </SimpleGrid>
 
       {history.length > 0 && (
-        <Shelf id="history" title="Your history" count={history.length} hint="Your conversations and corrected writing, newest first." to="/practice/history">
+        <Shelf id="history" kind="history" title="Your history" count={history.length} hint="Your conversations and corrected writing, newest first." to="/practice/history">
           {history.slice(0, 12).map((e) => e.node)}
         </Shelf>
       )}

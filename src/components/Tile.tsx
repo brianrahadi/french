@@ -2,6 +2,7 @@ import { createContext, useContext, type MouseEvent, type ReactNode } from 'reac
 import { Card, Group, Progress, SimpleGrid, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
 import { Link, useNavigate } from 'react-router'
 import { useStore, type UiSize } from '../lib/store'
+import { KindIcon, type Kind } from './kinds'
 
 /** Card width on a shelf, by interface size (Settings → Appearance). Rem-based, so it also follows the text size. */
 const SHELF_W: Record<UiSize, number> = { big: 232, medium: 212, small: 192 }
@@ -39,6 +40,7 @@ export function TileGrid({ children }: { children: ReactNode }) {
  * buttons inside it (e.g. delete) keep working on their own.
  */
 export function Tile({
+  kind,
   to,
   fluid,
   onClick,
@@ -54,6 +56,8 @@ export function Tile({
   done,
   highlight,
 }: {
+  /** What the card is (a lesson, a story, a book…): an icon at the top left. */
+  kind?: Kind
   to?: string
   /** Fill the grid cell instead of the fixed shelf width. */
   fluid?: boolean
@@ -95,9 +99,10 @@ export function Tile({
       style={{ cursor: (to || onClick) && !disabled ? 'pointer' : undefined, flexShrink: 0, font: 'inherit', color: 'inherit', ...(highlight ? { borderColor: 'var(--mantine-primary-color-filled)', borderWidth: 2 } : {}) }}
     >
       <Stack gap={6} h="100%">
-        {(top || corner) && (
+        {(kind || top || corner) && (
           <Group gap={6} wrap="nowrap" justify="space-between">
-            <Group gap={6} wrap="nowrap">
+            <Group gap={6} wrap="nowrap" miw={0}>
+              {kind && <KindIcon kind={kind} size="sm" />}
               {top}
             </Group>
             {corner}

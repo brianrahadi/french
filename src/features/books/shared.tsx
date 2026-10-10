@@ -33,6 +33,7 @@ export function BookTile({ b }: { b: BookMeta }) {
   const min = bookMinutes(b.words, b.kind)
   return (
     <Tile
+      kind="book"
       to={`/books/${b.id}`}
       done={p.finished}
       top={

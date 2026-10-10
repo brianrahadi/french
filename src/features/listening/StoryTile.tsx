@@ -19,6 +19,7 @@ export function PercentBadge({ score }: { score: number }) {
 export function StoryTile({ s, result }: { s: StoryDef; result?: SentenceStat }) {
   return (
     <Tile
+      kind="story"
       to={`/listening/story/${s.id}`}
       done={!!result}
       top={

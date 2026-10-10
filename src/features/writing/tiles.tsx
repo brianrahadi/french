@@ -36,6 +36,7 @@ export function ScoreBadge({ score, miw }: { score: number; miw?: number }) {
 export function PromptTile({ p, done, suggested }: { p: WritingPrompt; done?: boolean; suggested?: boolean }) {
   return (
     <Tile
+      kind="writing"
       to={`/writing/new?prompt=${p.id}`}
       highlight={suggested}
       top={
@@ -71,6 +72,7 @@ export function PromptTile({ p, done, suggested }: { p: WritingPrompt; done?: bo
 export function WritingTile({ w }: { w: WritingEntry }) {
   return (
     <Tile
+      kind="writing"
       to={`/writing/${w.id}`}
       done
       top={

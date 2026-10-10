@@ -11,6 +11,7 @@ export function LessonTile({ l, p, n }: { l: Lesson; p?: LessonProgress; n: numb
   const st = lessonStatus(p)
   return (
     <Tile
+      kind="grammar"
       to={st === 'due' ? `/grammar/${l.id}/practice` : `/grammar/${l.id}`}
       done={st === 'mastered'}
       top={<LevelBadge level={l.level} />}

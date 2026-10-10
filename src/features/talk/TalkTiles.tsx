@@ -9,6 +9,7 @@ import { ConnectAiCard } from '../../components/AiSetup'
 import { Dialog } from '../../components/Dialog'
 import { LevelBadge } from '../../components/ui'
 import { Tile } from '../../components/Tile'
+import { KINDS } from '../../components/kinds'
 import { useAiConfig } from '../../lib/ai'
 import { ago } from '../../lib/date'
 import { frTypo } from '../../lib/words'
@@ -26,8 +27,8 @@ export function ScenarioTile({ s, done }: { s: Scenario; done?: boolean }) {
       onClick={() => (ai ? navigate(`/talk/${start({ scenarioId: s.id, level: s.level })}`) : navigate('/settings#ai'))}
       top={
         <>
-          <ThemeIcon size={26} radius="sm" variant="light">
-            <Icon size={15} />
+          <ThemeIcon size={24} radius="sm" variant="light" color={KINDS.talk.color} role="img" aria-label="Role-play" title="Role-play">
+            <Icon size={14} />
           </ThemeIcon>
           <LevelBadge level={s.level} />
         </>
@@ -56,14 +57,8 @@ export function ConversationTile({ c }: { c: Conversation }) {
     <Tile
       to={`/talk/${c.id}`}
       done={!!c.feedback}
-      top={
-        <>
-          <ThemeIcon size={26} radius="sm" variant="light">
-            <MessagesSquare size={15} />
-          </ThemeIcon>
-          <LevelBadge level={c.level} />
-        </>
-      }
+      kind="talk"
+      top={<LevelBadge level={c.level} />}
       corner={score !== undefined && <Badge color={score >= 85 ? 'green' : score >= 60 ? 'orange' : 'red'} className="tnum">{score}</Badge>}
       title={frTypo(c.title)}
       fr

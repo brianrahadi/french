@@ -65,6 +65,7 @@ export function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
   const words = countWords(t.paragraphs.map((p) => p.fr).join(' '))
   return (
     <Tile
+      kind="text"
       to={`/reading/${t.id}`}
       done={done}
       top={
@@ -91,6 +92,7 @@ export function GradedTile({ t, done }: { t: ReaderTextDef; done?: boolean }) {
 export function UserTextTile({ t, done, onDelete }: { t: ReaderText; done?: boolean; onDelete: () => void }) {
   return (
     <Tile
+      kind="mytext"
       to={`/reading/${t.id}`}
       done={done}
       top={

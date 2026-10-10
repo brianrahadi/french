@@ -19,6 +19,7 @@ export function AudioTile({ l, p, next }: { l: AudioLessonDef; p?: AudioProgress
   const started = p && !p.done && p.pos > 0
   return (
     <Tile
+      kind="audio"
       to={`/audio/${l.id}`}
       done={!!p?.done}
       highlight={next}

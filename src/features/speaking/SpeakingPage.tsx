@@ -113,7 +113,7 @@ export default function SpeakingPage() {
         </Stack>
       </Card>
 
-      <Shelf id="sounds" title="Tricky sounds" count={SOUND_SETS.length}>
+      <Shelf id="sounds" kind="sounds" title="Tricky sounds" count={SOUND_SETS.length}>
         {SOUND_SETS.map((set) => (
           <Tile
             key={set.id}

@@ -4,6 +4,7 @@ import { Box, Button, Group, Scroller, Stack, Text, Title } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import { ArrowRight } from 'lucide-react'
 import { FluidTiles } from './Tile'
+import { KindIcon, type Kind } from './kinds'
 
 /** How many cards a shelf shows on a phone before "See all". */
 const PHONE_PREVIEW = 2
@@ -16,6 +17,7 @@ const PHONE_PREVIEW = 2
  */
 export function Shelf({
   id,
+  kind,
   title,
   count,
   action,
@@ -26,6 +28,8 @@ export function Shelf({
 }: {
   /** Anchor for links like /library#stories. */
   id?: string
+  /** What the shelf holds: an icon before the title. */
+  kind?: Kind
   title: ReactNode
   count?: number
   /** Something on the right of the title, e.g. a filter. */
@@ -48,6 +52,7 @@ export function Shelf({
       <Group justify="space-between" gap="sm" mb={hint ? 2 : 'xs'} wrap="nowrap">
         <Title order={2} size="h4">
           <Group component="span" gap={8} wrap="nowrap">
+            {kind && <KindIcon kind={kind} />}
             {title}
             {count !== undefined && (
               <Text span c="dimmed" size="sm" fw={500} className="tnum">

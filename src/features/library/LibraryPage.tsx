@@ -106,20 +106,20 @@ export default function LibraryPage() {
       {!speechSupported && <Callout kind="warn">This browser can’t read text aloud, so audio lessons and stories won’t play here. Try Chrome, Edge or Safari.</Callout>}
 
       {continuing.length > 0 && (
-        <Shelf id="continue" title="Continue" count={continuing.length} to="/library/continue">
+        <Shelf id="continue" kind="continue" title="Continue" count={continuing.length} to="/library/continue">
           {continuing.map((e) => e.node)}
         </Shelf>
       )}
 
       <GroupLabel title="Courses" fr="Cours" />
 
-      <Shelf id="grammar" title="Grammar course" count={grammar.length} to="/grammar">
+      <Shelf id="grammar" kind="grammar" title="Grammar course" count={grammar.length} to="/grammar">
         {grammar.map((l) => (
           <LessonTile key={l.id} l={l} p={s.lessons[l.id]} n={lessonNo(l.id)} />
         ))}
       </Shelf>
 
-      <Shelf id="audio" title="Audio course" count={audioTodo.length} to="/library/audio">
+      <Shelf id="audio" kind="audio" title="Audio course" count={audioTodo.length} to="/library/audio">
         {audioTodo.map((l) => (
           <AudioTile key={l.id} l={l} p={audio[l.id]} next={l === nextAudio} />
         ))}
@@ -127,7 +127,7 @@ export default function LibraryPage() {
 
       <GroupLabel title="Listen" fr="Écouter" />
 
-      <Shelf id="stories" title="Mini stories" count={storiesTodo.length} to="/library/stories">
+      <Shelf id="stories" kind="story" title="Mini stories" count={storiesTodo.length} to="/library/stories">
         {storiesTodo.map((x) => (
           <StoryTile key={x.id} s={x} />
         ))}
@@ -135,20 +135,20 @@ export default function LibraryPage() {
 
       <GroupLabel title="Read" fr="Lire" />
 
-      <Shelf id="texts" title="Graded texts" count={texts.length} to="/library/texts">
+      <Shelf id="texts" kind="text" title="Graded texts" count={texts.length} to="/library/texts">
         {texts.map((t) => (
           <GradedTile key={t.id} t={t} />
         ))}
         <ActionTile icon={<WandSparkles size={18} aria-hidden />} title={`Write me a new ${level} story`} sub="On any topic, with your words" onClick={() => d.openGenerate(level)} />
       </Shelf>
 
-      <Shelf id="books" title="Books" count={books.length} to="/library/books">
+      <Shelf id="books" kind="book" title="Books" count={books.length} to="/library/books">
         {books.map((b) => (
           <BookTile key={b.id} b={b} />
         ))}
       </Shelf>
 
-      <Shelf id="my-texts" title="Your texts" count={myTexts.length}>
+      <Shelf id="my-texts" kind="mytext" title="Your texts" count={myTexts.length}>
         {myTexts.map((t) => (
           <UserTextTile key={t.id} t={t} onDelete={() => d.askDelete(t.id)} />
         ))}
@@ -156,7 +156,7 @@ export default function LibraryPage() {
       </Shelf>
 
       {done.length > 0 && (
-        <Shelf id="completed" title="Completed" count={done.length} to="/library/completed">
+        <Shelf id="completed" kind="completed" title="Completed" count={done.length} to="/library/completed">
           {done.map((e) => e.node)}
         </Shelf>
       )}
