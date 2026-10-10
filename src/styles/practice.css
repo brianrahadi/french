@@ -144,6 +144,9 @@
   background: color-mix(in srgb, var(--primary) 14%, transparent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 14%, transparent);
 }
+.lk-nb {
+  white-space: nowrap;
+}
 .lk-word {
   display: inline;
   padding: 0;

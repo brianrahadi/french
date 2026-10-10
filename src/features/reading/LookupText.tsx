@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { create } from 'zustand'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router'
@@ -30,6 +30,52 @@ interface Open {
 }
 
 const useOpen = create<{ open: Open | null; set: (o: Open | null) => void }>((set) => ({ open: null, set: (open) => set({ open }) }))
+
+/** A non-breaking space (French spacing before ! ? : ; » and after «). */
+const NB = '[\\u00a0\\u202f]'
+const LEAD = new RegExp(`^${NB}[^ \\n]*`)
+const TRAIL = new RegExp(`[^ \\n]*${NB}$`)
+
+/**
+ * Keeps each word together with the punctuation French spacing attaches to it
+ * ("garçon !", "« Bonjour"), so a line never starts with "!" or ends with "«".
+ * Word buttons wrap like inline blocks, so a non-breaking space alone isn't enough.
+ */
+function glue(parts: (string | ReactElement)[]): ReactNode[] {
+  const out: ReactNode[] = []
+  let group: ReactNode[] | null = null
+  let k = 0
+  const close = () => {
+    if (group) out.push(group.length > 1 ? <span key={`g${k++}`} className="lk-nb">{group}</span> : group[0])
+    group = null
+  }
+  parts.forEach((p, i) => {
+    if (typeof p !== 'string') {
+      group = group ?? []
+      group.push(p)
+      return
+    }
+    let text = p
+    const lead = group && LEAD.exec(text)?.[0]
+    if (lead) {
+      group!.push(<span key={`l${i}`}>{lead}</span>)
+      text = text.slice(lead.length)
+    }
+    const next = parts[i + 1]
+    const trail = next && typeof next !== 'string' ? TRAIL.exec(text)?.[0] : undefined
+    if (trail) text = text.slice(0, -trail.length)
+    if (text || !lead) {
+      close()
+      if (text) out.push(<span key={`t${i}`}>{text}</span>)
+    }
+    if (trail) {
+      close()
+      group = [<span key={`r${i}`}>{trail}</span>]
+    }
+  })
+  close()
+  return out
+}
 
 /** The set of words the learner is learning (custom words and started built-in words), as lookup keys. */
 export function useLearningKeys(): Set<string> {
@@ -84,33 +130,35 @@ export function LookupText({
         const isActive = activeSentence === si + sentenceOffset
         return (
           <span key={si} className={`rd-sentence${isActive ? ' rd-sentence--active' : ''}`}>
-            {s.tokens.map((t, ti) => {
-              if (!t.word) return <span key={ti}>{frTypo(t.text)}</span>
-              wi++
-              const idx = wi
-              const selected = open && open.sentence === s.text && idx >= open.from && idx <= open.to
-              const wid = vocab?.idFor.get(t.text.toLowerCase())
-              const st = wid ? vocab?.status[wid] : undefined
-              const mark = vocab
-                ? `${vocab.highlight && st && st !== 'known' ? ` lk-word--s-${st}` : ''}${wid && wid === vocab.focus ? ' lk-word--focus' : ''}`
-                : lookupForms(t.text).some((f) => learning.has(f))
-                  ? ' lk-word--learning'
-                  : ''
-              return (
-                <button
-                  key={ti}
-                  type="button"
-                  data-wid={wid}
-                  className={`lk-word${mark}${selected ? ' lk-word--selected' : ''}`}
-                  onClick={(e) => {
-                    setOpen({ owner, sentence: s.text, words, from: idx, to: idx, anchor: e.currentTarget })
-                    if (wid) vocab?.onOpen?.(wid)
-                  }}
-                >
-                  {frTypo(t.text)}
-                </button>
-              )
-            })}
+            {glue(
+              s.tokens.map((t, ti) => {
+                if (!t.word) return frTypo(t.text)
+                wi++
+                const idx = wi
+                const selected = open && open.sentence === s.text && idx >= open.from && idx <= open.to
+                const wid = vocab?.idFor.get(t.text.toLowerCase())
+                const st = wid ? vocab?.status[wid] : undefined
+                const mark = vocab
+                  ? `${vocab.highlight && st && st !== 'known' ? ` lk-word--s-${st}` : ''}${wid && wid === vocab.focus ? ' lk-word--focus' : ''}`
+                  : lookupForms(t.text).some((f) => learning.has(f))
+                    ? ' lk-word--learning'
+                    : ''
+                return (
+                  <button
+                    key={ti}
+                    type="button"
+                    data-wid={wid}
+                    className={`lk-word${mark}${selected ? ' lk-word--selected' : ''}`}
+                    onClick={(e) => {
+                      setOpen({ owner, sentence: s.text, words, from: idx, to: idx, anchor: e.currentTarget })
+                      if (wid) vocab?.onOpen?.(wid)
+                    }}
+                  >
+                    {frTypo(t.text)}
+                  </button>
+                )
+              }),
+            )}
             {si < sentences.length - 1 ? ' ' : ''}
           </span>
         )
