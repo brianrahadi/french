@@ -39,9 +39,23 @@ import { PALETTES, paletteOf, type Palette, type PaletteId } from '../../theme'
 import { SIDEBAR_SHORTCUT } from '../../components/rail'
 
 /** A titled settings group: an h2 and the controls in a Card (or bare, for cards that bring their own). */
-function Section({ id, anchor, title, bare, children }: { id: string; anchor?: string; title: ReactNode; bare?: boolean; children: ReactNode }) {
+function Section({
+  id,
+  anchor,
+  title,
+  bare,
+  className,
+  children,
+}: {
+  id: string
+  anchor?: string
+  title: ReactNode
+  bare?: boolean
+  className?: string
+  children: ReactNode
+}) {
   return (
-    <Box component="section" aria-labelledby={id} id={anchor} mt="xl">
+    <Box component="section" aria-labelledby={id} id={anchor} mt="xl" className={className}>
       <Title order={2} size="h4" id={id} mb="sm">
         {title}
       </Title>
@@ -395,7 +409,7 @@ export default function SettingsPage() {
         />
       </Section>
 
-      <Section id="set-keys" title="Keyboard shortcuts">
+      <Section id="set-keys" title="Keyboard shortcuts" className="kbd-hint">
         <DataList labelWidth={110} gap="xs">
           <Shortcut keys={<Kbd>↵</Kbd>}>Check answer · continue</Shortcut>
           <Shortcut keys={<Kbd>Space</Kbd>}>Flip a flashcard</Shortcut>

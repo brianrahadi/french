@@ -209,9 +209,9 @@ export function SpeakQuestion({
         {cap.state === 'idle' && !attempts && (
           <Text span c="dimmed" fz="inherit">
             Tap the microphone{' '}
-            <Text span visibleFrom="sm" fz="inherit">
+            <span className="kbd-hint">
               or press <Kbd>Space</Kbd>
-            </Text>{' '}
+            </span>{' '}
             and speak.
           </Text>
         )}

@@ -19,8 +19,13 @@ import type { Level } from '../data/types'
  * (a level badge, a progress bar…) without repeating props everywhere.
  */
 
+/** A key hint. Hidden on touch screens (`.kbd-hint`), where there's no keyboard to press it on. */
 export function Kbd({ children }: { children: ReactNode }) {
-  return <MKbd size="xs">{children}</MKbd>
+  return (
+    <MKbd size="xs" className="kbd-hint">
+      {children}
+    </MKbd>
+  )
 }
 
 export function ProgressBar({ value, label, variant, thin }: { value: number; label: string; variant?: 'success'; thin?: boolean }) {

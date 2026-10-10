@@ -117,9 +117,17 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Touch screens (phones, tablets): no keyboard, so no key hints. */
 @media (hover: none) {
   .kbd-hint {
     display: none !important;
+  }
+  /* A button section that only held a key hint would leave an empty gap. */
+  .mantine-Button-section:has(> .kbd-hint:only-child) {
+    display: none;
+  }
+  .mantine-Button-root:has(.mantine-Button-section[data-position='right'] > .kbd-hint:only-child) {
+    padding-inline-end: var(--button-padding-x);
   }
 }
 

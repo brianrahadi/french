@@ -90,10 +90,10 @@ export function DictationQuestion({
           </Button>
           <Text size="sm" c="dimmed">
             {plays > 1 ? `Played ${plays}×` : 'Replay as often as you like'}
-            <Text span visibleFrom="sm" fz="inherit">
+            <span className="kbd-hint">
               {' '}
               · <Kbd>⇧↵</Kbd>
-            </Text>
+            </span>
           </Text>
         </Stack>
         <Chip ml="auto" size="xs" checked={showCount} onChange={() => setShowCount((v) => !v)} icon={<Eye size={14} aria-hidden />}>
