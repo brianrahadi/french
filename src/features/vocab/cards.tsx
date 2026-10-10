@@ -10,10 +10,14 @@ import { GenderTag, Kbd } from '../../components/ui'
 import { checkAnswer, normalize } from '../../lib/answer'
 import { useStore } from '../../lib/store'
 import { useHotkeys } from '../../lib/hooks'
-import { previewIntervals, Rating, State, type Grade } from '../../lib/srs'
+import { newCard, previewIntervals, Rating, State, type Grade } from '../../lib/srs'
 import { definite, displayFr, frTypo, glossParts, posLabel, productionAnswers, speakText, startsWithVowelSound } from '../../lib/words'
 
-/* Flashcard building blocks shared by the vocabulary session and the mixed daily session. */
+/*
+ * Flashcard building blocks shared by the vocabulary session and the mixed daily session.
+ * Cards work like Anki: the front only, you guess, flip (Space), then rate 1–4. New words
+ * aren't shown with their answer first — a new word is just a card you haven't seen yet.
+ */
 
 /** Small uppercase line above the card saying what to do. */
 function Kicker({ children }: { children: ReactNode }) {
@@ -60,49 +64,53 @@ export function Example({ w, autoPlay = false }: { w: Word; autoPlay?: boolean }
   )
 }
 
-export function IntroCard({ word: w, onDone }: { word: Word; onDone: (known: boolean) => void }) {
-  const autoplay = useStore((s) => s.settings.autoplay)
-  useHotkeys({ Enter: () => onDone(false), Space: () => onDone(false), k: () => onDone(true) })
+/** "New · A1" for a word seen for the first time (no card yet, or one never rated). */
+function useIsNew(id: string) {
+  const [isNew] = useState(() => {
+    const c = useStore.getState().cards[id]
+    return !c || c.state === State.New
+  })
+  return isNew
+}
+
+function CardKicker({ id, word: w, children }: { id: string; word: Word; children: ReactNode }) {
+  const isNew = useIsNew(id)
   return (
-    <>
-      <Kicker>
-        <Sparkles size={15} aria-hidden /> New word · {w.level}
-      </Kicker>
-      <div className="flash">
-        <Group gap={6} justify="center">
-          <FrWord w={w} />
-          <SpeakButton text={speakText(w)} autoPlay={autoplay} />
-        </Group>
-        <WordMeta w={w} />
-        <div className="flash__divider" />
-        <div className="flash__en">{w.en}</div>
-        {w.ex && (
-              <Box mt={22}>
-                <Example w={w} />
-              </Box>
-            )}
-        {w.note && <p className="flash__note">{w.note}</p>}
-      </div>
-      <BottomSheet
-        verdict="neutral"
-        actions={
-          <Button size="lg" onClick={() => onDone(false)} autoFocus rightSection={<Kbd>↵</Kbd>}>
-            Got it
-          </Button>
-        }
-      >
-        <Button variant="subtle" color="gray" onClick={() => onDone(true)} rightSection={<Kbd>K</Kbd>}>
-          I already know this
+    <Kicker>
+      {isNew && (
+        <Text span c="blue.7" fz="inherit" fw="inherit" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Sparkles size={15} aria-hidden /> New{w.level && !w.custom ? ` · ${w.level}` : ''} ·
+        </Text>
+      )}
+      {children}
+    </Kicker>
+  )
+}
+
+/** Front-of-card actions: flip, and — for a word never seen — skip it as already known. */
+function FrontSheet({ onFlip, onKnown }: { onFlip: () => void; onKnown?: () => void }) {
+  useHotkeys({ Enter: onFlip, Space: onFlip, ...(onKnown ? { k: onKnown } : {}) })
+  return (
+    <BottomSheet verdict="neutral">
+      <Stack gap={6} align="center">
+        <Button size="lg" fullWidth maw={420} onClick={onFlip} autoFocus rightSection={<Kbd>Space</Kbd>}>
+          Show answer
         </Button>
-      </BottomSheet>
-    </>
+        {onKnown && (
+          <Button variant="subtle" color="gray" size="xs" onClick={onKnown} rightSection={<Kbd>K</Kbd>}>
+            I already know this
+          </Button>
+        )}
+      </Stack>
+    </BottomSheet>
   )
 }
 
 export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: Grade) => void; suggested?: Grade }) {
   const card = useStore((s) => s.cards[id])
   const retention = useStore((s) => s.settings.retention)
-  const labels = useMemo(() => (card ? previewIntervals(card, new Date(), retention) : null), [card, retention])
+  // A new word has no card until it's first rated: preview from a fresh one.
+  const labels = useMemo(() => previewIntervals(card ?? newCard(), new Date(), retention), [card, retention])
   const buttons: { g: Grade; label: string; color: string }[] = [
     { g: Rating.Again, label: 'Again', color: 'red' },
     { g: Rating.Hard, label: 'Hard', color: 'orange' },
@@ -139,7 +147,7 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
               <Stack gap={2} align="center">
                 {b.label}
                 <Text span size="xs" fw={560} c="dimmed" className="tnum">
-                  {labels?.[b.g] ?? ''}
+                  {labels[b.g]}
                   <span className="kbd-hint"> · {i + 1}</span>
                 </Text>
               </Stack>
@@ -156,13 +164,22 @@ export function RatingBar({ id, onRate, suggested }: { id: string; onRate: (g: G
   )
 }
 
-export function RecognitionCard({ word: w, id, onRate }: { word: Word; id: string; onRate: (g: Grade) => void }) {
+interface CardProps {
+  word: Word
+  id: string
+  onRate: (g: Grade) => void
+  /** Offered on a word's very first card: skip it as already known. */
+  onKnown?: () => void
+}
+
+export function RecognitionCard({ word: w, id, onRate, onKnown }: CardProps) {
   const autoplay = useStore((s) => s.settings.autoplay)
   const [revealed, setRevealed] = useState(false)
-  useHotkeys({ Enter: () => setRevealed(true), Space: () => setRevealed(true) }, { enabled: !revealed })
   return (
     <>
-      <Kicker>What does this mean?</Kicker>
+      <CardKicker id={id} word={w}>
+        What does this mean?
+      </CardKicker>
       <div className="flash">
         <Group gap={6} justify="center">
           <FrWord w={w} />
@@ -184,15 +201,85 @@ export function RecognitionCard({ word: w, id, onRate }: { word: Word; id: strin
           </>
         )}
       </div>
-      <BottomSheet verdict="neutral">
-        {revealed ? (
+      {revealed ? (
+        <BottomSheet verdict="neutral">
           <RatingBar id={id} onRate={onRate} />
-        ) : (
-          <Button size="lg" fullWidth maw={420} mx="auto" display="flex" onClick={() => setRevealed(true)} rightSection={<Kbd>Space</Kbd>}>
-            Show answer
-          </Button>
+        </BottomSheet>
+      ) : (
+        <FrontSheet onFlip={() => setRevealed(true)} onKnown={onKnown} />
+      )}
+    </>
+  )
+}
+
+/** EN → FR, in the card style chosen in Settings: flashcard (Anki), fill in the blank, or a mix. */
+export function ProductionCard(props: CardProps) {
+  const style = useStore((s) => s.settings.cardStyle)
+  // Mixed: decided once per card shown, so it doesn't switch while you answer.
+  const [coin] = useState(() => Math.random() < 0.5)
+  const typed = style === 'type' || (style === 'mixed' && coin)
+  return typed ? <TypedProductionCard {...props} /> : <FlipProductionCard {...props} />
+}
+
+/** The French example with the word blanked out, when the word appears in it as is. */
+function blanked(w: Word): string | null {
+  if (!w.ex) return null
+  const target = (w.pos === 'n' && w.g && !w.custom ? w.fr : displayFr(w).split(' · ')[0]).trim()
+  if (target.length < 2) return null
+  const esc = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(`(^|[^\\p{L}])${esc}(?![\\p{L}])`, 'iu')
+  if (!re.test(w.ex)) return null
+  return w.ex.replace(re, (_m, pre: string) => `${pre}_____`)
+}
+
+function FlipProductionCard({ word: w, id, onRate, onKnown }: CardProps) {
+  const autoplay = useStore((s) => s.settings.autoplay)
+  const [revealed, setRevealed] = useState(false)
+  const withArticle = w.pos === 'n' && w.g && !w.custom
+  return (
+    <>
+      <CardKicker id={id} word={w}>
+        Say it in French
+      </CardKicker>
+      <div className="flash">
+        <div className="flash__en">{glossParts(w.en).join(', ')}</div>
+        <div className="flash__pos">
+          {posLabel(w)}
+          {withArticle ? ' — with its article' : ''}
+        </div>
+        {w.exEn && !revealed && (
+          <Box component="p" className="flash__example-en" mt={14}>
+            “{w.exEn}”
+          </Box>
         )}
-      </BottomSheet>
+        {revealed && (
+          <>
+            <div className="flash__divider" />
+            <Group gap={6} justify="center" aria-live="polite">
+              <FrWord w={w} />
+              <SpeakButton text={speakText(w)} autoPlay={autoplay} />
+            </Group>
+            {w.pos === 'n' && w.g && !w.both && (startsWithVowelSound(w.fr) || w.pl) && (
+              <div className="flash__pos">
+                <GenderTag g={w.g} />
+              </div>
+            )}
+            {w.ex && (
+              <Box mt={18}>
+                <Example w={w} />
+              </Box>
+            )}
+            {w.note && <p className="flash__note">{w.note}</p>}
+          </>
+        )}
+      </div>
+      {revealed ? (
+        <BottomSheet verdict="neutral">
+          <RatingBar id={id} onRate={onRate} />
+        </BottomSheet>
+      ) : (
+        <FrontSheet onFlip={() => setRevealed(true)} onKnown={onKnown} />
+      )}
     </>
   )
 }
@@ -201,7 +288,7 @@ type Verdict = 'correct' | 'almost' | 'wrong' | 'partial'
 const sheetVerdict = (v: Verdict) => (v === 'correct' ? 'correct' : v === 'wrong' ? 'wrong' : 'almost')
 const VERDICT_COLOR = { correct: 'green', almost: 'orange', wrong: 'red' } as const
 
-export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string; onRate: (g: Grade) => void }) {
+function TypedProductionCard({ word: w, id, onRate, onKnown }: CardProps) {
   const autoplay = useStore((s) => s.settings.autoplay)
   const strict = useStore((s) => s.settings.strictAccents)
   const say = useSpeak()
@@ -209,6 +296,7 @@ export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string
   const [result, setResult] = useState<null | { verdict: 'correct' | 'almost' | 'wrong' | 'partial'; expected: string }>(null)
   const ref = useRef<HTMLInputElement>(null)
   const { answers, partial } = productionAnswers(w)
+  const blank = useMemo(() => blanked(w), [w])
 
   const check = (giveUp = false) => {
     if (result) return
@@ -239,15 +327,22 @@ export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string
 
   return (
     <>
-      <Kicker>Say it in French</Kicker>
+      <CardKicker id={id} word={w}>
+        Fill in the blank
+      </CardKicker>
       <div className="flash">
         <div className="flash__en">{glossParts(w.en).join(', ')}</div>
         <div className="flash__pos">
           {posLabel(w)}
           {hintArticle ? ' — include the article' : ''}
         </div>
+        {!result && blank && (
+          <Box component="p" className="flash__example" lang="fr" mt={14}>
+            {frTypo(blank)}
+          </Box>
+        )}
         {w.exEn && !result && (
-          <Box component="p" className="flash__example-en" mt={14}>
+          <Box component="p" className="flash__example-en" mt={blank ? 4 : 14}>
             “{w.exEn}”
           </Box>
         )}
@@ -327,9 +422,16 @@ export function ProductionCard({ word: w, id, onRate }: { word: Word; id: string
             </Button>
           }
         >
-          <Button variant="subtle" color="gray" onClick={() => check(true)}>
-            Show answer
-          </Button>
+          <Group gap={4}>
+            <Button variant="subtle" color="gray" onClick={() => check(true)}>
+              Show answer
+            </Button>
+            {onKnown && (
+              <Button variant="subtle" color="gray" onClick={onKnown}>
+                I already know this
+              </Button>
+            )}
+          </Group>
         </BottomSheet>
       )}
     </>

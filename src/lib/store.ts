@@ -14,6 +14,8 @@ import type { PaletteId } from '../theme'
 
 export type Theme = 'system' | 'light' | 'dark'
 export type Directions = 'both' | 'recognition' | 'production'
+/** How EN → FR cards are answered: flip and self-rate (Anki), type it into the blank, or a mix of both. */
+export type CardStyle = 'flip' | 'type' | 'mixed'
 /** How big the interface is: text, cards and spacing. Big is the original size. */
 export type UiSize = 'big' | 'medium' | 'small'
 
@@ -27,6 +29,7 @@ export interface Settings {
   voiceURIEn: string | null
   rate: number
   strictAccents: boolean
+  cardStyle: CardStyle
   theme: Theme
   /** Colour theme (see PALETTES in src/theme.ts). */
   palette: PaletteId
@@ -286,6 +289,7 @@ export const DEFAULT_SETTINGS: Settings = {
   voiceURIEn: null,
   rate: 0.95,
   strictAccents: false,
+  cardStyle: 'flip',
   theme: 'system',
   palette: 'clay',
   size: 'big',

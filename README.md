@@ -73,10 +73,11 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 **Vocabulary — 5,000+ words: 29 themed decks plus the 5,000 most frequent French words**
 - **Top 5000** is one switch: the most frequent French words, introduced strictly in frequency order (most common first), without themes or levels. Words that are also in a themed deck are shared, so you never learn one twice.
 - Scheduled with **FSRS** (the modern algorithm Anki now uses) via [`ts-fsrs`](https://github.com/open-spaced-repetition/ts-fsrs).
-- Every word is learned both ways: *recognition* (FR → EN, self-graded) and *production* (EN → FR, typed and auto-graded, then you confirm the rating).
+- Cards work like Anki: you only see the front, guess, flip (`Space`) and rate yourself Again / Hard / Good / Easy (`1–4`). New words aren't shown with their answer first — a new word is just a card you haven't seen yet. The study screen shows Anki's counter of new · learning · review cards left.
+- Every word is learned both ways: *recognition* (FR → EN) and *production* (EN → FR). **Card style** in Settings picks how EN → FR cards are answered: *Flashcard* (flip and self-rate), *Fill in the blank* (type the French — the example sentence has the word blanked out — auto-checked, then you confirm the rating) or *Mixed* (one or the other at random for each card).
 - Nouns are always learned with their article; gender is colour-coded **and** labelled (m/f) so it doesn’t rely on colour alone.
 - Every word has an example sentence and translation, with audio.
-- “I already know this” (K) skips words you know from Anki/LingQ in one keystroke.
+- “I already know this” (K) on a word’s first card skips words you know from Anki/LingQ in one keystroke.
 - Add your own words, or **import from Anki / LingQ / a spreadsheet** (tab, semicolon or comma separated).
 
 **Conjugation — 103 verbs × 9 tenses**

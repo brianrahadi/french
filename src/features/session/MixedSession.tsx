@@ -17,7 +17,7 @@ import { DictationQuestion, type DictationAnswer } from '../listening/DictationQ
 import { sentenceById } from '../listening/sentences'
 import { SpeakQuestion, type SpeakAnswer } from '../speaking/SpeakQuestion'
 import { FixQuestion, type FixAnswer } from '../weak/FixQuestion'
-import { IntroCard, ProductionCard, RecognitionCard } from '../vocab/cards'
+import { ProductionCard, RecognitionCard } from '../vocab/cards'
 import { dirsFor } from '../vocab/selectors'
 import { GrammarQuestion, promptText } from '../grammar/GrammarQuestion'
 import type { Graded } from '../grammar/grade'
@@ -111,37 +111,36 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
 
   const advance = () => setRun((r) => pick({ ...r, done: r.done + 1 }))
 
-  const onIntroduced = (wordId: string, known: boolean) => {
-    const dirs = dirsFor(directions)
-    introduceWord(wordId, dirs, known)
+  // A new word is shown as a card straight away (front only, Anki-style) — no study screen first.
+  const onKnown = (wordId: string) => {
+    introduceWord(wordId, dirsFor(directions), true)
     logActivity(true, { newWord: true, skill: 'vocabulary' })
-    setRun((r) => {
-      let items = r.items
-      if (!known) {
-        items = insertAt(items, 2, { kind: 'card', id: cardId(wordId, dirs[0]) })
-        if (dirs[1]) items = insertAt(items, 6, { kind: 'card', id: cardId(wordId, dirs[1]) })
-      }
-      return pick({ ...r, items, done: r.done + 1, newWords: r.newWords + 1 })
-    })
+    setRun((r) => pick({ ...r, done: r.done + 1, newWords: r.newWords + 1 }))
   }
 
-  const onRated = (id: string, grade: Grade) => {
+  const onRated = (id: string, grade: Grade, isNew = false) => {
+    const { wordId, dir } = parseCardId(id)
+    const dirs = dirsFor(directions)
+    if (isNew) introduceWord(wordId, dirs)
     const next = rateCard(id, grade)
     const ok = grade !== Rating.Again
-    logActivity(ok, { skill: 'vocabulary' })
+    logActivity(ok, { newWord: isNew, skill: 'vocabulary' })
     if (!ok) {
-      const { wordId, dir } = parseCardId(id)
       const w = findWord(wordId, customWords)
       if (w) noteLapse(wordId, dir === 'r' ? w.fr : w.en, dir === 'r' ? w.en : displayFr(w))
     }
+    // The other direction of a new word comes up a few questions later, as a new card.
+    const sibling = isNew ? dirs.find((d) => d !== dir) : undefined
     setRun((r) => {
       const dueMs = new Date(next.due).getTime()
       const again = cardComesBack(grade, dueMs)
       return pick({
         ...r,
+        items: sibling ? insertAt(r.items, 5, { kind: 'card', id: cardId(wordId, sibling) }) : r.items,
         learning: again ? [...r.learning, { id, due: dueMs }] : r.learning,
         done: r.done + 1,
         vocab: bump(r.vocab, ok),
+        newWords: r.newWords + (isNew ? 1 : 0),
       })
     })
   }
@@ -252,8 +251,9 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
   let body: React.ReactNode = null
 
   if (cur.kind === 'intro' || cur.kind === 'card') {
-    const wordId = cur.kind === 'intro' ? cur.wordId : parseCardId(cur.id).wordId
-    const w = findWord(wordId, customWords)
+    const isNew = cur.kind === 'intro'
+    const id = isNew ? cardId(cur.wordId, dirsFor(directions)[0]) : cur.id
+    const w = findWord(parseCardId(id).wordId, customWords)
     if (!w) {
       setTimeout(advance)
       return null
@@ -261,12 +261,10 @@ function MixedSession({ mode }: { mode: 'daily' | 'weak' }) {
     body = (
       <>
         <Kind icon={<Layers size={15} aria-hidden />} label={tag('Vocabulary', !w.custom && w.level, plan.mode === 'weak' && 'weak spot')} />
-        {cur.kind === 'intro' ? (
-          <IntroCard key={key} word={w} onDone={(known) => onIntroduced(w.id, known)} />
-        ) : parseCardId(cur.id).dir === 'r' ? (
-          <RecognitionCard key={key} word={w} id={cur.id} onRate={(g) => onRated(cur.id, g)} />
+        {parseCardId(id).dir === 'r' ? (
+          <RecognitionCard key={key} word={w} id={id} onRate={(g) => onRated(id, g, isNew)} onKnown={isNew ? () => onKnown(w.id) : undefined} />
         ) : (
-          <ProductionCard key={key} word={w} id={cur.id} onRate={(g) => onRated(cur.id, g)} />
+          <ProductionCard key={key} word={w} id={id} onRate={(g) => onRated(id, g, isNew)} onKnown={isNew ? () => onKnown(w.id) : undefined} />
         )}
       </>
     )

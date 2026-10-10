@@ -9,7 +9,7 @@ import { useStore } from '../../lib/store'
 import { useDocumentTitle, useHotkeys } from '../../lib/hooks'
 import { cardId, parseCardId, Rating, State, type Grade } from '../../lib/srs'
 import { dirsFor, dueCardIds, newAvailableToday, newWordQueue } from './selectors'
-import { IntroCard, ProductionCard, RecognitionCard } from './cards'
+import { ProductionCard, RecognitionCard } from './cards'
 import { noteLapse } from '../../lib/mistakes'
 import { displayFr } from '../../lib/words'
 
@@ -88,44 +88,42 @@ function StudySession({ extra }: { extra: number }) {
   const remaining = session.items.length + session.learning.length + (session.current ? 1 : 0)
   const progress = session.done / Math.max(1, session.done + remaining)
 
-  const onIntroduced = (wordId: string, known: boolean) => {
-    const dirs = dirsFor(directions)
-    introduceWord(wordId, dirs, known)
+  // A word's first card is shown straight away, front only — no study screen first.
+  const onKnown = (wordId: string) => {
+    introduceWord(wordId, dirsFor(directions), true)
     logActivity(true, { newWord: true, skill: 'vocabulary' })
-    setSession((s) => {
-      let items = s.items
-      if (!known) {
-        // Test it soon, after a couple of other cards, then the other direction later.
-        items = insertAt(items, 2, { kind: 'card', id: cardId(wordId, dirs[0]) })
-        if (dirs[1]) items = insertAt(items, 6, { kind: 'card', id: cardId(wordId, dirs[1]) })
-      }
-      return pick({ ...s, items, done: s.done + 1, learned: s.learned + 1 })
-    })
+    setSession((s) => pick({ ...s, done: s.done + 1, learned: s.learned + 1 }))
   }
 
-  const onRated = (id: string, grade: Grade) => {
+  const onRated = (id: string, grade: Grade, isNew = false) => {
+    const { wordId, dir } = parseCardId(id)
+    const dirs = dirsFor(directions)
+    if (isNew) introduceWord(wordId, dirs)
     const next = rateCard(id, grade)
-    logActivity(grade !== Rating.Again, { skill: 'vocabulary' })
+    logActivity(grade !== Rating.Again, { newWord: isNew, skill: 'vocabulary' })
     if (grade === Rating.Again) {
-      const { wordId, dir } = parseCardId(id)
       const w = findWord(wordId, useStore.getState().customWords)
       if (w) noteLapse(wordId, dir === 'r' ? w.fr : w.en, dir === 'r' ? w.en : displayFr(w))
     }
+    // The other direction of a new word comes up later, as a new card of its own.
+    const sibling = isNew ? dirs.find((d) => d !== dir) : undefined
     setSession((s) => {
       const dueMs = new Date(next.due).getTime()
       const inSession = (next.state === State.Learning || next.state === State.Relearning) && dueMs - Date.now() < 60 * 60_000
       return pick({
         ...s,
+        items: sibling ? insertAt(s.items, 5, { kind: 'card', id: cardId(wordId, sibling) }) : s.items,
         learning: inSession ? [...s.learning, { id, due: dueMs }] : s.learning,
         done: s.done + 1,
         reviews: s.reviews + 1,
         correct: s.correct + (grade !== Rating.Again ? 1 : 0),
+        learned: s.learned + (isNew ? 1 : 0),
       })
     })
   }
 
   const cur = session.current
-  const count = `${session.done}/${session.done + remaining}`
+  const count = <AnkiCounts session={session} />
 
   if (!cur) {
     return (
@@ -135,33 +133,54 @@ function StudySession({ extra }: { extra: number }) {
     )
   }
 
-  if (cur.kind === 'intro') {
-    const w = findWord(cur.wordId, customWords)
-    if (!w) {
-      setTimeout(() => setSession((s) => pick(s)))
-      return null
-    }
-    return (
-      <FocusShell progress={progress} exitTo="/vocab" label="Study" count={count}>
-        <IntroCard key={w.id} word={w} onDone={(known) => onIntroduced(w.id, known)} />
-      </FocusShell>
-    )
-  }
-
-  const { wordId, dir } = parseCardId(cur.id)
+  const isNew = cur.kind === 'intro'
+  const id = isNew ? cardId(cur.wordId, dirsFor(directions)[0]) : cur.id
+  const { wordId, dir } = parseCardId(id)
   const w = findWord(wordId, customWords)
   if (!w) {
     setTimeout(() => setSession((s) => pick(s)))
     return null
   }
+  const key = `${id}-${session.done}`
+  const props = {
+    word: w,
+    id,
+    onRate: (g: Grade) => onRated(id, g, isNew),
+    onKnown: isNew ? () => onKnown(w.id) : undefined,
+  }
   return (
     <FocusShell progress={progress} exitTo="/vocab" label="Study" count={count}>
-      {dir === 'r' ? (
-        <RecognitionCard key={`${cur.id}-${session.done}`} word={w} id={cur.id} onRate={(g) => onRated(cur.id, g)} />
-      ) : (
-        <ProductionCard key={`${cur.id}-${session.done}`} word={w} id={cur.id} onRate={(g) => onRated(cur.id, g)} />
-      )}
+      {dir === 'r' ? <RecognitionCard key={key} {...props} /> : <ProductionCard key={key} {...props} />}
     </FocusShell>
+  )
+}
+
+type Kind = 'new' | 'learning' | 'review'
+
+function kindOf(item: Item, cards: ReturnType<typeof useStore.getState>['cards']): Kind {
+  if (item.kind === 'intro') return 'new'
+  const c = cards[item.id]
+  if (!c || c.state === State.New) return 'new'
+  return c.state === State.Review ? 'review' : 'learning'
+}
+
+/** Anki's counter: cards left to see — new (blue), learning (red), review (green); the current kind underlined. */
+function AnkiCounts({ session }: { session: Session }) {
+  const cards = useStore((s) => s.cards)
+  const n: Record<Kind, number> = { new: 0, learning: 0, review: 0 }
+  for (const it of session.items) n[kindOf(it, cards)]++
+  n.learning += session.learning.length
+  const cur = session.current ? kindOf(session.current, cards) : null
+  if (cur) n[cur]++
+  const label = `${n.new} new, ${n.learning} learning, ${n.review} to review`
+  return (
+    <span className="anki-counts" aria-label={label} title={label}>
+      {(['new', 'learning', 'review'] as Kind[]).map((k) => (
+        <span key={k} className={`anki-counts__${k}${cur === k ? ' is-current' : ''}`}>
+          {n[k]}
+        </span>
+      ))}
+    </span>
   )
 }
 

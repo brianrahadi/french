@@ -279,3 +279,20 @@
 .mistake + .mistake {
   border-top: 1px solid var(--border);
 }
+
+/* Anki's remaining-cards counter: new · learning · review, the current kind underlined. */
+.anki-counts {
+  display: inline-flex;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.anki-counts__new { color: var(--mantine-color-blue-6); }
+.anki-counts__learning { color: var(--mantine-color-red-6); }
+.anki-counts__review { color: var(--mantine-color-green-7); }
+.anki-counts .is-current {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}

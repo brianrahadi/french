@@ -13,7 +13,7 @@ export function FocusShell({
   label,
 }: {
   progress: number
-  count?: string
+  count?: ReactNode
   exitTo: string
   label: string
   children: ReactNode
@@ -27,7 +27,7 @@ export function FocusShell({
         <div style={{ flex: 1 }}>
           <ProgressBar value={progress} label={`${label} progress`} />
         </div>
-        <Text size="sm" c="dimmed" fw={600} className="tnum" miw={40} ta="right" aria-live="polite">
+        <Text component="div" size="sm" c="dimmed" fw={600} className="tnum" miw={40} ta="right" aria-live="polite">
           {count}
         </Text>
       </Group>

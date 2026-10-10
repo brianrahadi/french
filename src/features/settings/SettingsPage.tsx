@@ -29,7 +29,7 @@ import { Dialog } from '../../components/Dialog'
 import { PageHeader } from '../../components/PageHeader'
 import { Kbd } from '../../components/ui'
 import { toast } from '../../components/Toast'
-import { exportData, useStore, type Directions, type Theme, type UiSize } from '../../lib/store'
+import { exportData, useStore, type CardStyle, type Directions, type Theme, type UiSize } from '../../lib/store'
 import { useDocumentTitle } from '../../lib/hooks'
 import { say, speak, speechSupported, useEnglishVoices, useFrenchVoices, voiceTip } from '../../lib/speech'
 import { dayKey } from '../../lib/date'
@@ -206,13 +206,24 @@ export default function SettingsPage() {
         <Divider />
         <Segmented<Directions>
           label="Card directions"
-          desc="Typing the French (production) builds active vocabulary; recognition is faster."
+          desc="EN → FR (recalling the French) builds active vocabulary; FR → EN is faster."
           value={settings.directions}
           onChange={(d) => update({ directions: d })}
           data={[
             ['both', 'Both'],
             ['recognition', 'FR → EN'],
             ['production', 'EN → FR'],
+          ]}
+        />
+        <Segmented<CardStyle>
+          label="Card style"
+          desc="Flashcard works like Anki: guess, flip, rate yourself. Fill in the blank has you type the French and checks it. Mixed picks one at random for each card. (FR → EN cards are always flashcards.)"
+          value={settings.cardStyle}
+          onChange={(c) => update({ cardStyle: c })}
+          data={[
+            ['flip', 'Flashcard'],
+            ['type', 'Fill in the blank'],
+            ['mixed', 'Mixed'],
           ]}
         />
         <Divider />
