@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import { useMediaQuery } from '@mantine/hooks'
-import { Button, Container } from '@mantine/core'
+import { Button, Container, Divider, Group, Text } from '@mantine/core'
 import { ClipboardPaste, WandSparkles } from 'lucide-react'
 import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
@@ -28,9 +28,10 @@ import { libraryEntries, lessonNo } from './entries'
 import { isSection, sectionArea } from './LibrarySectionPage'
 
 /**
- * Everything to take in, LingQ-style: one row per kind of content (courses,
- * stories, texts, books), what you're in the middle of at the top and what
- * you've finished at the bottom. Conversations and writing are in Practice.
+ * Everything to take in, LingQ-style: what you're in the middle of at the
+ * top, then rows grouped as Courses (grammar, audio), Listen (stories) and
+ * Read (graded texts, books, your texts), and what you've finished at the
+ * bottom. Conversations and writing are in Practice.
  */
 export default function LibraryPage() {
   useDocumentTitle('Library')
@@ -68,13 +69,14 @@ export default function LibraryPage() {
   // ── Rows of things to start
   const grammar = [
     ...LESSONS.filter((l) => lessonStatus(s.lessons[l.id]) === 'due'),
-    ...LESSONS.filter((l) => lessonStatus(s.lessons[l.id]) === 'new'),
+    ...LESSONS.filter((l) => lessonStatus(s.lessons[l.id]) === 'new' && shown(l.level)),
   ]
-  const audioTodo = AUDIO_LESSONS.filter((l) => !audio[l.id]?.done && !(audio[l.id]?.pos > 0))
+  const audioTodo = AUDIO_LESSONS.filter((l) => !audio[l.id]?.done && !(audio[l.id]?.pos > 0) && shown(l.level))
   const nextAudio = AUDIO_LESSONS.find((l) => !audio[l.id]?.done)
   const storiesTodo = STORIES.filter((x) => !stories[x.id] && shown(x.level)).sort(byLevel)
   const texts = BUILTIN_TEXTS.filter((t) => !s.read[t.id] && shown(t.level)).sort(byLevel)
-  const myTexts = s.texts.filter((t) => !s.read[t.id] && !t.openedAt)
+  // Texts you pasted or had written for you, until you finish them (opened ones also show in Continue).
+  const myTexts = s.texts.filter((t) => !s.read[t.id])
   // Books you're reading first, then the rest by level; finished ones move to Completed.
   const bookState = (id: string) => bookProgress(BOOKS.find((b) => b.id === id)!, s.read, s.books?.[id]?.chapter)
   const books = BOOKS.filter((b) => !bookState(b.id).finished && shown(b.level)).sort((a, b) => {
@@ -109,12 +111,9 @@ export default function LibraryPage() {
         </Shelf>
       )}
 
-      <Shelf
-        id="grammar"
-        title="Grammar course"
-        count={grammar.length}
-        to="/grammar"
-      >
+      <GroupLabel title="Courses" fr="Cours" />
+
+      <Shelf id="grammar" title="Grammar course" count={grammar.length} to="/grammar">
         {grammar.map((l) => (
           <LessonTile key={l.id} l={l} p={s.lessons[l.id]} n={lessonNo(l.id)} />
         ))}
@@ -126,11 +125,15 @@ export default function LibraryPage() {
         ))}
       </Shelf>
 
+      <GroupLabel title="Listen" fr="Écouter" />
+
       <Shelf id="stories" title="Mini stories" count={storiesTodo.length} to="/library/stories">
         {storiesTodo.map((x) => (
           <StoryTile key={x.id} s={x} />
         ))}
       </Shelf>
+
+      <GroupLabel title="Read" fr="Lire" />
 
       <Shelf id="texts" title="Graded texts" count={texts.length} to="/library/texts">
         {texts.map((t) => (
@@ -145,14 +148,12 @@ export default function LibraryPage() {
         ))}
       </Shelf>
 
-      {myTexts.length > 0 && (
-        <Shelf id="my-texts" title="Your texts" count={myTexts.length}>
-          {myTexts.map((t) => (
-            <UserTextTile key={t.id} t={t} onDelete={() => d.askDelete(t.id)} />
-          ))}
-          <ActionTile icon={<ClipboardPaste size={18} aria-hidden />} title="Paste a text" sub="An article, a song, a message…" onClick={d.openPaste} />
-        </Shelf>
-      )}
+      <Shelf id="my-texts" title="Your texts" count={myTexts.length}>
+        {myTexts.map((t) => (
+          <UserTextTile key={t.id} t={t} onDelete={() => d.askDelete(t.id)} />
+        ))}
+        <ActionTile icon={<ClipboardPaste size={18} aria-hidden />} title="Paste a text" sub="An article, a song, a message…" onClick={d.openPaste} />
+      </Shelf>
 
       {done.length > 0 && (
         <Shelf id="completed" title="Completed" count={done.length} to="/library/completed">
@@ -162,5 +163,26 @@ export default function LibraryPage() {
 
       {d.dialogs}
     </Container>
+  )
+}
+
+/** A divider naming a group of shelves (Courses, Listen, Read). */
+function GroupLabel({ title, fr }: { title: string; fr: string }) {
+  return (
+    <Divider
+      mt={44}
+      mb={-12}
+      labelPosition="left"
+      label={
+        <Group gap={8} align="baseline" wrap="nowrap">
+          <Text fw={650} size="lg" c="var(--mantine-color-text)">
+            {title}
+          </Text>
+          <Text size="sm" c="dimmed" className="fr" lang="fr">
+            {fr}
+          </Text>
+        </Group>
+      }
+    />
   )
 }
