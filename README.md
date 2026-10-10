@@ -53,6 +53,11 @@ A focused, keyboard-friendly web app for learning French: **grammar**, **vocabul
 - Listen to the text with sentence-by-sentence highlighting; show the translation paragraph by paragraph.
 - **After reading**, every word from the text that's in your vocabulary bank is listed (rarest first) and you say whether you recognised it: known words get a recognition card scheduled days ahead, the rest start learning today (and don't use up your daily new words if you knew them). Words already in your reviews count as a review when they're due; hide any word you never want asked about.
 
+**Books — famous French classics, chapter by chapter**
+- 15 books shelved by level. **A1–A2** and *Notre-Dame de Paris* at **B1** are classics retold in graded French with an English line under every paragraph: *Le Petit Chaperon rouge*, *Cendrillon*, *La Belle et la Bête*, *Le Tour du monde en 80 jours*, *Les Trois Mousquetaires*, *Le Comte de Monte-Cristo*, *Les Misérables*. **B1–B2** are the authors' own words, from public-domain Project Gutenberg editions: Daudet's *Lettres de mon moulin* and *Contes du lundi*, Maupassant's *Contes du jour et de la nuit*, Hugo's *Le Dernier Jour d'un condamné*, Voltaire's *Candide*, Verne's *Le Tour du monde en quatre-vingts jours* and Flaubert's *Trois contes*.
+- Each chapter opens in the same reader as texts — tap-to-translate, listen, the **vocabulary sidebar**, *Mark as read* and the word check — with chapter navigation and *Next chapter*. Originals translate with your AI, kept on the device.
+- Each book has a page with its summary, progress and chapters. A book you're reading shows in **Continue** at the chapter you left; finished chapters count as reading and appear in History. A book's text loads only when you open it (and then works offline).
+
 **Conversation — role-play with an AI partner**
 - 40 real situations from A1 to B2, ten per level (café, market, train tickets, hotel, lost luggage, post office, job interview, a noisy neighbour, cancelling a contract, negotiating, a radio interview, announcing bad news to a client…), each with goals to reach and useful phrases, plus free conversation on any topic.
 - Replies stream in and stay in character; each of your messages is quietly checked, with corrections, the rule and the lesson that covers it.
@@ -178,6 +183,7 @@ content/          everything learners study, as Markdown — see content/README.
   grammar/        53 lessons: explanations + exercises (a1/ … b2/)
   vocab/          29 themed decks (a1/ … b2/) + 50 frequency decks (top5000/)
   reading/        18 graded texts with translations
+  books/          15 books: classics retold for A1–B1, public-domain originals for B1–B2
   stories/        16 listening stories with comprehension questions
   audio/          44 audio lessons, one course from A1 to B2
   conversations/  40 AI role-plays (goals, phrases, character brief)
