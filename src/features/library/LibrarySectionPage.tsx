@@ -5,6 +5,7 @@ import { ClipboardPaste, Feather, MessagesSquare, PencilLine, WandSparkles } fro
 import { AUDIO_LESSONS } from '../../data/audio'
 import { STORIES } from '../../data/stories'
 import { BUILTIN_TEXTS } from '../../data/texts'
+import { BOOKS, bookProgress } from '../../data/books'
 import { SCENARIOS } from '../../data/scenarios'
 import { WRITING_PROMPTS } from '../../data/writing'
 import { LEVELS, type Level } from '../../data/types'
@@ -17,18 +18,20 @@ import { storyDone, useCurrentLevel } from '../../lib/level'
 import { AudioTile } from '../audio/AudioTile'
 import { StoryTile } from '../listening/StoryTile'
 import { GradedTile, UserTextTile } from '../reading/texts'
+import { BookTile } from '../books/shared'
 import { ScenarioTile } from '../talk/TalkTiles'
 import { PromptTile } from '../writing/tiles'
 import { useLibraryDialogs } from './dialogs'
 import { libraryEntries } from './entries'
 
-export type SectionId = 'continue' | 'audio' | 'stories' | 'texts' | 'talk' | 'writing' | 'completed'
+export type SectionId = 'continue' | 'audio' | 'stories' | 'texts' | 'books' | 'talk' | 'writing' | 'completed'
 
 const META: Record<SectionId, { title: string; eyebrow: string }> = {
   continue: { title: 'Continue', eyebrow: 'En cours' },
   audio: { title: 'Audio course', eyebrow: 'Cours audio' },
   stories: { title: 'Mini stories', eyebrow: 'Histoires' },
   texts: { title: 'Graded texts', eyebrow: 'Lecture' },
+  books: { title: 'Books', eyebrow: 'Livres' },
   talk: { title: 'Conversations', eyebrow: 'Conversation' },
   writing: { title: 'Writing', eyebrow: 'Écriture' },
   completed: { title: 'Completed', eyebrow: 'Terminé' },
@@ -109,6 +112,9 @@ export default function LibrarySectionPage() {
         )
       break
     }
+    case 'books':
+      items = BOOKS.map((b) => ({ key: b.id, level: b.level, done: bookProgress(b, s.read).finished, node: <BookTile key={b.id} b={b} /> }))
+      break
     case 'talk':
       items = SCENARIOS.map((x) => ({ key: x.id, level: x.level, done: talked.has(x.id), node: <ScenarioTile key={x.id} s={x} done={talked.has(x.id)} /> }))
       actions = <ActionTile icon={<MessagesSquare size={18} aria-hidden />} title="Free conversation" sub="Chat about anything with Camille" onClick={d.openFreeTalk} />

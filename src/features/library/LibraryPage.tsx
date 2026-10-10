@@ -7,6 +7,7 @@ import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
 import { STORIES } from '../../data/stories'
 import { BUILTIN_TEXTS } from '../../data/texts'
+import { BOOKS, bookProgress } from '../../data/books'
 import { SCENARIOS } from '../../data/scenarios'
 import { WRITING_PROMPTS } from '../../data/writing'
 import { LEVELS, type Level } from '../../data/types'
@@ -23,6 +24,7 @@ import { LessonTile } from '../grammar/LessonTile'
 import { AudioTile } from '../audio/AudioTile'
 import { StoryTile } from '../listening/StoryTile'
 import { GradedTile, UserTextTile } from '../reading/texts'
+import { BookTile } from '../books/shared'
 import { ScenarioTile } from '../talk/TalkTiles'
 import { PromptTile, suggestPrompt } from '../writing/tiles'
 import { useLibraryDialogs } from './dialogs'
@@ -77,6 +79,12 @@ export default function LibraryPage() {
   const storiesTodo = STORIES.filter((x) => !stories[x.id] && shown(x.level)).sort(byLevel)
   const texts = BUILTIN_TEXTS.filter((t) => !s.read[t.id] && shown(t.level)).sort(byLevel)
   const myTexts = s.texts.filter((t) => !s.read[t.id] && !t.openedAt)
+  // Books you're reading first, then the rest by level; finished ones move to Completed.
+  const bookState = (id: string) => bookProgress(BOOKS.find((b) => b.id === id)!, s.read, s.books?.[id]?.chapter)
+  const books = BOOKS.filter((b) => !bookState(b.id).finished && shown(b.level)).sort((a, b) => {
+    const started = (x: typeof a) => (s.books?.[x.id] || bookState(x.id).done ? 0 : 1)
+    return started(a) - started(b) || byLevel(a, b)
+  })
   const scenarios = SCENARIOS.filter((x) => !talked.has(x.id) && shown(x.level)).sort(byLevel)
   const suggested = suggestPrompt(s.lessons, written, level)
   const prompts = WRITING_PROMPTS.filter((p) => !written.has(p.id) && p !== suggested && shown(p.level)).sort(byLevel)
@@ -136,6 +144,12 @@ export default function LibraryPage() {
           <GradedTile key={t.id} t={t} />
         ))}
         <ActionTile icon={<WandSparkles size={18} aria-hidden />} title={`Write me a new ${level} story`} sub="On any topic, with your words" onClick={() => d.openGenerate(level)} />
+      </Shelf>
+
+      <Shelf id="books" title="Books" count={books.length} to="/library/books">
+        {books.map((b) => (
+          <BookTile key={b.id} b={b} />
+        ))}
       </Shelf>
 
       {myTexts.length > 0 && (

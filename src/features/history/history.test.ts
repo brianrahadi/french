@@ -2,10 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { initialState } from '../../lib/store'
 import { LESSONS } from '../../data/grammar'
 import { AUDIO_LESSONS } from '../../data/audio'
+import { BOOKS, chapterKey } from '../../data/books'
 import { buildHistory, continueItems, dayLabel, recentGroups, type HistoryEntry } from './history'
 
 const base = { ...initialState }
 const at = (d: string, h = 10) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00`).toISOString()
+
+describe('books', () => {
+  it('lists finished chapters and keeps a book you are reading on Continue', () => {
+    const b = BOOKS[0]
+    const now = new Date('2026-10-09T12:00:00')
+    const s = { ...base, read: { [chapterKey(b.id, 1)]: '2026-10-08' }, books: { [b.id]: { chapter: 2, at: at('2026-10-08', 11) } } }
+    expect(buildHistory(s)[0]).toMatchObject({ kind: 'reading', title: b.title, detail: 'Chapter 1', to: `/books/${b.id}/1` })
+    expect(continueItems(s, undefined, now)[0]).toMatchObject({ title: b.title, detail: `Chapter 2 of ${b.chapters.length}`, to: `/books/${b.id}/2` })
+  })
+})
 
 describe('buildHistory', () => {
   it('lists lessons and stories with their scores, newest first', () => {

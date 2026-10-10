@@ -7,6 +7,7 @@ import { LESSON_BY_ID } from '../../data/grammar'
 import { STORY_BY_ID } from '../../data/stories'
 import { AUDIO_BY_ID } from '../../data/audio'
 import { TEXT_BY_ID } from '../../data/texts'
+import { BOOK_BY_ID, bookProgress, parseChapterKey } from '../../data/books'
 import { SCENARIO_BY_ID } from '../../data/scenarios'
 import { addDays, dayKey } from '../../lib/date'
 import type { State } from '../../lib/store'
@@ -52,7 +53,8 @@ export interface ContinueItem {
 export type HistorySource = Pick<
   State,
   'lessons' | 'writings' | 'conversations' | 'talkLog' | 'stories' | 'audio' | 'read' | 'texts' | 'listening' | 'speaking' | 'cards' | 'conj' | 'activity'
->
+> &
+  Partial<Pick<State, 'books'>>
 
 const dayOf = (iso: string) => dayKey(new Date(iso))
 /** A time for records that only kept the day. */
@@ -107,6 +109,12 @@ export function buildHistory(s: HistorySource): HistoryEntry[] {
 
   const saved = new Map(s.texts.map((t) => [t.id, t]))
   for (const [id, day] of Object.entries(s.read)) {
+    const ch = parseChapterKey(id)
+    if (ch) {
+      const b = BOOK_BY_ID[ch.bookId]
+      if (b) add({ id: `read:${id}`, kind: 'reading', title: b.title, detail: `Chapter ${ch.n}`, at: noon(day), to: `/books/${b.id}/${ch.n}` })
+      continue
+    }
     const t = saved.get(id)
     add({ id: `read:${id}`, kind: 'reading', title: TEXT_BY_ID[id]?.title ?? t?.title ?? 'Text', at: t?.finishedAt ?? noon(day), to: `/reading/${id}` })
   }
@@ -156,6 +164,14 @@ export function continueItems(s: HistorySource, session?: { done: number; left: 
   for (const [id, x] of Object.entries(s.audio ?? {}))
     if (x && !x.done && x.pos > 0 && x.at >= since && AUDIO_BY_ID[id])
       out.push({ id: `audio:${id}`, kind: 'listening', title: AUDIO_BY_ID[id].title, detail: `${pct((x.pos / Math.max(1, x.total)) * 100)}% through`, progress: x.pos / Math.max(1, x.total), at: x.at, to: `/audio/${id}` })
+
+  for (const [id, place] of Object.entries(s.books ?? {})) {
+    const b = BOOK_BY_ID[id]
+    if (!b || !place?.at) continue
+    const p = bookProgress(b, s.read, place.chapter)
+    if (!p.finished && place.at >= since)
+      out.push({ id: `book:${id}`, kind: 'reading', title: b.title, detail: `Chapter ${p.next} of ${p.total}`, progress: p.done / p.total, at: place.at, to: `/books/${id}/${p.next}` })
+  }
 
   for (const t of s.texts)
     if (t.openedAt && !t.finishedAt && !s.read[t.id] && t.openedAt >= since) out.push({ id: `text:${t.id}`, kind: 'reading', title: t.title, detail: 'Not finished', at: t.openedAt, to: `/reading/${t.id}` })
