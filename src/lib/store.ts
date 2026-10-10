@@ -248,6 +248,12 @@ interface Actions {
    * they study that direction); a word already in their reviews counts as a review.
    */
   checkWords: (results: { wordId: string; known: boolean }[], dirs: CardDir[]) => void
+  /**
+   * "I know this word" while reading: every card the word has is rated Easy (a word
+   * not started yet gets a recognition card scheduled days ahead), so it counts as known.
+   * Like checkWords, a known word doesn't use up the day's new words.
+   */
+  markWordsKnown: (wordIds: string[]) => void
   rateCard: (id: string, grade: Grade) => StoredCard
   toggleDeck: (deckId: string) => void
   setDecksActive: (deckIds: string[], active: boolean) => void
@@ -487,6 +493,22 @@ export const useStore = create<State & Actions>()(
             const pId = cardId(wordId, 'p')
             if (!known && dirs.includes('p') && !cards[pId]) cards[pId] = newCard(now)
             if (!introduced[wordId]) introduced[wordId] = known ? `${today}k` : today
+          }
+          return { cards, introduced }
+        }),
+
+      markWordsKnown: (wordIds) =>
+        set((s) => {
+          const now = new Date()
+          const today = dayKey(now)
+          const cards = { ...s.cards }
+          const introduced = { ...s.introduced }
+          for (const wordId of wordIds) {
+            const rId = cardId(wordId, 'r')
+            cards[rId] = review(cards[rId] ?? newCard(now), Rating.Easy, now, s.settings.retention)
+            const pId = cardId(wordId, 'p')
+            if (cards[pId]) cards[pId] = review(cards[pId], Rating.Easy, now, s.settings.retention)
+            if (!introduced[wordId]) introduced[wordId] = `${today}k`
           }
           return { cards, introduced }
         }),

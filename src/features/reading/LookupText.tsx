@@ -15,6 +15,7 @@ import { customWord, displayFr, frTypo, posLabel } from '../../lib/words'
 import { dirsFor } from '../vocab/selectors'
 import { cachedGloss, dictionaryLookup, glossInContext, key, verbFormLookup, fallbackGloss } from './lookup'
 import type { Gloss } from './types'
+import type { TextVocabMarks } from './vocabStatus'
 
 interface Open {
   /** Which LookupText opened it — only one popup is open on the page at a time. */
@@ -52,6 +53,7 @@ export function LookupText({
   activeSentence,
   sentenceOffset = 0,
   className,
+  vocab,
 }: {
   text: string
   /** Stored on added words, e.g. 'text:<id>'. */
@@ -60,6 +62,8 @@ export function LookupText({
   activeSentence?: number
   sentenceOffset?: number
   className?: string
+  /** Colour words by status (new / learning) and mark the focused word, as in the reader's vocabulary panel. */
+  vocab?: TextVocabMarks
 }) {
   const owner = useId()
   const current = useOpen((s) => s.open)
@@ -85,13 +89,23 @@ export function LookupText({
               wi++
               const idx = wi
               const selected = open && open.sentence === s.text && idx >= open.from && idx <= open.to
-              const known = lookupForms(t.text).some((f) => learning.has(f))
+              const wid = vocab?.idFor.get(t.text.toLowerCase())
+              const st = wid ? vocab?.status[wid] : undefined
+              const mark = vocab
+                ? `${vocab.highlight && st && st !== 'known' ? ` lk-word--s-${st}` : ''}${wid && wid === vocab.focus ? ' lk-word--focus' : ''}`
+                : lookupForms(t.text).some((f) => learning.has(f))
+                  ? ' lk-word--learning'
+                  : ''
               return (
                 <button
                   key={ti}
                   type="button"
-                  className={`lk-word${known ? ' lk-word--learning' : ''}${selected ? ' lk-word--selected' : ''}`}
-                  onClick={(e) => setOpen({ owner, sentence: s.text, words, from: idx, to: idx, anchor: e.currentTarget })}
+                  data-wid={wid}
+                  className={`lk-word${mark}${selected ? ' lk-word--selected' : ''}`}
+                  onClick={(e) => {
+                    setOpen({ owner, sentence: s.text, words, from: idx, to: idx, anchor: e.currentTarget })
+                    if (wid) vocab?.onOpen?.(wid)
+                  }}
                 >
                   {frTypo(t.text)}
                 </button>

@@ -26,6 +26,7 @@ describe('matching a text to the vocabulary bank', () => {
     const ids = list.map((t) => t.word.id)
     expect(new Set(ids).size).toBe(ids.length)
     expect(list.find((t) => t.word.fr === 'prendre')?.count).toBe(2)
+    expect(list.find((t) => t.word.fr === 'prendre')?.forms).toEqual(['prend'])
     expect(ids).toContain(own.id)
     expect(list.some((t) => t.form === 'Karim' || t.form === '8')).toBe(false)
   })

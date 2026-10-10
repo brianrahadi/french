@@ -169,6 +169,16 @@
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
+/* LingQ-style status colours (reader vocabulary panel) */
+.lk-word--s-new {
+  background: color-mix(in srgb, var(--mantine-color-blue-5) 20%, transparent);
+}
+.lk-word--s-learning {
+  background: color-mix(in srgb, var(--mantine-color-yellow-5) 34%, transparent);
+}
+.lk-word--focus {
+  box-shadow: 0 0 0 2px var(--primary);
+}
 .lk-word--selected {
   background: color-mix(in srgb, var(--primary) 22%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent);
@@ -411,4 +421,106 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 14px;
+}
+
+/* ── Reader with the vocabulary panel beside the text (below it on narrow screens) */
+.reading-wrap {
+  container-type: inline-size;
+}
+.reading-layout {
+  display: grid;
+  gap: 28px;
+  max-width: var(--page-w-narrow);
+  margin-inline: auto;
+}
+.reading-layout > * {
+  min-width: 0;
+}
+@container (min-width: 62rem) {
+  .reading-layout--aside {
+    max-width: none;
+    grid-template-columns: minmax(0, var(--page-w-narrow)) 19rem;
+    justify-content: center;
+    align-items: start;
+  }
+  .reading-layout--aside .vocab-panel {
+    position: sticky;
+    top: 16px;
+  }
+  .reading-layout--aside .vp-list {
+    max-height: max(14rem, calc(100vh - 380px));
+  }
+}
+.vp-bar {
+  display: flex;
+  height: 8px;
+  margin-top: 10px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.vp-bar__seg {
+  transition: width 0.3s var(--ease);
+}
+.vp-bar__seg--known,
+.vp-dot--known {
+  background: var(--mantine-color-green-6);
+}
+.vp-bar__seg--learning,
+.vp-dot--learning {
+  background: var(--mantine-color-yellow-5);
+}
+.vp-bar__seg--new,
+.vp-dot--new {
+  background: var(--mantine-color-blue-5);
+}
+.vp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.vp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.vp-list {
+  position: relative;
+  list-style: none;
+  margin: 10px -6px 0;
+  padding: 0;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+.vp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+}
+.vp-row:hover {
+  background: var(--surface-2);
+}
+.vp-row--focus,
+.vp-row--focus:hover {
+  background: var(--primary-soft);
+}
+.vp-word {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border-radius: var(--radius-sm);
+}
+.vp-word:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.vp-word__fr {
+  display: block;
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }

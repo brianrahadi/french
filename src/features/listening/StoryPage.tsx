@@ -14,6 +14,8 @@ import { splitSentences } from '../../lib/french'
 import { speak, speechSupported, stopSpeaking } from '../../lib/speech'
 import { frTypo } from '../../lib/words'
 import { LookupText } from '../reading/LookupText'
+import { VocabPanel } from '../reading/VocabPanel'
+import { useHighlightPref, useTextVocab, type TextVocabMarks } from '../reading/vocabStatus'
 
 const SPEEDS = [
   { label: 'Slow', factor: 0.8 },
@@ -58,6 +60,17 @@ function Story({ story }: { story: StoryDef }) {
   const [listens, setListens] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const playRef = useRef({ index: 0, stopped: true })
+
+  // The vocabulary panel beside the transcript: its words as new / learning / known.
+  const frParagraphs = useMemo(() => story.paragraphs.map((p) => p.fr), [story])
+  const vocab = useTextVocab(frParagraphs)
+  const [focus, setFocus] = useState<string | null>(null)
+  const [highlight, setHighlight] = useHighlightPref()
+  const marks: TextVocabMarks = useMemo(
+    () => ({ idFor: vocab.idFor, status: vocab.status, highlight, focus, onOpen: setFocus }),
+    [vocab.idFor, vocab.status, highlight, focus],
+  )
+  const withPanel = showText && (vocab.words.length > 0 || vocab.hidden > 0)
 
   // Sentences in order, with the index where each paragraph starts.
   const { sentences, offsets } = useMemo(() => {
@@ -150,199 +163,212 @@ function Story({ story }: { story: StoryDef }) {
   const progress = playing || current > 0 ? (current + (playing ? 0.5 : 0)) / sentences.length : 0
 
   return (
-    <Container size="var(--page-w-narrow)" py="xl">
-      <PageHeader back={{ to: '/library#stories', label: 'Library' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
-        <Group gap={8} mt="sm">
-          <LevelBadge level={story.level} />
-          <Text size="sm" c="dimmed">
-            {story.topic} · {storyMinutes(story)} min · {story.questions.length} questions
-          </Text>
-          {best !== undefined && (
-            <Badge color="gray" className="tnum">
-              best {best}%
-            </Badge>
-          )}
-        </Group>
-      </PageHeader>
-
-      <Stepper active={STEPS.indexOf(step)} size="xs" mb="lg" allowNextStepsSelect={false}>
-        <Stepper.Step label="Listen" />
-        <Stepper.Step label="Answer" />
-        <Stepper.Step label="Check" />
-      </Stepper>
-
-      {!speechSupported && <Callout kind="warn">This browser can’t read text aloud. Try Chrome, Edge or Safari, or read the text instead.</Callout>}
-
-      {/* ── Player (always available) */}
-      <Card aria-label="Audio player" padding={step === 'listen' ? 'lg' : 'md'}>
-        <Group gap="xs">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current - 1)} aria-label="Previous sentence" title="Previous sentence">
-            <SkipBack size={18} aria-hidden />
-          </ActionIcon>
-          {playing === 'playing' ? (
-            <Button miw={140} onClick={pause} leftSection={<Pause size={18} aria-hidden />}>
-              Pause
-            </Button>
-          ) : (
-            <Button miw={140} onClick={() => play()} disabled={!speechSupported} leftSection={<Play size={18} aria-hidden />}>
-              {playing === 'paused' ? 'Resume' : listens ? 'Listen again' : 'Listen'}
-            </Button>
-          )}
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current + 1)} aria-label="Next sentence" title="Next sentence">
-            <SkipForward size={18} aria-hidden />
-          </ActionIcon>
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={restart} aria-label="From the start" title="From the start" disabled={!speechSupported}>
-            <RotateCcw size={17} aria-hidden />
-          </ActionIcon>
-          <SegmentedControl
-            ml="auto"
-            size="xs"
-            value={String(speed)}
-            onChange={(v) => setSpeed(Number(v))}
-            data={SPEEDS.map((s) => ({ value: String(s.factor), label: s.label }))}
-            aria-label="Speed"
-          />
-        </Group>
-        <Group gap="sm" mt="md" wrap="nowrap">
-          <div style={{ flex: 1 }}>
-            <ProgressBar value={progress} label={`Sentence ${current + 1} of ${sentences.length}`} thin />
-          </div>
-          <Text size="sm" c="dimmed" className="tnum">
-            {current + 1}/{sentences.length}
-            {listens > 0 && ` · heard ${listens}×`}
-          </Text>
-        </Group>
-      </Card>
-
-      {/* ── Step 1: listening */}
-      {step === 'listen' && (
-        <Group justify="space-between" mt="md">
-          <Button variant="subtle" color="gray" onClick={() => setShowText((v) => !v)} leftSection={showText ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}>
-            {showText ? 'Hide the text' : 'Peek at the text'}
-          </Button>
-          <Button onClick={goQuestions}>Answer the questions</Button>
-        </Group>
-      )}
-
-      {/* ── Step 2: questions */}
-      {step === 'questions' && (
-        <Stack gap="lg" mt="lg" component="section" aria-label="Questions">
-          {story.questions.map((q, qi) => (
-            <Card key={qi}>
-              <Text size="xs" c="dimmed" fw={600}>
-                Question {qi + 1}
-              </Text>
-              <Text fz={18} fw={600} mt={2} mb="md">
-                <Rich text={q.prompt} />
-              </Text>
-              <Choices
-                options={q.options.map((o) => frTypo(o))}
-                value={answers[qi]}
-                onChange={(oi) => setAnswers((a) => ({ ...a, [qi]: oi }))}
-                label={`Question ${qi + 1}`}
-                fr
-              />
-            </Card>
-          ))}
-          <Group justify="space-between">
-            <Text size="sm" c="dimmed">
-              {answered}/{story.questions.length} answered
-            </Text>
-            <Button size="lg" onClick={submit} disabled={answered < story.questions.length} leftSection={<Check size={18} aria-hidden />}>
-              Check my answers
-            </Button>
-          </Group>
-        </Stack>
-      )}
-
-      {/* ── Step 3: results */}
-      {step === 'results' && (
-        <Stack gap="md" mt="lg" component="section" aria-label="Results">
-          <Card>
-            <Group wrap="nowrap" align="center" gap="lg">
-              <Text fz={44} fw={700} lh={1} className="tnum" c={pct === 100 ? 'green' : pct >= 60 ? undefined : 'red'}>
-                {pct}%
-              </Text>
-              <div style={{ flex: 1 }}>
-                <Text fw={650}>
-                  {correct} of {story.questions.length} right
-                </Text>
+    <Container size="var(--page-w)" py="xl">
+      <div className="reading-wrap">
+        <div className={`reading-layout${withPanel ? ' reading-layout--aside' : ''}`}>
+          <div>
+            <PageHeader back={{ to: '/library#stories', label: 'Library' }} title={frTypo(story.title)} fr subtitle={story.titleEn}>
+              <Group gap={8} mt="sm">
+                <LevelBadge level={story.level} />
                 <Text size="sm" c="dimmed">
-                  {pct === 100
-                    ? 'Perfect comprehension. Now listen once more with the text to catch every word.'
-                    : 'Read the text below, then listen again while following it — the bits you missed usually become clear.'}
+                  {story.topic} · {storyMinutes(story)} min · {story.questions.length} questions
                 </Text>
-              </div>
-              <Button variant="default" onClick={retry} leftSection={<RotateCcw size={16} aria-hidden />}>
-                Try again
-              </Button>
-            </Group>
-          </Card>
-          <Card padding={0}>
-            {story.questions.map((q, qi) => {
-              const ok = answers[qi] === q.answer
-              return (
-                <Group key={qi} align="flex-start" wrap="nowrap" gap="sm" p="md" style={qi ? { borderTop: '1px solid var(--mantine-color-default-border)' } : undefined}>
-                  <ThemeIcon color={ok ? 'green' : 'red'} variant="light" radius="xl" size={24} aria-label={ok ? 'Right' : 'Wrong'}>
-                    {ok ? <Check size={14} aria-hidden /> : <X size={14} aria-hidden />}
-                  </ThemeIcon>
-                  <Stack gap={2} style={{ minWidth: 0 }}>
-                    <Text fw={600}>
+                {best !== undefined && (
+                  <Badge color="gray" className="tnum">
+                    best {best}%
+                  </Badge>
+                )}
+              </Group>
+            </PageHeader>
+
+            <Stepper active={STEPS.indexOf(step)} size="xs" mb="lg" allowNextStepsSelect={false}>
+              <Stepper.Step label="Listen" />
+              <Stepper.Step label="Answer" />
+              <Stepper.Step label="Check" />
+            </Stepper>
+
+            {!speechSupported && <Callout kind="warn">This browser can’t read text aloud. Try Chrome, Edge or Safari, or read the text instead.</Callout>}
+
+            {/* ── Player (always available) */}
+            <Card aria-label="Audio player" padding={step === 'listen' ? 'lg' : 'md'}>
+              <Group gap="xs">
+                <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current - 1)} aria-label="Previous sentence" title="Previous sentence">
+                  <SkipBack size={18} aria-hidden />
+                </ActionIcon>
+                {playing === 'playing' ? (
+                  <Button miw={140} onClick={pause} leftSection={<Pause size={18} aria-hidden />}>
+                    Pause
+                  </Button>
+                ) : (
+                  <Button miw={140} onClick={() => play()} disabled={!speechSupported} leftSection={<Play size={18} aria-hidden />}>
+                    {playing === 'paused' ? 'Resume' : listens ? 'Listen again' : 'Listen'}
+                  </Button>
+                )}
+                <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => jump(current + 1)} aria-label="Next sentence" title="Next sentence">
+                  <SkipForward size={18} aria-hidden />
+                </ActionIcon>
+                <ActionIcon variant="subtle" color="gray" size="lg" onClick={restart} aria-label="From the start" title="From the start" disabled={!speechSupported}>
+                  <RotateCcw size={17} aria-hidden />
+                </ActionIcon>
+                <SegmentedControl
+                  ml="auto"
+                  size="xs"
+                  value={String(speed)}
+                  onChange={(v) => setSpeed(Number(v))}
+                  data={SPEEDS.map((s) => ({ value: String(s.factor), label: s.label }))}
+                  aria-label="Speed"
+                />
+              </Group>
+              <Group gap="sm" mt="md" wrap="nowrap">
+                <div style={{ flex: 1 }}>
+                  <ProgressBar value={progress} label={`Sentence ${current + 1} of ${sentences.length}`} thin />
+                </div>
+                <Text size="sm" c="dimmed" className="tnum">
+                  {current + 1}/{sentences.length}
+                  {listens > 0 && ` · heard ${listens}×`}
+                </Text>
+              </Group>
+            </Card>
+
+            {/* ── Step 1: listening */}
+            {step === 'listen' && (
+              <Group justify="space-between" mt="md">
+                <Button variant="subtle" color="gray" onClick={() => setShowText((v) => !v)} leftSection={showText ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}>
+                  {showText ? 'Hide the text' : 'Peek at the text'}
+                </Button>
+                <Button onClick={goQuestions}>Answer the questions</Button>
+              </Group>
+            )}
+
+            {/* ── Step 2: questions */}
+            {step === 'questions' && (
+              <Stack gap="lg" mt="lg" component="section" aria-label="Questions">
+                {story.questions.map((q, qi) => (
+                  <Card key={qi}>
+                    <Text size="xs" c="dimmed" fw={600}>
+                      Question {qi + 1}
+                    </Text>
+                    <Text fz={18} fw={600} mt={2} mb="md">
                       <Rich text={q.prompt} />
                     </Text>
-                    <Group gap={8}>
-                      {!ok && (
-                        <Text size="sm" c="red" td="line-through" className="fr" lang="fr">
-                          {frTypo(q.options[answers[qi]])}
-                        </Text>
-                      )}
-                      <Text size="sm" c="green.8" fw={600} className="fr" lang="fr">
-                        {frTypo(q.options[q.answer])}
-                      </Text>
-                    </Group>
-                    {q.explain && (
-                      <Text size="sm" c="dimmed">
-                        <Rich text={q.explain} />
-                      </Text>
-                    )}
-                  </Stack>
+                    <Choices
+                      options={q.options.map((o) => frTypo(o))}
+                      value={answers[qi]}
+                      onChange={(oi) => setAnswers((a) => ({ ...a, [qi]: oi }))}
+                      label={`Question ${qi + 1}`}
+                      fr
+                    />
+                  </Card>
+                ))}
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    {answered}/{story.questions.length} answered
+                  </Text>
+                  <Button size="lg" onClick={submit} disabled={answered < story.questions.length} leftSection={<Check size={18} aria-hidden />}>
+                    Check my answers
+                  </Button>
                 </Group>
-              )
-            })}
-          </Card>
-        </Stack>
-      )}
+              </Stack>
+            )}
 
-      {/* ── Transcript */}
-      {showText && (
-        <Box component="section" mt="xl" aria-label="Transcript">
-          <Group justify="space-between" mb={4}>
-            <Title order={2} size="h5" c="dimmed" tt="uppercase">
-              Transcript
-            </Title>
-            <Button variant="subtle" size="xs" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
-              {showEn ? 'Hide translation' : 'Show translation'}
-            </Button>
-          </Group>
-          <Text size="sm" c="dimmed" mb="sm">
-            Tap any word to see what it means and add it to your flashcards.
-          </Text>
-          <article className="reader-body fr" lang="fr">
-            {story.paragraphs.map((p, i) => (
-              <div key={i} className="reader-para">
-                <p>
-                  <LookupText text={p.fr} source={`story:${story.id}`} activeSentence={playing ? current : undefined} sentenceOffset={offsets[i]} />
-                </p>
-                {showEn && (
-                  <p className="reader-en" lang="en">
-                    {p.en}
-                  </p>
-                )}
-              </div>
-            ))}
-          </article>
-        </Box>
-      )}
+            {/* ── Step 3: results */}
+            {step === 'results' && (
+              <Stack gap="md" mt="lg" component="section" aria-label="Results">
+                <Card>
+                  <Group wrap="nowrap" align="center" gap="lg">
+                    <Text fz={44} fw={700} lh={1} className="tnum" c={pct === 100 ? 'green' : pct >= 60 ? undefined : 'red'}>
+                      {pct}%
+                    </Text>
+                    <div style={{ flex: 1 }}>
+                      <Text fw={650}>
+                        {correct} of {story.questions.length} right
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {pct === 100
+                          ? 'Perfect comprehension. Now listen once more with the text to catch every word.'
+                          : 'Read the text below, then listen again while following it — the bits you missed usually become clear.'}
+                      </Text>
+                    </div>
+                    <Button variant="default" onClick={retry} leftSection={<RotateCcw size={16} aria-hidden />}>
+                      Try again
+                    </Button>
+                  </Group>
+                </Card>
+                <Card padding={0}>
+                  {story.questions.map((q, qi) => {
+                    const ok = answers[qi] === q.answer
+                    return (
+                      <Group key={qi} align="flex-start" wrap="nowrap" gap="sm" p="md" style={qi ? { borderTop: '1px solid var(--mantine-color-default-border)' } : undefined}>
+                        <ThemeIcon color={ok ? 'green' : 'red'} variant="light" radius="xl" size={24} aria-label={ok ? 'Right' : 'Wrong'}>
+                          {ok ? <Check size={14} aria-hidden /> : <X size={14} aria-hidden />}
+                        </ThemeIcon>
+                        <Stack gap={2} style={{ minWidth: 0 }}>
+                          <Text fw={600}>
+                            <Rich text={q.prompt} />
+                          </Text>
+                          <Group gap={8}>
+                            {!ok && (
+                              <Text size="sm" c="red" td="line-through" className="fr" lang="fr">
+                                {frTypo(q.options[answers[qi]])}
+                              </Text>
+                            )}
+                            <Text size="sm" c="green.8" fw={600} className="fr" lang="fr">
+                              {frTypo(q.options[q.answer])}
+                            </Text>
+                          </Group>
+                          {q.explain && (
+                            <Text size="sm" c="dimmed">
+                              <Rich text={q.explain} />
+                            </Text>
+                          )}
+                        </Stack>
+                      </Group>
+                    )
+                  })}
+                </Card>
+              </Stack>
+            )}
+
+            {/* ── Transcript */}
+            {showText && (
+              <Box component="section" mt="xl" aria-label="Transcript">
+                <Group justify="space-between" mb={4}>
+                  <Title order={2} size="h5" c="dimmed" tt="uppercase">
+                    Transcript
+                  </Title>
+                  <Button variant="subtle" size="xs" onClick={() => setShowEn((v) => !v)} aria-pressed={showEn}>
+                    {showEn ? 'Hide translation' : 'Show translation'}
+                  </Button>
+                </Group>
+                <Text size="sm" c="dimmed" mb="sm">
+                  Tap any word to see what it means and add it to your flashcards.
+                </Text>
+                <article className="reader-body fr" lang="fr">
+                  {story.paragraphs.map((p, i) => (
+                    <div key={i} className="reader-para">
+                      <p>
+                        <LookupText
+                          text={p.fr}
+                          source={`story:${story.id}`}
+                          activeSentence={playing ? current : undefined}
+                          sentenceOffset={offsets[i]}
+                          vocab={withPanel ? marks : undefined}
+                        />
+                      </p>
+                      {showEn && (
+                        <p className="reader-en" lang="en">
+                          {p.en}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </article>
+              </Box>
+            )}
+        </div>
+          {withPanel && <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} />}
+    </div>
+      </div>
     </Container>
   )
 }

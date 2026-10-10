@@ -17,6 +17,8 @@ export interface TextWord {
   form: string
   /** The first sentence it appears in. */
   sentence: string
+  /** Every form it takes in the text, lower-cased ("allée", "va"). */
+  forms: string[]
   /** Times it appears in the text. */
   count: number
   /** Position in the frequency list (lower = more common); words outside it come last. */
@@ -79,9 +81,12 @@ export function textVocab(paragraphs: string[], customWords: Word[]): TextWord[]
         // One entry per word even if it's both in the decks and in my words ("gare" / "la gare").
         const k = `${baseForm(w.fr)}|${w.pos === 'n' ? `n${w.g ?? ''}` : w.pos === 'expr' ? 'x' : w.pos}`
         const seen = found.get(w.id) ?? found.get(k)
-        if (seen) seen.count++
-        else {
-          const entry = { word: w, form: t.text, sentence, count: 1, rank: rank(w) }
+        const lower = t.text.toLowerCase()
+        if (seen) {
+          seen.count++
+          if (!seen.forms.includes(lower)) seen.forms.push(lower)
+        } else {
+          const entry = { word: w, form: t.text, forms: [lower], sentence, count: 1, rank: rank(w) }
           found.set(w.id, entry)
           found.set(k, entry)
         }

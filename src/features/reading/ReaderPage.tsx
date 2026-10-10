@@ -18,6 +18,8 @@ import { LookupText } from './LookupText'
 import { translateParagraphs } from './ai'
 import { WordCheck } from './WordCheck'
 import { useWordsToCheck } from './useWordsToCheck'
+import { VocabPanel } from './VocabPanel'
+import { useHighlightPref, useTextVocab, type TextVocabMarks } from './vocabStatus'
 
 interface Doc {
   id: string
@@ -125,6 +127,16 @@ function Reader({ doc }: { doc: Doc }) {
   const toCheck = useWordsToCheck(doc.paragraphs)
   const [checking, setChecking] = useState(false)
 
+  // The vocabulary panel: the text's words as new / learning / known, coloured in the text.
+  const vocab = useTextVocab(doc.paragraphs)
+  const [focus, setFocus] = useState<string | null>(null)
+  const [highlight, setHighlight] = useHighlightPref()
+  const marks: TextVocabMarks = useMemo(
+    () => ({ idFor: vocab.idFor, status: vocab.status, highlight, focus, onOpen: setFocus }),
+    [vocab.idFor, vocab.status, highlight, focus],
+  )
+  const withPanel = vocab.words.length > 0 || vocab.hidden > 0
+
   const toggleTranslation = async () => {
     if (showEn) return setShowEn(false)
     if (doc.translation?.length) return setShowEn(true)
@@ -209,138 +221,146 @@ function Reader({ doc }: { doc: Doc }) {
   }
 
   return (
-    <Container size="var(--page-w-narrow)" py="xl">
-      <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/library#texts', label: 'Library' }} fr>
-        <Group gap={8} mt="xs">
-          {doc.level && <LevelBadge level={doc.level} />}
-          <Text size="sm" c="dimmed">
-            {words} words · {Math.max(1, Math.round(words / 120))} min
-          </Text>
-          {read && (
-            <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
-              read
-            </Badge>
-          )}
-        </Group>
-      </PageHeader>
-
-      <Group
-        role="toolbar"
-        aria-label="Reading tools"
-        gap={8}
-        pos="sticky"
-        top={0}
-        mx={-8}
-        mb={10}
-        px={8}
-        py={10}
-        bg="var(--bg)"
-        style={{ zIndex: 5, borderBottom: '1px solid var(--mantine-color-default-border)' }}
-      >
-        {speechSupported && (
-          <Group gap={4}>
-            {playing === 'playing' ? (
-              <Button variant="default" size="xs" leftSection={<Pause size={15} aria-hidden />} onClick={pause}>
-                Pause
-              </Button>
-            ) : (
-              <Button variant="default" size="xs" leftSection={<Play size={15} aria-hidden />} onClick={play}>
-                {playing === 'paused' ? 'Resume' : 'Listen'}
-              </Button>
-            )}
-            {playing && (
-              <ActionIcon variant="subtle" color="gray" size="sm" onClick={stop} aria-label="Stop reading">
-                <Square size={14} aria-hidden />
-              </ActionIcon>
-            )}
-          </Group>
-        )}
-        <Button
-          variant={showEn ? 'light' : 'default'}
-          size="xs"
-          onClick={toggleTranslation}
-          aria-pressed={showEn}
-          disabled={translating}
-          leftSection={translating ? <Loader size={14} aria-hidden /> : <Languages size={15} aria-hidden />}
-        >
-          {showEn ? 'Hide translation' : 'Translation'}
-        </Button>
-        <SegmentedControl
-          ml="auto"
-          size="xs"
-          aria-label="Text size"
-          value={String(size)}
-          onChange={(v) => setFont(Number(v))}
-          data={SIZES.map((s, i) => ({
-            value: String(i),
-            label: (
-              <>
-                <Text span inherit fz={11 + i * 3} className="fr" aria-hidden>
-                  {s.label}
+    <Container size="var(--page-w)" py="xl">
+      <div className="reading-wrap">
+        <div className={`reading-layout${withPanel ? ' reading-layout--aside' : ''}`}>
+          <div>
+            <PageHeader title={frTypo(doc.title)} subtitle={doc.subtitle} back={{ to: '/library#texts', label: 'Library' }} fr>
+              <Group gap={8} mt="xs">
+                {doc.level && <LevelBadge level={doc.level} />}
+                <Text size="sm" c="dimmed">
+                  {words} words · {Math.max(1, Math.round(words / 120))} min
                 </Text>
-                <VisuallyHidden>Text size {i + 1}</VisuallyHidden>
-              </>
-            ),
-          }))}
-        />
-      </Group>
-      {error && <Callout kind="warn">{error}</Callout>}
+                {read && (
+                  <Badge color="green" size="sm" leftSection={<Check size={12} aria-hidden />}>
+                    read
+                  </Badge>
+                )}
+              </Group>
+            </PageHeader>
 
-      <Text size="sm" c="dimmed" mb={18}>
-        Tap a word for its meaning.
-      </Text>
-
-      <article className="reader-body fr" lang="fr" style={{ fontSize: SIZES[size].size }}>
-        {doc.paragraphs.map((p, i) => (
-          <div key={i} className="reader-para">
-            <p>
-              <LookupText text={p} source={`text:${doc.id}`} activeSentence={active ?? undefined} sentenceOffset={offsets[i]} />
-            </p>
-            {showEn && doc.translation?.[i] && (
-              <p className="reader-en" lang="en">
-                {doc.translation[i]}
-              </p>
-            )}
-          </div>
-        ))}
-      </article>
-
-      {checking ? (
-        <WordCheck words={toCheck} onDone={() => setChecking(false)} />
-      ) : (
-        <Card component="footer" mt={28}>
-          <Group justify="space-between" gap={14}>
-            <Box miw={0}>
-              <Text fw={650} mb={2}>
-                {read ? 'Finished' : 'Done reading?'}
-              </Text>
-              <Text size="sm" c="dimmed">
-                {saved.length
-                  ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
-                      .slice(0, 6)
-                      .map((w) => frTypo(w.fr))
-                      .join(', ')}${saved.length > 6 ? '…' : ''}`
-                  : 'Tap words you don’t know to add them to your flashcards.'}
-              </Text>
-            </Box>
-            <Group gap={8}>
-              {read && toCheck.length > 0 && (
-                <Button variant="default" onClick={() => setChecking(true)}>
-                  Check {toCheck.length} word{toCheck.length > 1 ? 's' : ''}
-                </Button>
+            <Group
+              role="toolbar"
+              aria-label="Reading tools"
+              gap={8}
+              pos="sticky"
+              top={0}
+              mx={-8}
+              mb={10}
+              px={8}
+              py={10}
+              bg="var(--bg)"
+              style={{ zIndex: 5, borderBottom: '1px solid var(--mantine-color-default-border)' }}
+            >
+              {speechSupported && (
+                <Group gap={4}>
+                  {playing === 'playing' ? (
+                    <Button variant="default" size="xs" leftSection={<Pause size={15} aria-hidden />} onClick={pause}>
+                      Pause
+                    </Button>
+                  ) : (
+                    <Button variant="default" size="xs" leftSection={<Play size={15} aria-hidden />} onClick={play}>
+                      {playing === 'paused' ? 'Resume' : 'Listen'}
+                    </Button>
+                  )}
+                  {playing && (
+                    <ActionIcon variant="subtle" color="gray" size="sm" onClick={stop} aria-label="Stop reading">
+                      <Square size={14} aria-hidden />
+                    </ActionIcon>
+                  )}
+                </Group>
               )}
-              {saved.length > 0 && (
-                <Button variant="default" component={Link} to="/vocab/study">
-                  Study them
-                </Button>
-              )}
-              <Button leftSection={<Check size={16} aria-hidden />} onClick={handleMarkAsRead}>
-                {read ? 'Read again' : 'Mark as read'}
+              <Button
+                variant={showEn ? 'light' : 'default'}
+                size="xs"
+                onClick={toggleTranslation}
+                aria-pressed={showEn}
+                disabled={translating}
+                leftSection={translating ? <Loader size={14} aria-hidden /> : <Languages size={15} aria-hidden />}
+              >
+                {showEn ? 'Hide translation' : 'Translation'}
               </Button>
+              <SegmentedControl
+                ml="auto"
+                size="xs"
+                aria-label="Text size"
+                value={String(size)}
+                onChange={(v) => setFont(Number(v))}
+                data={SIZES.map((s, i) => ({
+                  value: String(i),
+                  label: (
+                    <>
+                      <Text span inherit fz={11 + i * 3} className="fr" aria-hidden>
+                        {s.label}
+                      </Text>
+                      <VisuallyHidden>Text size {i + 1}</VisuallyHidden>
+                    </>
+                  ),
+                }))}
+              />
             </Group>
-          </Group>
-        </Card>
-      )}
+            {error && <Callout kind="warn">{error}</Callout>}
+
+            <Text size="sm" c="dimmed" mb={18}>
+              Tap a word for its meaning.
+              {withPanel && highlight && ' Blue words are new, yellow ones you’re learning.'}
+            </Text>
+
+            <article className="reader-body fr" lang="fr" style={{ fontSize: SIZES[size].size }}>
+              {doc.paragraphs.map((p, i) => (
+                <div key={i} className="reader-para">
+                  <p>
+                    <LookupText text={p} source={`text:${doc.id}`} activeSentence={active ?? undefined} sentenceOffset={offsets[i]} vocab={withPanel ? marks : undefined} />
+                  </p>
+                  {showEn && doc.translation?.[i] && (
+                    <p className="reader-en" lang="en">
+                      {doc.translation[i]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </article>
+
+            {checking ? (
+              <WordCheck words={toCheck} onDone={() => setChecking(false)} />
+            ) : (
+              <Card component="footer" mt={28}>
+                <Group justify="space-between" gap={14}>
+                  <Box miw={0}>
+                    <Text fw={650} mb={2}>
+                      {read ? 'Finished' : 'Done reading?'}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {saved.length
+                        ? `${saved.length} word${saved.length > 1 ? 's' : ''} from this text in your flashcards: ${saved
+                            .slice(0, 6)
+                            .map((w) => frTypo(w.fr))
+                            .join(', ')}${saved.length > 6 ? '…' : ''}`
+                        : 'Tap words you don’t know to add them to your flashcards.'}
+                    </Text>
+                  </Box>
+                  <Group gap={8}>
+                    {read && toCheck.length > 0 && (
+                      <Button variant="default" onClick={() => setChecking(true)}>
+                        Check {toCheck.length} word{toCheck.length > 1 ? 's' : ''}
+                      </Button>
+                    )}
+                    {saved.length > 0 && (
+                      <Button variant="default" component={Link} to="/vocab/study">
+                        Study them
+                      </Button>
+                    )}
+                    <Button leftSection={<Check size={16} aria-hidden />} onClick={handleMarkAsRead}>
+                      {read ? 'Read again' : 'Mark as read'}
+                    </Button>
+                  </Group>
+                </Group>
+              </Card>
+            )}
+        </div>
+          {withPanel && <VocabPanel view={vocab} focus={focus} onFocus={setFocus} highlight={highlight} onHighlight={setHighlight} />}
+    </div>
+      </div>
     </Container>
   )
 }
