@@ -41,7 +41,10 @@ a {
   color: var(--primary-text);
   text-decoration: none;
 }
-a:hover {
+/* Underline on hover only for bare text links. Components rendered as links
+   (Button, Card, NavLink, ActionIcon, .nav-row…) carry a class and show a hover
+   background instead; Mantine's Anchor handles its own hover underline. */
+a:not([class]):hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
