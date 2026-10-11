@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useMediaQuery } from '@mantine/hooks'
 import { ActionIcon, Anchor, Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, type MantineColor } from '@mantine/core'
 import {
   ArrowRight,
@@ -65,12 +66,14 @@ export default function TodayPage() {
   useHotkeys({ Enter: () => hasSession && navigate('/session') })
   // On phones there's no sidebar, so what's left half-way shows here (the session card covers the session).
   const cont = useContinue().filter((c) => c.kind !== 'session').slice(0, CONTINUE_PREVIEW)
+  const phone = useMediaQuery('(max-width: 48em)') ?? false
 
   return (
     <Container size="var(--page-w)" py="xl">
       <PageHeader
         eyebrow={capitalize(frenchDate())}
         title={<>{greeting}&nbsp;!</>}
+        inline
         actions={
           <>
             {streak > 0 && (
@@ -100,23 +103,28 @@ export default function TodayPage() {
         navigate(`/grammar/${lessonsByLevel(lvl)[0].id}`)
       }} />}
 
-      <Card component="section" aria-labelledby="session-title" padding="xl">
-        <Group gap="xl" align="center" wrap="wrap">
-          <Stack gap={4} align="center">
-            <Ring value={today.items / goal} size={88} stroke={9} label={`${today.items} of ${goal} answers today`}>
-              <span className="tnum">{Math.min(100, Math.round((today.items / goal) * 100))}%</span>
+      {/* Wide screens: ring | text | button in a row. Phones: a small ring beside the title, then the text and a full-width button. */}
+      <Card component="section" aria-labelledby="session-title" padding={phone ? 'md' : 'xl'}>
+        <div className="today-hero">
+          <Stack gap={4} align="center" className="today-hero__ring">
+            <Ring value={today.items / goal} size={phone ? 66 : 88} stroke={phone ? 6 : 9} label={`${today.items} of ${goal} answers today`}>
+              <span className="tnum" style={phone ? { fontSize: 11 } : undefined}>
+                {Math.min(100, Math.round((today.items / goal) * 100))}%
+              </span>
             </Ring>
-            <Text size="sm" c="dimmed" className="tnum">
+            <Text size={phone ? 'xs' : 'sm'} c="dimmed" className="tnum">
               {today.items}/{goal} today
             </Text>
           </Stack>
-          <Stack gap={6} miw={0} style={{ flex: '1 1 300px' }}>
+          <Stack gap={2} miw={0} className="today-hero__head">
             <Text size="sm" fw={600} c="dimmed">
               Séance du jour
             </Text>
             <Title order={2} size="h3" id="session-title">
               {hasSession ? 'Today’s session' : today.items >= goal ? 'Objectif atteint !' : 'All caught up'}
             </Title>
+          </Stack>
+          <Stack gap={6} miw={0} className="today-hero__body">
             {saved ? (
               <Text c="dimmed" className="tnum">
                 {saved.run.done} done · {remaining(saved.run)} to go — picks up where you stopped.
@@ -169,20 +177,22 @@ export default function TodayPage() {
               <Text c="dimmed">Nothing is due. A good moment to learn a new grammar point or write a few sentences.</Text>
             )}
           </Stack>
-          {hasSession ? (
-            <Button component={Link} to="/session" size="lg" leftSection={<Play size={18} aria-hidden />} rightSection={<Kbd>↵</Kbd>}>
-              {saved ? 'Continue' : 'Start'}
-            </Button>
-          ) : up ? (
-            <Button component={Link} to={`/grammar/${up.id}`} size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
-              Next lesson
-            </Button>
-          ) : (
-            <Button component={Link} to="/practice#writing" size="lg" rightSection={<ArrowRight size={17} aria-hidden />}>
-              Write
-            </Button>
-          )}
-        </Group>
+          <div className="today-hero__cta">
+            {hasSession ? (
+              <Button component={Link} to="/session" size="lg" fullWidth={phone} leftSection={<Play size={18} aria-hidden />} rightSection={<Kbd>↵</Kbd>}>
+                {saved ? 'Continue' : 'Start'}
+              </Button>
+            ) : up ? (
+              <Button component={Link} to={`/grammar/${up.id}`} size="lg" fullWidth={phone} rightSection={<ArrowRight size={17} aria-hidden />}>
+                Next lesson
+              </Button>
+            ) : (
+              <Button component={Link} to="/practice#writing" size="lg" fullWidth={phone} rightSection={<ArrowRight size={17} aria-hidden />}>
+                Write
+              </Button>
+            )}
+          </div>
+        </div>
       </Card>
 
       {cont.length > 0 && (

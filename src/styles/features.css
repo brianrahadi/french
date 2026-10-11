@@ -263,3 +263,47 @@ code {
   margin-top: 3px;
   color: var(--success);
 }
+
+/* ── Today: the session card */
+.today-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'ring head cta'
+    'ring body cta';
+  align-items: center;
+  column-gap: var(--mantine-spacing-xl);
+  row-gap: 6px;
+}
+.today-hero__ring {
+  grid-area: ring;
+}
+.today-hero__head {
+  grid-area: head;
+  align-self: end;
+}
+.today-hero__body {
+  grid-area: body;
+  align-self: start;
+}
+.today-hero__cta {
+  grid-area: cta;
+}
+/* Phones: small ring beside the title; text and a full-width button underneath. */
+@media (max-width: 48em) {
+  .today-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'ring head'
+      'body body'
+      'cta cta';
+    column-gap: var(--mantine-spacing-md);
+    row-gap: var(--mantine-spacing-sm);
+  }
+  .today-hero__head {
+    align-self: center;
+  }
+  .today-hero__cta {
+    margin-top: 4px;
+  }
+}

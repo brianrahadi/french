@@ -11,6 +11,7 @@ export function PageHeader({
   actions,
   back,
   fr,
+  inline,
   children,
 }: {
   eyebrow?: ReactNode
@@ -20,6 +21,8 @@ export function PageHeader({
   back?: { to: string; label: string }
   /** The title is French (serif, lang="fr"). */
   fr?: boolean
+  /** Keep the actions on the title's line even on phones (for a short title and small actions). */
+  inline?: boolean
   /** Extra content under the subtitle (meta badges, stats…). */
   children?: ReactNode
 }) {
@@ -30,8 +33,8 @@ export function PageHeader({
           <ArrowLeft size={16} aria-hidden /> {back.label}
         </Anchor>
       )}
-      <Group justify="space-between" align="flex-end" gap="md">
-        <Box style={{ minWidth: 0, flex: '1 1 320px' }}>
+      <Group justify="space-between" align="flex-end" gap="md" wrap={inline ? 'nowrap' : 'wrap'}>
+        <Box style={{ minWidth: 0, flex: inline ? '1 1 0' : '1 1 320px' }}>
           {eyebrow && (
             <Text size="sm" fw={600} c="dimmed" mb={2}>
               {eyebrow}
@@ -47,7 +50,11 @@ export function PageHeader({
           )}
           {children}
         </Box>
-        {actions && <Group gap="sm">{actions}</Group>}
+        {actions && (
+          <Group gap="sm" wrap={inline ? 'nowrap' : 'wrap'} style={inline ? { flexShrink: 0 } : undefined}>
+            {actions}
+          </Group>
+        )}
       </Group>
     </Box>
   )
