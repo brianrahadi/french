@@ -2,7 +2,7 @@ import { createContext, useContext, type MouseEvent, type ReactNode } from 'reac
 import { Card, Group, Progress, SimpleGrid, Stack, Text, ThemeIcon, UnstyledButton } from '@mantine/core'
 import { Link, useNavigate } from 'react-router'
 import { useStore, type UiSize } from '../lib/store'
-import { KindIcon, type Kind } from './kinds'
+import { KindIcon, useShowKind, type Kind } from './kinds'
 
 /** Card width on a shelf, by interface size (Settings → Appearance). Rem-based, so it also follows the text size. */
 const SHELF_W: Record<UiSize, number> = { big: 232, medium: 212, small: 192 }
@@ -80,6 +80,7 @@ export function Tile({
 }) {
   const navigate = useNavigate()
   const width = useTileWidth()
+  const showKind = useShowKind(kind)
   const inGrid = useContext(Fluid)
   const fill = fluid || inGrid
   const open = (e: MouseEvent) => {
@@ -99,10 +100,10 @@ export function Tile({
       style={{ cursor: (to || onClick) && !disabled ? 'pointer' : undefined, flexShrink: 0, font: 'inherit', color: 'inherit', ...(highlight ? { borderColor: 'var(--mantine-primary-color-filled)', borderWidth: 2 } : {}) }}
     >
       <Stack gap={6} h="100%">
-        {(kind || top || corner) && (
+        {(showKind || top || corner) && (
           <Group gap={6} wrap="nowrap" justify="space-between">
             <Group gap={6} wrap="nowrap" miw={0}>
-              {kind && <KindIcon kind={kind} size="sm" />}
+              {showKind && kind && <KindIcon kind={kind} size="sm" />}
               {top}
             </Group>
             {corner}

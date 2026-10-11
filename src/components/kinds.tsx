@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import { createContext, useContext, type ComponentType, type ReactNode } from 'react'
 import { ThemeIcon, type MantineColor } from '@mantine/core'
 import { AudioLines, BookAudio, BookMarked, BookOpen, BookOpenText, CircleCheck, CirclePlay, FileText, History, Layers, MessagesSquare, NotebookPen, Podcast } from 'lucide-react'
 
@@ -25,6 +25,23 @@ export const KINDS: Record<Kind, { label: string; icon: Icon; color: MantineColo
   writing: { label: 'Writing', icon: NotebookPen, color: 'indigo' },
   vocab: { label: 'Vocabulary deck', icon: Layers, color: 'accent' },
   sounds: { label: 'Sounds', icon: AudioLines, color: 'green' },
+}
+
+const Scope = createContext<Kind | null>(null)
+
+/** Marks a row or page as holding one kind of card (e.g. the Grammar course shelf). */
+export function KindScope({ kind, children }: { kind: Kind | null; children: ReactNode }) {
+  return <Scope.Provider value={kind}>{children}</Scope.Provider>
+}
+
+/**
+ * Whether a card should show its kind's icon: not inside a row of that same
+ * kind, where it would only repeat the row's title (a lesson in Grammar
+ * course), but yes in mixed rows like Continue, Completed and Your history.
+ */
+export function useShowKind(kind?: Kind) {
+  const scope = useContext(Scope)
+  return !!kind && scope !== kind
 }
 
 /** A kind's icon in a soft coloured square: `md` beside a shelf title, `sm` at the top of a card. */

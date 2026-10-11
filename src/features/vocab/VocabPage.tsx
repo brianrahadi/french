@@ -28,7 +28,7 @@ import { type Level, type Word } from '../../data/types'
 import { Empty, GenderTag, Kbd, LevelBadge, ProgressBar, Stat, Switch } from '../../components/ui'
 import { PageHeader } from '../../components/PageHeader'
 import { Shelf } from '../../components/Shelf'
-import { KindIcon } from '../../components/kinds'
+import { KindIcon, useShowKind } from '../../components/kinds'
 import { ActionTile, useTileWidth } from '../../components/Tile'
 import { harderLevels, useCurrentLevel, withinLevel } from '../../lib/level'
 import { SpeakButton } from '../../components/SpeakButton'
@@ -208,6 +208,7 @@ function DeckCard({
   children?: ReactNode
 }) {
   const width = useTileWidth()
+  const showKind = useShowKind('vocab')
   return (
     <Card
       w={width}
@@ -218,7 +219,7 @@ function DeckCard({
       <Stack gap={6} h="100%">
         <Group justify="space-between" wrap="nowrap">
           <Group gap={6} wrap="nowrap">
-            <KindIcon kind="vocab" size="sm" />
+            {showKind && <KindIcon kind="vocab" size="sm" />}
             {level ? <LevelBadge level={level} /> : <Badge color="gray">{title === 'My words' ? 'yours' : 'frequency'}</Badge>}
           </Group>
           <Switch checked={active} onChange={onToggle} label={`Include “${title}” in new words`} />

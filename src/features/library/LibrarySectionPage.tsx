@@ -23,6 +23,7 @@ import { ScenarioTile } from '../talk/TalkTiles'
 import { PromptTile } from '../writing/tiles'
 import { useLibraryDialogs } from './dialogs'
 import { libraryEntries, practiceEntries } from './entries'
+import { KindScope, type Kind } from '../../components/kinds'
 
 export type SectionId = 'continue' | 'audio' | 'stories' | 'texts' | 'books' | 'completed' | 'talk' | 'writing' | 'history'
 
@@ -40,6 +41,9 @@ const META: Record<SectionId, { title: string; eyebrow: string; area: Area }> = 
   writing: { title: 'Writing', eyebrow: 'Écriture', area: 'practice' },
   history: { title: 'Your history', eyebrow: 'Historique', area: 'practice' },
 }
+
+/** The kind of card a one-kind section holds; its cards then skip their icon. Mixed lists (Continue…) have none. */
+const SECTION_KIND: Partial<Record<SectionId, Kind>> = { audio: 'audio', stories: 'story', texts: 'text', books: 'book', talk: 'talk', writing: 'writing' }
 
 export const isSection = (x: string | undefined): x is SectionId => !!x && x in META
 /** The tab a section lives in, e.g. 'practice' for 'talk'. */
@@ -153,26 +157,28 @@ export default function LibrarySectionPage() {
         subtitle={`${items.length - doneCount} left · ${doneCount} of ${items.length} done`}
         actions={<Switch checked={hideDone} onChange={(e) => setHideDone(e.currentTarget.checked)} label="Hide done" />}
       />
-      {actions && <TileGrid>{actions}</TileGrid>}
-      {LEVELS.map((l) => {
-        const all = items.filter((i) => i.level === l)
-        if (!all.length) return null
-        const shown = hideDone ? all.filter((i) => !i.done) : all
-        return (
-          <LevelGroup key={l} group={`library-${section}`} level={l} done={all.filter((i) => i.done).length} total={all.length} defaultOpen={l === level}>
-            {shown.length ? (
-              <TileGrid>{shown.map((i) => i.node)}</TileGrid>
-            ) : (
-              <Group py="sm">
-                <Text size="sm" c="dimmed">
-                  All done at {l}.
-                </Text>
-              </Group>
-            )}
-          </LevelGroup>
-        )
-      })}
-      {extra}
+      <KindScope kind={SECTION_KIND[section] ?? null}>
+        {actions && <TileGrid>{actions}</TileGrid>}
+        {LEVELS.map((l) => {
+          const all = items.filter((i) => i.level === l)
+          if (!all.length) return null
+          const shown = hideDone ? all.filter((i) => !i.done) : all
+          return (
+            <LevelGroup key={l} group={`library-${section}`} level={l} done={all.filter((i) => i.done).length} total={all.length} defaultOpen={l === level}>
+              {shown.length ? (
+                <TileGrid>{shown.map((i) => i.node)}</TileGrid>
+              ) : (
+                <Group py="sm">
+                  <Text size="sm" c="dimmed">
+                    All done at {l}.
+                  </Text>
+                </Group>
+              )}
+            </LevelGroup>
+          )
+        })}
+      </KindScope>
+      <KindScope kind="mytext">{extra}</KindScope>
       {d.dialogs}
     </Container>
   )

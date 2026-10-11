@@ -4,7 +4,7 @@ import { Box, Button, Group, Scroller, Stack, Text, Title } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import { ArrowRight } from 'lucide-react'
 import { FluidTiles } from './Tile'
-import { KindIcon, type Kind } from './kinds'
+import { KindIcon, KindScope, type Kind } from './kinds'
 
 /** How many cards a shelf shows on a phone before "See all". */
 const PHONE_PREVIEW = 2
@@ -76,24 +76,26 @@ export function Shelf({
         </Text>
       )}
       {above}
-      {phone ? (
-        <FluidTiles value>
-          <Stack gap="sm">
-            {to || cut ? items.slice(0, PHONE_PREVIEW) : items}
-            {!to && cut && (
-              <Button variant="default" onClick={() => setOpen(true)}>
-                Show all {items.length}
-              </Button>
-            )}
-          </Stack>
-        </FluidTiles>
-      ) : (
-        <Scroller draggable={false} edgeGradientColor="var(--bg)" controlSize={36}>
-          <Group gap="md" wrap="nowrap" align="stretch" py={4} px={2} style={{ whiteSpace: 'normal' }}>
-            {children}
-          </Group>
-        </Scroller>
-      )}
+      <KindScope kind={kind ?? null}>
+        {phone ? (
+          <FluidTiles value>
+            <Stack gap="sm">
+              {to || cut ? items.slice(0, PHONE_PREVIEW) : items}
+              {!to && cut && (
+                <Button variant="default" onClick={() => setOpen(true)}>
+                  Show all {items.length}
+                </Button>
+              )}
+            </Stack>
+          </FluidTiles>
+        ) : (
+          <Scroller draggable={false} edgeGradientColor="var(--bg)" controlSize={36}>
+            <Group gap="md" wrap="nowrap" align="stretch" py={4} px={2} style={{ whiteSpace: 'normal' }}>
+              {children}
+            </Group>
+          </Scroller>
+        )}
+      </KindScope>
     </Box>
   )
 }
