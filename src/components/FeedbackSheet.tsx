@@ -43,6 +43,7 @@ export function FeedbackSheet({
     <BottomSheet
       verdict={verdict}
       animate
+      stack
       label="Result"
       actions={
         <>
